@@ -46,7 +46,7 @@ public class HudFragment{
     private ImageButton flip;
     private Slider minimapSlider;
     private CoreItemsDisplay coreItems = new RCoreItemsDisplay();
-    private OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
+    public OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
     private AuxilliaryTable auxilliaryTable;
     private AdvanceToolTable advanceToolTable = new AdvanceToolTable();
     private HudSettingsTable hudSettingsTable = new HudSettingsTable();

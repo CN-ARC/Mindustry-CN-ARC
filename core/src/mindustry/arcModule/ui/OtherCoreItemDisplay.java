@@ -1,6 +1,8 @@
 package mindustry.arcModule.ui;
 
+import arc.Events;
 import arc.graphics.Color;
+import arc.scene.ui.ImageButton;
 import arc.scene.ui.TextButton;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
@@ -10,21 +12,24 @@ import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.content.UnitTypes;
 import mindustry.core.*;
+import mindustry.game.EventType;
+import mindustry.game.Team;
 import mindustry.game.Teams;
+import mindustry.gen.Tex;
 import mindustry.type.Item;
 import mindustry.type.UnitType;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
+import mindustry.ui.dialogs.BaseDialog;
 
 import static mindustry.Vars.*;
 import static mindustry.gen.Tex.*;
 import static mindustry.ui.Styles.*;
 
 public class OtherCoreItemDisplay extends Table {
-    private Seq<Teams.TeamData> teams = null, teams0 = null;
+    public Seq<Teams.TeamData> teams = new Seq<>();
 
     private float lastUpd = 0f, fontScl = 0.8f;
-    private int showTeams = 6, showStart = 0;
     private boolean show = false, showStat = true, showItem = true, showUnit = true;
 
     private Table teamsTable;
@@ -63,37 +68,23 @@ public class OtherCoreItemDisplay extends Table {
                         rebuild();
                     }).size(40f).row();
 
-                    buttons.button("+",textStyle, () -> {
-                        if(showTeams > teams.size) return;
-                        showTeams += 1;
-                        if(showTeams > 15) showTeams = 15;
-                    }).size(40f).row();
-    
-                    buttons.button("-",textStyle, () -> {
-                        showTeams -= 1;
-                        if(showTeams <= 0) showTeams = 1;
-                    }).size(40f).row();
-    
-                    buttons.button(">",textStyle, () -> {
-                        showStart += 1;
-                        if(showStart + showTeams > teams0.size) showStart = teams0.size - showTeams;
-                    }).size(40f).row();
-    
-                    buttons.button("<",textStyle, () -> {
-                        showStart -= 1;
-                        if(showStart < 0) showStart = 0;
-                    }).size(40f).row();
+                    buttons.button("T",textStyle, () -> {
+                        teamChangeMenu();
+                    }).checked(gg->false).size(40f).row();
 
                     buttons.button(Blocks.worldProcessor.emoji(),textStyle, () -> {
                         showStat = !showStat;
+                        teamsRebuild();
                     }).checked(a->showStat).size(40f).row();
 
                     buttons.button(content.items().get(0).emoji(),textStyle, () -> {
                         showItem = !showItem;
+                        teamsRebuild();
                     }).checked(a->showItem).size(40f).row();
     
                     buttons.button(UnitTypes.mono.emoji(),textStyle, () -> {
                         showUnit = !showUnit;
+                        teamsRebuild();
                     }).checked(a->showUnit).size(40f);
                 }).left();
         
@@ -103,9 +94,36 @@ public class OtherCoreItemDisplay extends Table {
     
             }).left();
         }
+    }
 
+    private void teamChangeMenu(){
+        BaseDialog dialog = new BaseDialog("队伍选择器");
+        Table selectTeam = new Table().top();
 
+        dialog.cont.pane(td -> {
+            for(Team team : Team.all){
+                if(team.id % 10 == 6){
+                    td.row();
+                    td.add("队伍：" + team.id + "~" + (team.id + 10));
+                }
+                ImageButton button = new ImageButton(Tex.whiteui, Styles.clearTogglei);
+                button.getStyle().imageUpColor = team.color;
+                button.margin(10f);
+                button.resizeImage(40f);
+                button.clicked(() -> {
+                    if(teams.contains(team.data())) teams.remove(team.data());
+                    else teams.add(team.data());
+                    teamsRebuild();
+                });
+                button.update(() -> button.setChecked(teams.contains(team.data())));
+                td.add(button);
+            }
+        });
 
+        dialog.add(selectTeam).center();
+        dialog.row();
+        dialog.addCloseButton();
+        dialog.show();
     }
 
     private void teamsRebuild(){
@@ -117,27 +135,14 @@ public class OtherCoreItemDisplay extends Table {
                 teamsRebuild();
                 return;
             }
-
-            if (teams != state.teams.getActive()) {
-                teamsRebuild();
-                return;
-            }
         });
-
-        teamsTable.label(() -> "").get().setFontScale(fontScl);
-        teams0 = Vars.state.teams.getActive();
-        teams0.sort(team -> -team.cores.size);
-        teams0.filter(team -> arcInfoControl(team.team));
-
-        teams = new Seq<>();
-        for(int ii = 0; ii < showTeams; ii++){
-            if(ii + showStart < 0 || ii + showStart >= teams0.size) break;
-            teams.add(teams0.get(ii + showStart));
-        }
+        teams.sort(teamData -> -teamData.cores.size);
 
         /**name + cores + units */
+        teamsTable.label(() -> "").get().setFontScale(fontScl);
         for (Teams.TeamData team : teams) {
-            teamsTable.label(() -> "[#" + team.team.color + "]" + team.team.localized()).get().setFontScale(fontScl);
+            if(team.team.id>6) teamsTable.label(() -> "[#" + team.team.color + "]#" + team.team.id).get().setFontScale(fontScl);
+            else teamsTable.label(() -> "[#" + team.team.color + "]" + team.team.localized()).get().setFontScale(fontScl);
         }
         teamsTable.row();
         teamsTable.label(() -> Blocks.coreNucleus.emoji()).get().setFontScale(fontScl);
@@ -150,8 +155,14 @@ public class OtherCoreItemDisplay extends Table {
             teamsTable.label(() -> "[#" + team.team.color + "]" + UI.formatAmount(team.units.size)).padRight(1).get().setFontScale(fontScl);
         }
         teamsTable.row();
+        teamsTable.label(() -> UnitTypes.gamma.emoji()).get().setFontScale(fontScl);
+        for (Teams.TeamData team : teams) {
+            teamsTable.label(() -> "[#" + team.team.color + "]" + team.players.size).padRight(1).get().setFontScale(fontScl);
+        }
+        teamsTable.row();
 
         if(showStat){
+            teamsTable.image().color(getThemeColor()).fillX().height(1).colspan(999).padTop(3).padBottom(3).row();
             teamsTable.image(Blocks.siliconSmelter.uiIcon).size(15,15).left().get();
             for(Teams.TeamData team : teams){
                 teamsTable.label(() -> "[#" + team.team.color + "]" + (state.rules.teams.get(team.team).cheat? "[green]+":"[red]×")).get().setFontScale(fontScl);
@@ -182,11 +193,10 @@ public class OtherCoreItemDisplay extends Table {
                 teamsTable.label(() -> "[#" + team.team.color + "]" + Strings.autoFixed(state.rules.teams.get(team.team).unitBuildSpeedMultiplier * state.rules.unitBuildSpeedMultiplier,2)).get().setFontScale(fontScl);
             }
             teamsTable.row();
-
-
         }
 
         if(showItem){
+            teamsTable.image().color(getThemeColor()).fillX().height(1).colspan(999).padTop(3).padBottom(3).row();
             boolean[] dispItems = new boolean[content.items().size];
             for(Item item : content.items()){            
                 for(Teams.TeamData team : teams){
@@ -209,6 +219,7 @@ public class OtherCoreItemDisplay extends Table {
         }
 
         if(showUnit){
+            teamsTable.image().color(getThemeColor()).fillX().height(1).colspan(999).padTop(3).padBottom(3).row();
             boolean[] dispUnits = new boolean[content.units().size];
             for(UnitType unit : content.units()){            
                 for(Teams.TeamData team : teams){
@@ -232,14 +243,7 @@ public class OtherCoreItemDisplay extends Table {
     }
 
     public void updateTeamList() {
-        teams0 = Vars.state.teams.getActive();
-        showTeams = teams0.size;
-        teams0.sort(team -> -team.cores.size);
-        teams = new Seq<>();
-        for(int ii = 0; ii < showTeams; ii++){
-            if(ii + showStart < 0 || ii + showStart >= teams0.size) break;
-            teams.add(teams0.get(ii + showStart));
-        }
+        teams = Vars.state.teams.getActive().copy();
     }
 
 }
