@@ -104,6 +104,8 @@ public class AuxilliaryTable extends Table{
                             t.button(type.tinyName(), clearLineNoneTogglet, () -> markType = type)
                                     .checked(b -> markType == type).size(40).tooltip(type.describe);
                         }
+                        t.button("T", clearLineNoneTogglet, () -> Marker.teamMark = !Marker.teamMark)
+                                .checked(b -> Marker.teamMark).size(40).tooltip("前缀添加/t");
 
                     }).left();
                 }

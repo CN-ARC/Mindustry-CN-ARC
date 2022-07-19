@@ -13,8 +13,7 @@ import mindustry.entities.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 
-import static mindustry.Vars.tilesize;
-import static mindustry.Vars.ui;
+import static mindustry.Vars.*;
 
 public class Marker{
     /** 冷却时间*/
@@ -36,12 +35,14 @@ public class Marker{
     );
 
     public static boolean isLocal;
+    public static boolean teamMark = false;
 
     public static final Seq<MarkElement> markList = new Seq<>();
 
     static{
         Events.run(WorldLoadEvent.class, () -> {
             markList.clear();
+            teamMark = state.rules.pvp;
         });
     }
 
@@ -177,7 +178,7 @@ public class Marker{
         }
 
         public void sendMessage(Vec2 pos){
-            String text = versionFixed +
+            String text = (teamMark ? "/t ":"") + versionFixed +
                     "[#" + color + "]" + "<" + name + ">" +
                     "[white]" + ": " +
                     "(" + World.toTile(pos.x) + "," + World.toTile(pos.y)+")";
