@@ -38,7 +38,7 @@ public class MapInfoTable extends BaseToolsTable{
                 if(follow == null) follow = ui.listfrag.players.get(0);
                 followIndex = (followIndex + 1)>=ui.listfrag.players.size?  0 : followIndex + 1;
                 follow = ui.listfrag.players.get(followIndex);
-                ui.announce("视角追踪：" + follow.name,3f);
+                ui.arcInfo("视角追踪：" + follow.name,3f);
             }
         }).tooltip("切换跟踪玩家");
     }
