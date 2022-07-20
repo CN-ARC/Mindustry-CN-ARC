@@ -40,10 +40,11 @@ public class Marker{
     public static final Seq<MarkElement> markList = new Seq<>();
 
     static{
+        /*
         Events.run(WorldLoadEvent.class, () -> {
             markList.clear();
             teamMark = state.rules.pvp;
-        });
+        });*/
     }
 
     public static void mark(MarkType type, float x, float y){
