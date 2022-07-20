@@ -4,6 +4,7 @@ import arc.*;
 import arc.files.*;
 import arc.func.*;
 import arc.scene.ui.CheckBox;
+import arc.scene.ui.Label;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Table;
 import arc.util.*;
@@ -37,8 +38,9 @@ public class BeControl{
     public static String gitDownloadURL = "https://gh.tinylake.tk//";
     private String directDesktopURL,directMobileURL,directSteamURL;
 
-    private Table beTable;
+    private Table beTable,upTable;
     private TextField URLField;
+    private Label commitLabel;
 
     /** @return whether this is a bleeding edge build. */
     public boolean active(){
@@ -71,14 +73,26 @@ public class BeControl{
     private void BeControlTable(){
         BaseDialog beDialog = new BaseDialog("自动更新设置");
 
-        beDialog.cont.table(a -> beTable = a
+        beDialog.cont.table(t -> {
+            t.table(a->beTable = a);
+            if(!mobile || Core.graphics.isPortrait()) {
+                t.table().width(20f);
+                t.pane(tt -> {
+                    tt.add("更新日志").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
+                    tt.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
+                    tt.table(a -> upTable = a);
+                });
+            }
+        }
         );
+
 
         buildTable();
 
         beDialog.addCloseButton();
 
         beDialog.show();
+        if(!mobile || Core.graphics.isPortrait())  getCommits();
     }
 
     private void buildTable(){
@@ -113,111 +127,115 @@ public class BeControl{
                 buildTable();
             }).height(50f).width(300f);
         });
+        if(!mobile || Core.graphics.isPortrait()) {
+            beTable.row();
+            beTable.add("PC端").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
+            beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
 
-        beTable.row();
-        beTable.add("PC端").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
-        beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
-
-        beTable.table(t->{
-            t.table(tt->{
-                tt.field(updateUrl,text->{
-                    updateUrl = text;
-                }).width(300f);
-                tt.button("♐",()-> {
-                    if(!Core.app.openURI(updateUrl)){
-                        ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
-                        Core.app.setClipboardText(updateUrl);
-                    }
-                }).width(50f);
-            });
-            t.row();
-            t.button("PC-自动下载安装",()->{
-                boolean[] cancel = {false};
-                float[] progress = {0};
-                int[] length = {0};
-                Fi file = bebuildDirectory.child("Mindustry CN-ARC-" + updateBuild + ".jar");
-                Fi fileDest = OS.hasProp("becopy") ?
-                        Fi.get(OS.prop("becopy")) :
-                        Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-
-                BaseDialog dialog = new BaseDialog("@be.updating");
-                download(updateUrl, file, i -> length[0] = i, v -> progress[0] = v, () -> cancel[0], () -> {
-                    try{
-                        Runtime.getRuntime().exec(OS.isMac ?
-                                new String[]{javaPath, "-XstartOnFirstThread", "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()} :
-                                new String[]{javaPath, "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()}
-                        );
-                        System.exit(0);
-                    }catch(IOException e){
-                        ui.showException(e);
-                    }
-                }, e -> {
-                    dialog.hide();
-                    ui.showException(e);
+            beTable.table(t -> {
+                t.table(tt -> {
+                    tt.field(updateUrl, text -> {
+                        updateUrl = text;
+                    }).width(300f);
+                    tt.button("♐", () -> {
+                        if (!Core.app.openURI(updateUrl)) {
+                            ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
+                            Core.app.setClipboardText(updateUrl);
+                        }
+                    }).width(50f);
                 });
+                t.row();
+                t.button("PC-自动下载安装", () -> {
+                    boolean[] cancel = {false};
+                    float[] progress = {0};
+                    int[] length = {0};
+                    Fi file = bebuildDirectory.child("Mindustry CN-ARC-" + updateBuild + ".jar");
+                    Fi fileDest = OS.hasProp("becopy") ?
+                            Fi.get(OS.prop("becopy")) :
+                            Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().getPath());
 
-                dialog.cont.add(new Bar(() -> length[0] == 0 ? Core.bundle.get("be.updating") : (int)(progress[0] * length[0]) / 1024/ 1024 + "/" + length[0]/1024/1024 + " MB", () -> Pal.accent, () -> progress[0])).width(400f).height(70f);
-                dialog.buttons.button("@cancel", Icon.cancel, () -> {
-                    cancel[0] = true;
-                    dialog.hide();
-                }).size(210f, 64f);
-                dialog.setFillParent(false);
-                dialog.show();
-            }).width(300f);
-        });
-
-        beTable.row();
-        beTable.add("steam端").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
-        beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
-
-        beTable.table(t->{
-            t.table(tt->{
-                tt.field(steamUrl,text->{
-                    steamUrl = text;
-                }).width(300f);
-                tt.button("♐",()-> {
-                    if(!Core.app.openURI(steamUrl)){
-                        ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
-                        Core.app.setClipboardText(steamUrl);
-                    }
-                }).width(50f);
-            });
-            t.row();
-            t.button("steam-自动下载安装",()->{
-                boolean[] cancel = {false};
-                float[] progress = {0};
-                int[] length = {0};
-                Fi file = bebuildDirectory.child("Mindustry CN-ARC-" + updateBuild + ".jar");
-                Fi fileDest = OS.hasProp("becopy") ?
-                        Fi.get(OS.prop("becopy")) :
-                        Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-
-                BaseDialog dialog = new BaseDialog("@be.updating");
-                download(steamUrl, file, i -> length[0] = i, v -> progress[0] = v, () -> cancel[0], () -> {
-                    try{
-                        Runtime.getRuntime().exec(OS.isMac ?
-                                new String[]{javaPath, "-XstartOnFirstThread", "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()} :
-                                new String[]{javaPath, "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()}
-                        );
-                        System.exit(0);
-                    }catch(IOException e){
+                    BaseDialog dialog = new BaseDialog("@be.updating");
+                    download(updateUrl, file, i -> length[0] = i, v -> progress[0] = v, () -> cancel[0], () -> {
+                        try {
+                            Runtime.getRuntime().exec(OS.isMac ?
+                                    new String[]{javaPath, "-XstartOnFirstThread", "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()} :
+                                    new String[]{javaPath, "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()}
+                            );
+                            System.exit(0);
+                        } catch (IOException e) {
+                            ui.showException(e);
+                        }
+                    }, e -> {
+                        dialog.hide();
                         ui.showException(e);
-                    }
-                }, e -> {
-                    dialog.hide();
-                    ui.showException(e);
+                    });
+
+                    dialog.cont.add(new Bar(() -> length[0] == 0 ? Core.bundle.get("be.updating") : (int) (progress[0] * length[0]) / 1024 / 1024 + "/" + length[0] / 1024 / 1024 + " MB", () -> Pal.accent, () -> progress[0])).width(400f).height(70f);
+                    dialog.buttons.button("@cancel", Icon.cancel, () -> {
+                        cancel[0] = true;
+                        dialog.hide();
+                    }).size(210f, 64f);
+                    dialog.setFillParent(false);
+                    dialog.show();
+                }).width(300f);
+            });
+
+            beTable.row();
+            beTable.add("steam端").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
+            beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
+
+            beTable.table(t -> {
+                t.table(tt -> {
+                    tt.field(steamUrl, text -> {
+                        steamUrl = text;
+                    }).width(300f);
+                    tt.button("♐", () -> {
+                        if (!Core.app.openURI(steamUrl)) {
+                            ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
+                            Core.app.setClipboardText(steamUrl);
+                        }
+                    }).width(50f);
                 });
+                t.row();
+                t.button("steam-自动下载安装", () -> {
+                    boolean[] cancel = {false};
+                    float[] progress = {0};
+                    int[] length = {0};
+                    Fi file = bebuildDirectory.child("Mindustry CN-ARC-" + updateBuild + ".jar");
+                    Fi fileDest = OS.hasProp("becopy") ?
+                            Fi.get(OS.prop("becopy")) :
+                            Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().getPath());
 
-                dialog.cont.add(new Bar(() -> length[0] == 0 ? Core.bundle.get("be.updating") : (int)(progress[0] * length[0]) / 1024/ 1024 + "/" + length[0]/1024/1024 + " MB", () -> Pal.accent, () -> progress[0])).width(400f).height(70f);
-                dialog.buttons.button("@cancel", Icon.cancel, () -> {
-                    cancel[0] = true;
-                    dialog.hide();
-                }).size(210f, 64f);
-                dialog.setFillParent(false);
-                dialog.show();
-            }).width(300f);
-        });
+                    BaseDialog dialog = new BaseDialog("@be.updating");
+                    download(steamUrl, file, i -> length[0] = i, v -> progress[0] = v, () -> cancel[0], () -> {
+                        try {
+                            Runtime.getRuntime().exec(OS.isMac ?
+                                    new String[]{javaPath, "-XstartOnFirstThread", "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()} :
+                                    new String[]{javaPath, "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()}
+                            );
+                            System.exit(0);
+                        } catch (IOException e) {
+                            ui.showException(e);
+                        }
+                    }, e -> {
+                        dialog.hide();
+                        ui.showException(e);
+                    });
 
+                    dialog.cont.add(new Bar(() -> length[0] == 0 ? Core.bundle.get("be.updating") : (int) (progress[0] * length[0]) / 1024 / 1024 + "/" + length[0] / 1024 / 1024 + " MB", () -> Pal.accent, () -> progress[0])).width(400f).height(70f);
+                    dialog.buttons.button("@cancel", Icon.cancel, () -> {
+                        cancel[0] = true;
+                        dialog.hide();
+                    }).size(210f, 64f);
+                    dialog.setFillParent(false);
+                    dialog.show();
+                }).width(300f);
+            });
+        }
+        else {
+            beTable.row();
+            beTable.add("检测到手机竖屏状态，已隐藏更新日志及其他端下载链接。\n如需显示请横屏后重新打开本窗口");
+        }
         beTable.row();
         beTable.add("PE端").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
         beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
@@ -270,6 +288,28 @@ public class BeControl{
             }else{
                 Core.app.post(() -> done.get(false));
             }
+        });
+    }
+
+    /** 加载commits */
+    public void getCommits(){
+        upTable.clear();
+        StringBuilder commits = new StringBuilder();
+        Http.get("https://api.github.com/repos/CN-ARC/Mindustry-CN-ARC/commits").submit(res -> {
+            Jval val = Jval.read(res.getResultAsString());
+            Jval.JsonArray list =  val.asArray();
+            list.each(commit->{
+                String time = commit.get("commit").get("author").getString("date");
+                String author = commit.get("commit").get("author").getString("name");
+                String content = commit.get("commit").getString("message");
+                upTable.table(upt->{
+                    upt.add("[#008000]" + time).width(270f).left();
+                    upt.add("[#1E90FF]" + author).width(80f).padLeft(10f);
+                }).fillX().row();
+                upTable.add("[white]" + content).padBottom(3f).left();
+                upTable.row();
+            });
+            commitLabel.setText(commits.toString());
         });
     }
 
