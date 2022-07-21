@@ -52,6 +52,8 @@ public class MapEditorDialog extends Dialog implements Disposable{
     private boolean shownWithMap = false;
     private Seq<Block> blocksOut = new Seq<>();
 
+    private TextField brushField;
+
     public MapEditorDialog(){
         super("");
 
@@ -640,9 +642,9 @@ public class MapEditorDialog extends Dialog implements Disposable{
 
                     to.table(t-> {
                         t.add("笔刷：");
-                        t.field(Float.toString(editor.brushSize), TextField.TextFieldFilter.digitsOnly, value -> {
+                        brushField = t.field(Float.toString(editor.brushSize), value -> {
                             editor.brushSize = Float.parseFloat(value);
-                        }).valid(value -> Strings.canParsePositiveFloat(value)).maxTextLength(4).width(100f);
+                        }).valid(value -> Strings.canParsePositiveFloat(value)).maxTextLength(4).width(100f).get();
                     });
 
                 });
@@ -652,7 +654,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
 
                 mid.table(Tex.underline, t -> {
                     Slider slider = new Slider(0, MapEditor.brushSizes.length - 1, 1, false);
-                    slider.moved(f -> editor.brushSize = MapEditor.brushSizes[(int)f]);
+                    slider.moved(f -> {editor.brushSize = MapEditor.brushSizes[(int)f];brushField.setText(Float.toString(editor.brushSize));});
                     for(int j = 0; j < MapEditor.brushSizes.length; j++){
                         if(MapEditor.brushSizes[j] == editor.brushSize){
                             slider.setValue(j);
