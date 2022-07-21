@@ -96,22 +96,17 @@ public class Minimap extends Table{
 
             @Override
             public void clicked(InputEvent event, float x, float y){
-                ui.minimapfrag.toggle();
-                if (android) ui.minimapfrag.toggle();
-                else{
-                    float sz = 16 * renderer.minimap.getZoom();
-                    float dx = Mathf.clamp(Core.camera.position.x / 8, sz, world.width() - sz);
-                    float dy = Mathf.clamp(Core.camera.position.y / 8, sz, world.height() - sz);
+                float sz = 16 * renderer.minimap.getZoom();
+                float dx = Mathf.clamp(Core.camera.position.x / 8, sz, world.width() - sz);
+                float dy = Mathf.clamp(Core.camera.position.y / 8, sz, world.height() - sz);
 
-                    float ptilex = sz * 2 / width, ptiley = sz * 2 / height;
-                    Vec2 pos = Tmp.v1.set(dx, dy).sub(sz, sz).add(x * ptilex, y * ptiley).scl(8);
+                float ptilex = sz * 2 / width, ptiley = sz * 2 / height;
+                Vec2 pos = Tmp.v1.set(dx, dy).sub(sz, sz).add(x * ptilex, y * ptiley).scl(8);
 
-                    Core.camera.position.set(pos);
+                Core.camera.position.set(pos);
 
-                    if(control.input instanceof DesktopInput input){
-                        input.panning = true;
-                    }
-
+                if(control.input instanceof DesktopInput input){
+                    input.panning = true;
                 }
             }
         });

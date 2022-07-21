@@ -155,11 +155,11 @@ public class MinimapRenderer{
             Draw.reset();
         }
 
-        if(withLabels && net.active()){
+        if(net.active()){
             for(Player player : Groups.player){
                 if(!player.dead()){
-                    float rx = player.x / (world.width() * tilesize) * w;
-                    float ry = player.y / (world.height() * tilesize) * h;
+                    float rx = !withLabels ? (player.x - rect.x) / rect.width * w : player.x / (world.width() * tilesize) * w;
+                    float ry = !withLabels ? (player.y - rect.y) / rect.width * h : player.y / (world.height() * tilesize) * h;
 
                     drawLabel(x + rx, y + ry, player.name, player.team().color);
                 }
