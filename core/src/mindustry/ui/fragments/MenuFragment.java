@@ -66,36 +66,10 @@ public class MenuFragment{
             up = discordBanner;
         }}, ui.discord::show).marginTop(9f).marginLeft(10f).tooltip("@discord").size(84, 45).name("discord"));
 
-        /*
-        //info icon
-        if(mobile){
-            parent.fill(c -> c.bottom().left().button("", new TextButtonStyle(){{
-                font = Fonts.def;
-                fontColor = Color.white;
-                up = infoBanner;
-            }}, ui.about::show).size(84, 45).name("info"));
-
-
-        }else if(becontrol.active()){
-            parent.fill(c -> c.bottom().right().button("@be.check", Icon.refresh, () -> {
-                ui.loadfrag.show();
-                becontrol.checkUpdate(result -> {
-                    ui.loadfrag.hide();
-                    if(!result){
-                        ui.showInfo("@be.noupdates");
-                    }
-                });
-            }).size(200, 60).name("becheck").update(t -> {
-                t.getLabel().setColor(becontrol.isUpdateAvailable() ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
-            }));
-        }*/
         parent.fill(c -> c.bottom().right().button("检查更新", Icon.refresh, () -> {
             ui.loadfrag.show();
             becontrol.checkUpdate(result -> {
                 ui.loadfrag.hide();
-                if(!result){
-                    ui.showInfo("暂时还没新版本哦~");
-                }
             });
         }).size(200, 60).name("检查更新").update(t -> {
             t.getLabel().setColor(becontrol.isUpdateAvailable() ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);

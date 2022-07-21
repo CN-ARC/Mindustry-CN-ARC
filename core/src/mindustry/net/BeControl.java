@@ -3,6 +3,7 @@ package mindustry.net;
 import arc.*;
 import arc.files.*;
 import arc.func.*;
+import arc.graphics.Color;
 import arc.scene.ui.CheckBox;
 import arc.scene.ui.Label;
 import arc.scene.ui.TextField;
@@ -30,7 +31,7 @@ public class BeControl{
     private static final int updateInterval = 60;
 
     private boolean checkUpdates = true;
-    private boolean updateAvailable;
+    private boolean updateAvailable = false;
     private String updateUrl;
     private String steamUrl;
     private String mobileUrl;
@@ -99,7 +100,7 @@ public class BeControl{
         beTable.clear();
 
         beTable.table(t->{
-            t.add("[violet]！！！发现了新版本：" + updateBuild +"，你的版本为：" + arcVersion);
+            t.add(updateAvailable?("[violet]！！！发现了新版本：" + updateBuild +"，你的版本为：" + arcVersion) : ("你已是最新版本，不需要更新！版本号" + arcVersion));
         });
 
         beTable.row();
@@ -119,13 +120,29 @@ public class BeControl{
                 tt.button(Icon.refreshSmall,()->buildTable());
             });
             t.row();
-            t.button("wz提供镜像",()->{
-                gitDownloadURL = "https://gh.tinylake.tk//";
-                updateUrl = gitDownloadURL + directDesktopURL;
-                steamUrl = gitDownloadURL + directSteamURL;
-                mobileUrl = gitDownloadURL + directMobileURL;
-                buildTable();
-            }).height(50f).width(300f);
+            t.table(tt->{
+                tt.button("wz镜像",()->{
+                    gitDownloadURL = "https://gh.tinylake.tk//";
+                    updateUrl = gitDownloadURL + directDesktopURL;
+                    steamUrl = gitDownloadURL + directSteamURL;
+                    mobileUrl = gitDownloadURL + directMobileURL;
+                    buildTable();
+                }).height(50f).width(150f);
+                tt.button("A",()->{
+                    gitDownloadURL = "https://gh.api.99988866.xyz/";
+                    updateUrl = gitDownloadURL + directDesktopURL;
+                    steamUrl = gitDownloadURL + directSteamURL;
+                    mobileUrl = gitDownloadURL + directMobileURL;
+                    buildTable();
+                }).height(50f).width(50f);
+                tt.button("B",()->{
+                    gitDownloadURL = "https://ghproxy.com/";
+                    updateUrl = gitDownloadURL + directDesktopURL;
+                    steamUrl = gitDownloadURL + directSteamURL;
+                    mobileUrl = gitDownloadURL + directMobileURL;
+                    buildTable();
+                }).height(50f).width(50f);
+            });
         });
         if(!mobile || Core.graphics.isPortrait()) {
             beTable.row();
@@ -195,7 +212,7 @@ public class BeControl{
                             Core.app.setClipboardText(steamUrl);
                         }
                     }).width(50f);
-                });
+                });/*
                 t.row();
                 t.button("steam-自动下载安装", () -> {
                     boolean[] cancel = {false};
@@ -229,7 +246,7 @@ public class BeControl{
                     }).size(210f, 64f);
                     dialog.setFillParent(false);
                     dialog.show();
-                }).width(300f);
+                }).width(300f);*/
             });
         }
         else {
@@ -286,7 +303,7 @@ public class BeControl{
                     done.get(true);
                 });
             }else{
-                Core.app.post(() -> done.get(false));
+                Core.app.post(() -> {BeControlTable();done.get(false);});
             }
         });
     }
@@ -303,10 +320,10 @@ public class BeControl{
                 String author = commit.get("commit").get("author").getString("name");
                 String content = commit.get("commit").getString("message");
                 upTable.table(upt->{
-                    upt.add("[#008000]" + time).width(270f).left();
-                    upt.add("[#1E90FF]" + author).width(80f).padLeft(10f);
+                    upt.add(time).color(Color.valueOf("#008000")).width(270f).left();
+                    upt.add(author).color(Color.valueOf("#1E90FF")).width(80f).padLeft(10f);
                 }).fillX().row();
-                upTable.add("[white]" + content).padBottom(3f).left();
+                upTable.add(content).color(Color.white).padBottom(3f).left();
                 upTable.row();
             });
             commitLabel.setText(commits.toString());
