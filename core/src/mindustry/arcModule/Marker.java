@@ -40,11 +40,10 @@ public class Marker{
     public static final Seq<MarkElement> markList = new Seq<>();
 
     static{
-        /*
         Events.run(WorldLoadEvent.class, () -> {
             markList.clear();
-            teamMark = state.rules.pvp;
-        });*/
+            //teamMark = state.rules.pvp;
+        });
     }
 
     public static void mark(MarkType type, float x, float y){
@@ -85,8 +84,12 @@ public class Marker{
             int Indexer = -1;
 
             for(MarkType markType1 : markTypes){
-                if (text.contains("<" + markType1.name + ">") || text.contains("<" + markType1.localizedName + ">")) {markType = markType1;Indexer = text.indexOf("<" + markType1.name + ">");}
+                if (text.contains("<" + markType1.name + ">") || text.contains("<" + markType1.localizedName + ">")) {
+                    markType = markType1;
+                    Indexer = text.indexOf("<" + markType1.name + ">");
+                }
             }
+
             if(Indexer>10 && markType!=null){
                 /* Parse position */
                 String posStr = text.substring(text.indexOf('(', Indexer + 1));
@@ -104,9 +107,6 @@ public class Marker{
                 ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text,pos));
                 return true;
             }
-
-
-
 
         if(text.contains("[YELLOW][集合]")&& text.contains("[WHITE]\"[WHITE]\",输入\"[gold]go[WHITE]\"前往")){
 

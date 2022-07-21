@@ -46,8 +46,9 @@ public class MessageDialog extends BaseDialog{
 
     private Table historyTable;
     private Boolean fieldMode = false;
+
     public MessageDialog(){
-        super("arc-中央监控室");
+        super("ARC-中央监控室");
 
         cont.pane(t -> {
             historyTable = t;
@@ -229,6 +230,7 @@ public class MessageDialog extends BaseDialog{
     public boolean resolveMsg(String message){
 
         if(Marker.resolveMessage(message)) return true;
+        if(District.resolveMessage(message)) return true;
         if(resolveMarkMsg(message)) return true;
         if(resolveServerMsg(message)) return true;
 
@@ -239,6 +241,7 @@ public class MessageDialog extends BaseDialog{
 
     public boolean resolveMsg(String message,@Nullable Player playersender){
         if(Marker.resolveMessage(message)) return true;
+        if(District.resolveMessage(message)) return true;
         if(resolveMarkMsg(message)) return true;
 
         if(playersender != null){
@@ -368,6 +371,7 @@ public class MessageDialog extends BaseDialog{
 
         markLoc("标记", "坐标", Color.valueOf("#7FFFD4")),
         markInfo("标记", "波次", Color.valueOf("#7FFFD4")),
+        district("规划区","",Color.violet),
 
         serverTips("服务器", "小贴士", Color.valueOf("#98FB98"),false),
         serverMsg("服务器", "信息", Color.valueOf("#cefdce")),
