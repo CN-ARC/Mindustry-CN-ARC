@@ -2,6 +2,9 @@ package mindustry.arcModule;
 
 import arc.*;
 import arc.graphics.Color;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.math.Mathf;
 import arc.math.geom.*;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.Dialog;
@@ -11,6 +14,7 @@ import arc.scene.ui.layout.Scl;
 import arc.struct.Seq;
 import arc.util.Log;
 import arc.util.Strings;
+import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.*;
 import mindustry.arcModule.ui.dialogs.MessageDialog;
@@ -21,11 +25,10 @@ import mindustry.ctype.ContentType;
 import mindustry.ctype.UnlockableContent;
 import mindustry.game.EventType;
 import mindustry.gen.*;
+import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
-
-import java.util.Date;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.Marker.teamMark;
@@ -57,6 +60,8 @@ public class District{
         BaseDialog disSet = new BaseDialog("ARC-区域规划中心");
 
         disSet.cont.table(t->{
+            t.table(tt->tt.add("区域规划器-用于单机|服务器在地图上设置、管理和交流某个区域的用途\n[orange]目前已完成：标记|交流|识别\n未完成：绘制ui、优化标记...有空再搞"));
+            t.row();
             t.add("坐标设置").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
             t.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
             t.table(tt->{
@@ -102,7 +107,7 @@ public class District{
 
             });
             t.row();
-            t.add("时间设置").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
+            t.add("持续时间").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
             t.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
             t.table(tt->{
                 TextField sField = tt.field("" + 30, text -> {
@@ -120,7 +125,7 @@ public class District{
             });
 
             t.row();
-            t.add("规划区显示").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
+            t.add("规划项目").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
             t.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
             t.table(tt->{
                 tt.add("图标：");
@@ -135,7 +140,6 @@ public class District{
             t.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
             t.button("发布规划区!",()->{
                 Call.sendChatMessage(voidDistrict.toString());
-                //ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.district,voidDistrict.toString(),voidDistrict.center()));
             }).fillX();
         });
 
@@ -155,8 +159,8 @@ public class District{
 
         resolveDistrict.message = text;
 
-        int districtTypeHand = text.indexOf('<', Indexer + 1);
-        int districtTypeTail = text.indexOf('>', Indexer + 2);
+        int districtTypeHand = text.indexOf('[', Indexer + 1);
+        int districtTypeTail = text.indexOf(']', Indexer + 2);
         if(districtTypeHand == -1 || districtTypeTail<districtTypeHand) return false;
         resolveDistrict.districtType.districtName = text.substring(districtTypeHand,districtTypeTail);
 
@@ -187,7 +191,7 @@ public class District{
         }
         resolveDistrict.districtB = new Vec2(pos);
 
-        districtList.add(resolveDistrict);
+        districtList.add(new advDistrict(resolveDistrict));
         ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.district,text,resolveDistrict.center()));
         return true;
     }
@@ -232,14 +236,14 @@ public class District{
     public static class advDistrict{
         public District.DistictType districtType = new DistictType("");
         public String message;
-        public Date time;
+        public Float time;
         public Float duration = 30f;
         public String creator;
         public boolean selected;
         public Vec2 districtA = new Vec2();
         public Vec2 districtB = new Vec2();
 
-        public advDistrict(District.DistictType districtType, String message, Date time, String creator, Vec2 districtA, Vec2 districtB){
+        public advDistrict(District.DistictType districtType, String message, Float time, String creator, Vec2 districtA, Vec2 districtB){
             this.districtType = districtType;
             this.message = message;
             this.time = time;
@@ -251,7 +255,7 @@ public class District{
         public advDistrict(){}
 
         public advDistrict(District.DistictType districtType, String message, String creator, Vec2 districtA, Vec2 districtB){
-            this(districtType, message, new Date(), creator, districtA, districtB);
+            this(districtType, message, Time.time, creator, districtA, districtB);
         }
 
         public advDistrict(District.DistictType districtType, String message, Vec2 districtA, Vec2 districtB){
@@ -262,7 +266,7 @@ public class District{
             this.districtType = voidDistrict.districtType;
             this.message = voidDistrict.message;
             this.duration = voidDistrict.duration;
-            this.time = new Date();
+            this.time = Time.time;
             this.creator = voidDistrict.creator;
             this.districtA = new Vec2().set(voidDistrict.districtA);
             this.districtB = new Vec2().set(voidDistrict.districtB);
@@ -270,7 +274,7 @@ public class District{
 
         public String toString(){
             return  (teamMark ? "/t ":"") + versionFixed +
-                    ShareType + "[white]<" + districtType.getName() + ">" +
+                    ShareType + "[white][" + districtType.getName() + "]" +
                     "[white]：" +
                     "(" + (int)districtA.x + "," + (int)districtA.y+")~" +
                     "(" + (int)districtB.x + "," + (int)districtB.y+")"
@@ -279,6 +283,18 @@ public class District{
 
         public Vec2 center(){
             return new Vec2((districtA.x + districtB.x)/2f,(districtA.y + districtB.y)/2f);
+        }
+
+        public void draw(){
+            if((Time.time - time) > (duration * 60f)) return;
+            if(districtA.x == districtB.x || districtA.y == districtB.y) return;
+            Draw.color(Color.orange,0.4f);
+            Draw.z(Layer.effect - 2f);
+            //Lines.rect(districtA.x * tilesize, districtA.y * tilesize, (districtB.x - districtA.x) * tilesize, (districtB.y - districtA.y)*tilesize);
+            Lines.rect(districtA.x , districtA.y, (districtB.x - districtA.x) , (districtB.y - districtA.y));
+            Lines.line(districtA.x * tilesize,districtB.y * tilesize,districtA.x * tilesize,districtA.y * tilesize);
+            Lines.line(districtA.x,districtB.y,districtA.y,districtA.y);
+            ui.arcInfo(districtA.x + districtB.x + "",0.1f);
         }
 
     }

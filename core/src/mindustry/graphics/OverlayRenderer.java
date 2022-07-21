@@ -9,6 +9,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.ai.types.*;
+import mindustry.arcModule.District;
 import mindustry.content.UnitTypes;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
@@ -202,6 +203,13 @@ public class OverlayRenderer{
                     }
 
                 });
+            }
+        }
+
+        /*应该放在这里更好管理，不清楚为啥画不出来*/
+        if(District.districtList.size>0){
+            for(District.advDistrict district : District.districtList){
+                district.draw();
             }
         }
 
