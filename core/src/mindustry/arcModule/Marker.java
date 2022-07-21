@@ -163,7 +163,7 @@ public class Marker{
             this.color = color;
 
             localizedName = Core.bundle.get("marker." + name + ".name", "unknown");
-            describe = Core.bundle.get("marker." + name + ".description", "unknown");
+            describe = Core.bundle.get("marker." + name + ".name", "unknown");
         }
 
         public String shortName(){
