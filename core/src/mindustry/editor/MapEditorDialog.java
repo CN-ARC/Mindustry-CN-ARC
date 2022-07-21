@@ -31,7 +31,10 @@ import mindustry.world.blocks.environment.*;
 import mindustry.world.blocks.storage.*;
 import mindustry.world.meta.*;
 
+import java.util.Arrays;
+
 import static mindustry.Vars.*;
+import static mindustry.ui.Styles.flatToggleMenut;
 
 public class MapEditorDialog extends Dialog implements Disposable{
     private MapView view;
@@ -598,58 +601,52 @@ public class MapEditorDialog extends Dialog implements Disposable{
                 mid.add(tools).top().padBottom(-6);
                 mid.row();
 
-                mid.button("队伍选择", () -> {
-                    BaseDialog dialog = new BaseDialog("队伍选择器");
-                    Table selectTeam = new Table().top();
-
-                    dialog.cont.pane(td->{
-                        int i = 0;
-                        for(Team team : Team.all){
-                            ImageButton button = new ImageButton(Tex.whiteui, Styles.clearTogglei);
-                            button.getStyle().imageUpColor = team.color;
-                            button.margin(10f);
-                            button.resizeImage(40f);
-                            button.clicked(() -> {editor.drawTeam = team;dialog.hide();});
-                            button.update(() -> button.setChecked(editor.drawTeam == team));
-                            td.add(button);
-                            i++;
-                            if(i==5) {td.row();td.add("队伍："+i+"~"+(i+10));}
-                            else if((i-5)%10==0) {td.row();td.add("队伍："+i+"~"+(i+10));}
-                        }
-                    }
-                    );
-
-                    dialog.add(selectTeam).center();
-                    dialog.row();
-
-                    dialog.addCloseButton();
-
-                    dialog.show();
-                }).center().width(size * 3f+3).row();
-
                 tools.row();
 
                 tools.table(Tex.underline, t -> t.add("[cyan]设置"))
                         .colspan(3).height(40).width(size * 3f + 3f).padBottom(3);
                 tools.row();
 
-                tools.add("设置队伍：");
-                tools.field(Integer.toString(editor.drawTeam.id), TextField.TextFieldFilter.digitsOnly, value -> {
-                    editor.drawTeam = Team.get(Integer.parseInt(value));
-                }).valid(value -> (Strings.canParsePositiveInt(value) && Integer.parseInt(value)<256)).maxTextLength(3).right().padLeft(20);
-                tools.row();
+                mid.table(to->{
+                    to.table(t->{
+                        for(Team team : Team.baseTeams){
+                            ImageButton button = new ImageButton(Tex.whiteui, Styles.clearTogglei);
+                            button.getStyle().imageUpColor = team.color;
+                            button.margin(3f);
+                            button.resizeImage(20f);
+                            button.clicked(() -> {
+                                editor.drawTeam = team;
+                            });
+                            button.update(() -> button.setChecked(editor.drawTeam == team));
+                            t.add(button);
+                            /*
+                            t.button(String.format("[#%s]%s", team.color, team.localized()), flatToggleMenut, () -> editor.drawTeam = team)
+                                    .checked(b -> editor.drawTeam == team).size(30f, 30f);*/
+                        }
+                        t.button("[violet]+", flatToggleMenut, this::teamSelectMenu).
+                                checked(b -> !Arrays.asList(Team.baseTeams).contains(editor.drawTeam)
+                                ).tooltip("[acid]更多队伍选择").size(30f, 30f);
+                    });
+                    to.row();
 
-                tools.add("辅助线：");
-                tools.field(Integer.toString(editor.interval), TextField.TextFieldFilter.digitsOnly, value -> {
-                    editor.interval = Integer.parseInt(value);
-                }).valid(value -> Strings.canParsePositiveInt(value)).maxTextLength(4).right();
+                    to.table(t-> {
+                        t.add("辅助线：");
+                        t.field(Integer.toString(editor.interval), TextField.TextFieldFilter.digitsOnly, value -> {
+                            editor.interval = Integer.parseInt(value);
+                        }).valid(value -> Strings.canParsePositiveInt(value)).maxTextLength(4).width(100f);
+                    });
 
-                tools.row();
+                    to.row();
 
-                tools.add("笔刷：");
-                tools.field(Float.toString(editor.brushSize), TextField.TextFieldFilter.digitsOnly, value -> {
-                    editor.brushSize = Float.parseFloat(value);
-                }).valid(value -> Strings.canParsePositiveFloat(value)).maxTextLength(4).right();
+                    to.table(t-> {
+                        t.add("笔刷：");
+                        t.field(Float.toString(editor.brushSize), TextField.TextFieldFilter.digitsOnly, value -> {
+                            editor.brushSize = Float.parseFloat(value);
+                        }).valid(value -> Strings.canParsePositiveFloat(value)).maxTextLength(4).width(100f);
+                    });
+
+                });
+
 
                 mid.row();
 
@@ -691,6 +688,35 @@ public class MapEditorDialog extends Dialog implements Disposable{
             cont.table(this::addBlockSelection).right().growY();
 
         }).grow();
+    }
+
+    private void teamSelectMenu(){
+        BaseDialog dialog = new BaseDialog("队伍选择器");
+        Table selectTeam = new Table().top();
+
+        dialog.cont.pane(td -> {
+            for(Team team : Team.all){
+                if(team.id % 10 == 6){
+                    td.row();
+                    td.add("队伍：" + team.id + "~" + (team.id + 10));
+                }
+                ImageButton button = new ImageButton(Tex.whiteui, Styles.clearTogglei);
+                button.getStyle().imageUpColor = team.color;
+                button.margin(10f);
+                button.resizeImage(40f);
+                button.clicked(() -> {
+                    editor.drawTeam = team;
+                    dialog.hide();
+                });
+                button.update(() -> button.setChecked(editor.drawTeam == team));
+                td.add(button);
+            }
+        });
+
+        dialog.add(selectTeam).center();
+        dialog.row();
+        dialog.addCloseButton();
+        dialog.show();
     }
 
     private void doInput(){
