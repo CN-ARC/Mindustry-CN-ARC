@@ -16,6 +16,10 @@ import arc.scene.utils.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.content.Blocks;
+import mindustry.content.Items;
+import mindustry.content.Planets;
+import mindustry.content.UnitTypes;
 import mindustry.ctype.*;
 import mindustry.game.*;
 import mindustry.gen.*;
@@ -25,10 +29,12 @@ import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.Block;
 import mindustry.world.blocks.production.GenericCrafter;
+import mindustry.world.meta.Env;
 
 import java.util.regex.*;
 
 import static mindustry.Vars.*;
+import static mindustry.content.Items.*;
 
 public class SchematicsDialog extends BaseDialog{
     private static final float tagh = 42f;
@@ -42,8 +48,23 @@ public class SchematicsDialog extends BaseDialog{
     private boolean checkedTags;
     private String blueprintlink = "https://docs.qq.com/sheet/DVHNoS3lIcm1NbFFS";
 
+    private String surpuloTags = UnitTypes.gamma.emoji(), erekirTags = UnitTypes.emanate.emoji();
+    private  Seq<String> planetTags = new Seq<String>().add(surpuloTags,erekirTags);
+
     public SchematicsDialog(){
         super("@schematics");
+
+        Events.on(EventType.WorldLoadEvent.class, event -> {
+            if(state.rules.env == Planets.serpulo.defaultEnv){
+                if (selectedTags.contains(erekirTags)) selectedTags.remove(erekirTags);
+                if (!selectedTags.contains(surpuloTags)) selectedTags.add(surpuloTags);
+            }
+            else if(state.rules.env == Planets.erekir.defaultEnv){
+                if (selectedTags.contains(surpuloTags)) selectedTags.remove(surpuloTags);
+                if (!selectedTags.contains(erekirTags)) selectedTags.add(erekirTags);
+            }
+        });
+
         Core.assets.load("sprites/schematic-background.png", Texture.class).loaded = t -> t.setWrap(TextureWrap.repeat);
 
         tags = Core.settings.getJson("schematic-tags", Seq.class, String.class, Seq::new);
@@ -111,6 +132,38 @@ public class SchematicsDialog extends BaseDialog{
             in.button(Icon.pencilSmall, () -> {
                 showAllTags();
             }).size(tagh).pad(2).tooltip("@schematic.edittags");
+        }).height(tagh).fillX();
+
+        cont.row();
+
+        cont.table(in -> {
+            in.left();
+            in.add("科技树：").padRight(4);
+
+            //tags (no scroll pane visible)
+            in.pane(Styles.noBarPane, t -> {
+                rebuildTags = () -> {
+                    t.clearChildren();
+                    t.left();
+
+                    t.defaults().pad(2).height(tagh);
+                    for(var tag : planetTags){
+                        t.button(tag, Styles.togglet, () -> {
+                            if(selectedTags.contains(tag)){
+                                selectedTags.remove(tag);
+                            }else{
+                                selectedTags.add(tag);
+                            }
+                            rebuildPane.run();
+                        }).checked(selectedTags.contains(tag)).with(c -> c.getLabel().setWrap(false));
+                    }
+                };
+                rebuildTags.run();
+            }).fillX().height(tagh).scrollY(false);
+
+            in.button(Icon.refreshSmall, () -> {
+                syncPlanetTags();
+            }).size(tagh).pad(2).tooltip("刷新");
         }).height(tagh).fillX();
 
         cont.row();
@@ -695,6 +748,30 @@ public class SchematicsDialog extends BaseDialog{
             });
             buttons.button("@back", Icon.left, this::hide).size(210f, 64f);
         }}.show();
+    }
+
+    void syncPlanetTags(){
+        ui.arcInfo("标签自动分类中...请稍后");
+        for(Schematic s : schematics.all()){
+            Boolean surpulo = true;
+            Boolean erekir = true;
+            for (Item item:erekirOnlyItems){
+                if(s.requirements().has(item)) {
+                    surpulo = false;
+                    break;
+                }
+            }
+            for (Item item:serpuloOnlyItems){
+                if(s.requirements().has(item)) {
+                    erekir = false;
+                    break;
+                }
+            }
+
+            if(surpulo && !s.labels.contains(surpuloTags)) addTag(s,surpuloTags);
+            if(erekir && !s.labels.contains(erekirTags)) addTag(s,erekirTags);
+        }
+        ui.arcInfo("标签分类完成");
     }
 
     void buildTags(Schematic schem, Table t){
