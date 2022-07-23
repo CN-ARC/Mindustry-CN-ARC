@@ -67,7 +67,7 @@ public class ChatFragment extends Table{
             if(shown){
                 if(input.keyTap(Binding.chat_history_prev) && historyPos < history.size - 1){
                     if(historyPos == 0) history.set(0, chatfield.getText());
-                     while(!chatValidType(messages.get(historyPos)) && historyPos < history.size - 1) historyPos++;
+                     while(!chatValidType(messages.get(historyPos)) && historyPos < history.size - 2) historyPos++;
                     historyPos++;
                     updateChat();
                 }
