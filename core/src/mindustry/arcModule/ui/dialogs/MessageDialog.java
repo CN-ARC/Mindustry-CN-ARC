@@ -71,6 +71,7 @@ public class MessageDialog extends BaseDialog{
 
         Events.on(EventType.WorldLoadEvent.class, e -> {
             addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWorldLoad, "载入地图： " + state.map.name()));
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWorldLoad, "简介： " + state.map.description()));
             limitMsg(maxMsgRecorded);
         });
 
