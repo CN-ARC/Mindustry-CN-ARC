@@ -41,6 +41,7 @@ public class BeControl{
 
     private Table beTable,upTable;
     private TextField URLField;
+    private TextField upField;
     private Label commitLabel;
 
     /** @return whether this is a bleeding edge build. */
@@ -81,7 +82,7 @@ public class BeControl{
                 t.pane(tt -> {
                     tt.add("更新日志").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
                     tt.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
-                    tt.table(a -> upTable = a);
+                    commitLabel = tt.labelWrap("加载中...").width(500f).get();
                 });
             }
         }
@@ -212,41 +213,7 @@ public class BeControl{
                             Core.app.setClipboardText(steamUrl);
                         }
                     }).width(50f);
-                });/*
-                t.row();
-                t.button("steam-自动下载安装", () -> {
-                    boolean[] cancel = {false};
-                    float[] progress = {0};
-                    int[] length = {0};
-                    Fi file = bebuildDirectory.child("Mindustry CN-ARC-" + updateBuild + ".jar");
-                    Fi fileDest = OS.hasProp("becopy") ?
-                            Fi.get(OS.prop("becopy")) :
-                            Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-
-                    BaseDialog dialog = new BaseDialog("@be.updating");
-                    download(steamUrl, file, i -> length[0] = i, v -> progress[0] = v, () -> cancel[0], () -> {
-                        try {
-                            Runtime.getRuntime().exec(OS.isMac ?
-                                    new String[]{javaPath, "-XstartOnFirstThread", "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()} :
-                                    new String[]{javaPath, "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()}
-                            );
-                            System.exit(0);
-                        } catch (IOException e) {
-                            ui.showException(e);
-                        }
-                    }, e -> {
-                        dialog.hide();
-                        ui.showException(e);
-                    });
-
-                    dialog.cont.add(new Bar(() -> length[0] == 0 ? Core.bundle.get("be.updating") : (int) (progress[0] * length[0]) / 1024 / 1024 + "/" + length[0] / 1024 / 1024 + " MB", () -> Pal.accent, () -> progress[0])).width(400f).height(70f);
-                    dialog.buttons.button("@cancel", Icon.cancel, () -> {
-                        cancel[0] = true;
-                        dialog.hide();
-                    }).size(210f, 64f);
-                    dialog.setFillParent(false);
-                    dialog.show();
-                }).width(300f);*/
+                });
             });
         }
         else {
@@ -310,7 +277,7 @@ public class BeControl{
 
     /** 加载commits */
     public void getCommits(){
-        upTable.clear();
+        //upTable.clear();
         StringBuilder commits = new StringBuilder();
         Http.get("https://api.github.com/repos/CN-ARC/Mindustry-CN-ARC/commits").submit(res -> {
             Jval val = Jval.read(res.getResultAsString());
@@ -319,12 +286,20 @@ public class BeControl{
                 String time = commit.get("commit").get("author").getString("date");
                 String author = commit.get("commit").get("author").getString("name");
                 String content = commit.get("commit").getString("message");
+                commits.append("[#008000]").append(time);
+                for(int i=time.length();i<30;i++)
+                    commits.append(" ");
+                commits.append("[#1E90FF]").append(author);
+                commits.append("\n");
+                commits.append("[white]").append(content);
+                commits.append("\n");
+                /*
                 upTable.table(upt->{
                     upt.add(time).color(Color.valueOf("#008000")).width(270f).left();
                     upt.add(author).color(Color.valueOf("#1E90FF")).width(80f).padLeft(10f);
                 }).fillX().row();
                 upTable.add(content).color(Color.white).padBottom(3f).left();
-                upTable.row();
+                upTable.row();*/
             });
             commitLabel.setText(commits.toString());
         });
