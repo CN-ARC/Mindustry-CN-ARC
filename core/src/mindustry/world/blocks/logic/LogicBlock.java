@@ -4,6 +4,7 @@ import arc.Core;
 import arc.Graphics.*;
 import arc.Graphics.Cursor.*;
 import arc.func.*;
+import arc.math.*;
 import arc.math.geom.*;
 import arc.scene.ui.layout.*;
 import arc.struct.Bits;
@@ -628,7 +629,7 @@ public class LogicBlock extends Block{
             write.i(0);
 
             if(privileged){
-                write.s(ipt);
+                write.s(Mathf.clamp(ipt, 1, maxInstructionsPerTick));
             }
         }
 
@@ -683,7 +684,7 @@ public class LogicBlock extends Block{
             });
 
             if(privileged && revision >= 2){
-                ipt = Math.max(read.s(), 1);
+                ipt = Mathf.clamp(read.s(), 1, maxInstructionsPerTick);
             }
 
         }
