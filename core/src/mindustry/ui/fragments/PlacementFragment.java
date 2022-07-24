@@ -28,7 +28,7 @@ import mindustry.world.blocks.ConstructBlock.*;
 import static mindustry.Vars.*;
 
 public class PlacementFragment{
-    final int rowWidth = 4;
+    final int rowWidth = Math.max(Core.settings.getInt("itemSelectionSize"),4);
 
     public Category currentCategory = Category.distribution;
 

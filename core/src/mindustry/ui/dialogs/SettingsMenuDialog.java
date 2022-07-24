@@ -684,6 +684,7 @@ public class SettingsMenuDialog extends BaseDialog{
         //////////specmode
         specmode.addCategory("specGameMode");
         specmode.checkPref("modMode", false);
+        specmode.sliderPref("itemSelectionSize",4,2,10,1,i->i + "");
         specmode.checkPref("researchViewer",false);
         specmode.checkPref("developMode", false);
         //////////cheating
