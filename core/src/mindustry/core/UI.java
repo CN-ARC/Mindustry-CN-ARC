@@ -556,7 +556,7 @@ public class UI implements ApplicationListener, Loadable{
         t.touchable = Touchable.disabled;
         t.margin(8f).add(text).style(Styles.outlineLabel).labelAlign(Align.center);
         t.update(() -> t.setPosition(Core.graphics.getWidth()/2f, Core.graphics.getHeight()/2f, Align.center));
-        t.actions(Actions.fadeOut(duration, Interp.pow4In), Actions.remove());
+        t.actions(Actions.fadeOut(Math.min(duration,30f), Interp.pow4In), Actions.remove());
         t.pack();
         t.act(0.1f);
         Core.scene.add(t);
