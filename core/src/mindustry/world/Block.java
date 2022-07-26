@@ -601,10 +601,7 @@ public class Block extends UnlockableContent implements Senseable{
 
             addBar("power", entity -> new Bar(
                     () -> buffered ? Core.bundle.format("bar.poweramount", Float.isNaN(entity.power.status * capacity) ? "<ERROR>" : UI.formatAmount((int)(entity.power.status * capacity))) :
-                            entity.power.status > 0 ?
-                                    Core.bundle.format("bar.powerconsume", UI.formatFloat(entity.power.status * consPower.usage * 60 * entity.timeScale()))
-                                    :
-                                    Core.bundle.get("bar.power"),
+                                     Iconc.power + " " + UI.formatFloat(entity.power.status * consPower.usage * 60 * entity.timeScale() * (entity.shouldConsume() ? 1f : 0f)) + " (" + (int)(entity.timeScale() * 100 * (entity.shouldConsume() ? 1f : 0f) * entity.efficiency) + " %)",
                     () -> Pal.powerBar,
                     () -> Mathf.zero(consPower.requestedPower(entity)) && entity.power.graph.getPowerProduced() + entity.power.graph.getBatteryStored() > 0f ? 1f : entity.power.status)
             );
