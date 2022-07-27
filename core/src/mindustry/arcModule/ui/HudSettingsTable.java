@@ -152,7 +152,7 @@ public class HudSettingsTable extends Table{
                     t.button("[acid]光",textStyle, () ->{
                         Core.settings.put("bloom", !Core.settings.getBool("bloom"));
                     }).checked(a->Core.settings.getBool("bloom")).size(30,30).tooltip("光效显示");
-                    t.button("[acid]阴",textStyle, () ->{
+                    t.button("[acid]墙",textStyle, () ->{
                         Core.settings.put("forceEnableDarkness", !Core.settings.getBool("forceEnableDarkness"));
                     }).checked(a->Core.settings.getBool("forceEnableDarkness")).size(30,30).tooltip("墙体阴影显示");
                     t.button("[acid]天",textStyle, () ->{
