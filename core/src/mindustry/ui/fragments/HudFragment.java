@@ -389,7 +389,7 @@ public class HudFragment{
                     info.label(() -> mem.get((int)(Core.app.getJavaHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory");
                 }
                 info.row();
-                info.label(() -> "缩放: " + String.format("%.2f", Vars.renderer.getScale())).left().style(Styles.outlineLabel);
+                info.label(() -> "缩放: " + String.format("%.2f", renderer.getScale())).left().style(Styles.outlineLabel);
                 info.row();
                 info.add("ARC~"+arcVersion).color(getThemeColor()).left();
                 info.row();

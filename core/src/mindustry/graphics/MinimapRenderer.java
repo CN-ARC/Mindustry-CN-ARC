@@ -115,14 +115,26 @@ public class MinimapRenderer{
             Groups.unit.copy(units);
         }
 
+        float sz = baseSize * zoom;
+        float dx = (Core.camera.position.x / tilesize);
+        float dy = (Core.camera.position.y / tilesize);
+        dx = Mathf.clamp(dx, sz, world.width() - sz);
+        dy = Mathf.clamp(dy, sz, world.height() - sz);
+
+        rect.set((dx - sz) * tilesize, (dy - sz) * tilesize, sz * 2 * tilesize, sz * 2 * tilesize);
+
+        float Rwidth = !withLabels ? Core.camera.width / rect.width * w : Core.camera.width / (world.width() * tilesize) * w;
+        float Rheight = !withLabels ? Core.camera.height / rect.width * h : Core.camera.height / (world.height() * tilesize) * h;
+        Lines.rect(x + transfromX(withLabels,w,Core.camera.position.x) - Rwidth/2,y + transfromY(withLabels,h,Core.camera.position.y) - Rheight/2,Rwidth, Rheight );
+
         if(Marker.markList.size>0) {
             Marker.markList.each(a->{
                 if((Time.time - a.time)>Marker.retainTime) return;
                 Draw.color(a.markType.color);
                 Lines.stroke(Scl.scl(3f) * (1 - (Time.time % 180 + 30) / 210));
 
-                float rx = !withLabels ? (a.markPos.x - rect.x) / rect.width * w : a.markPos.x / (world.width() * tilesize) * w;
-                float ry = !withLabels ? (a.markPos.y - rect.y) / rect.width * h : a.markPos.y / (world.height() * tilesize) * h;
+                float rx = transfromX(withLabels,w,a.markPos.x);
+                float ry = transfromY(withLabels,h,a.markPos.y);
 
                 Lines.circle(x + rx, y + ry, scale(100f) * (Time.time % 180) / 180);
                 Lines.stroke(Scl.scl(3f));
@@ -131,14 +143,6 @@ public class MinimapRenderer{
                 Draw.reset();
             });
         }
-
-        float sz = baseSize * zoom;
-        float dx = (Core.camera.position.x / tilesize);
-        float dy = (Core.camera.position.y / tilesize);
-        dx = Mathf.clamp(dx, sz, world.width() - sz);
-        dy = Mathf.clamp(dy, sz, world.height() - sz);
-
-        rect.set((dx - sz) * tilesize, (dy - sz) * tilesize, sz * 2 * tilesize, sz * 2 * tilesize);
 
         for(Unit unit : units){
             if(unit.inFogTo(player.team())) continue;
@@ -213,6 +217,13 @@ public class MinimapRenderer{
         state.rules.objectives.eachRunning(obj -> {
             for(var marker : obj.markers) marker.drawMinimap(this);
         });
+    }
+
+    private float transfromX(boolean withLabels,float w,float x){
+        return !withLabels ? (x - rect.x) / rect.width * w : x / (world.width() * tilesize) * w;
+    }
+    private float transfromY(boolean withLabels,float h,float y){
+        return !withLabels ? (y - rect.y) / rect.width * h : y / (world.height() * tilesize) * h;
     }
 
     public void drawSpawns(float x, float y, float w, float h, float scaling){

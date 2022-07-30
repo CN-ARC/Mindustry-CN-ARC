@@ -10,6 +10,7 @@ import arc.scene.event.*;
 import arc.scene.ui.Slider;
 import arc.scene.ui.layout.*;
 import arc.util.Tmp;
+import mindustry.arcModule.Marker;
 import mindustry.gen.*;
 import mindustry.input.DesktopInput;
 import mindustry.input.InputHandler;
@@ -103,11 +104,13 @@ public class Minimap extends Table{
                 float ptilex = sz * 2 / width, ptiley = sz * 2 / height;
                 Vec2 pos = Tmp.v1.set(dx, dy).sub(sz, sz).add(x * ptilex, y * ptiley).scl(8);
 
-                Core.camera.position.set(pos);
-
                 if(control.input instanceof DesktopInput input){
                     input.panning = true;
                 }
+
+                Core.camera.position.set(pos);
+                Marker.markTypes.first().showEffect(pos);
+
             }
         });
 
