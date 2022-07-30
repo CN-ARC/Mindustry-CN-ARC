@@ -532,6 +532,7 @@ public class SettingsMenuDialog extends BaseDialog{
         arc.sliderPref("blockbarminhealth",0,0,4000,50, i -> i + "[red]HP");
         arc.checkPref("blockBars_mend", false);
         arc.checkPref("arcdrillmode", false);
+        arc.checkPref("arcDrillProgress",false);
         arc.checkPref("arcchoiceuiIcon", false);
         arc.checkPref("arclogicbordershow", true);
         arc.checkPref("arcPlacementEffect",false);
