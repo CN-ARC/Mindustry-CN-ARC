@@ -588,7 +588,7 @@ public class Block extends UnlockableContent implements Senseable{
 
     public void setBars(){
         addBar("health", entity -> new Bar(() -> {
-            if (entity.maxHealth == entity.health) {return entity.maxHealth+"";}
+            if (entity.maxHealth == entity.health) {return Strings.autoFixed(entity.maxHealth,1);}
             else {return entity.health + " / " + entity.maxHealth + " (" + (int)(100 * entity.health / entity.maxHealth) + "%)";}
         }, () -> Pal.health, entity::healthf).blink(Color.white));
 
