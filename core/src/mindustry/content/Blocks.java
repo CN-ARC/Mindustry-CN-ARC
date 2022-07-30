@@ -5510,6 +5510,7 @@ public class Blocks{
             size = 5;
             alwaysUnlocked = true;
         }};
+        /*
         heatSource = new HeatProducer("heat-source"){{
             requirements(Category.crafting, BuildVisibility.sandboxOnly, with());
             drawer = new DrawMulti(new DrawDefault(), new DrawHeatOutput());
@@ -5518,7 +5519,7 @@ public class Blocks{
             heatOutput = 1000f;
             warmupRate = 1000f;
             regionRotated1 = 1;
-        }};
+        }};*/
 
         //TODO move
         illuminator = new LightBlock("illuminator"){{
