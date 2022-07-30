@@ -76,6 +76,8 @@ public class LogicDialog extends BaseDialog{
                             ui.showException(e);
                         }
                     }).marginLeft(12f).disabled(b -> Core.app.getClipboardText() == null);
+                    t.row();
+                    t.button("[orange]清空",Icon.trash,style,()-> canvas.clearAll()).marginLeft(12f);
                 });
             });
 

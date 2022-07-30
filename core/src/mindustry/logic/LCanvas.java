@@ -163,6 +163,13 @@ public class LCanvas extends Table{
         this.statements.layout();
     }
 
+    public void clearAll(){
+        if(statements==null) return;
+        jumps.clear();
+        statements.clear();
+        rebuild();
+    }
+
     StatementElem checkHovered(){
         Element e = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
         if(e != null){
