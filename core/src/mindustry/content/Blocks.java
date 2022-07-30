@@ -1,5 +1,6 @@
 package mindustry.content;
 
+import arc.Core;
 import arc.graphics.*;
 import arc.math.*;
 import arc.struct.*;
@@ -5510,7 +5511,8 @@ public class Blocks{
             size = 5;
             alwaysUnlocked = true;
         }};
-        /*
+
+        if(Core.settings.getBool("beMode"))
         heatSource = new HeatProducer("heat-source"){{
             requirements(Category.crafting, BuildVisibility.sandboxOnly, with());
             drawer = new DrawMulti(new DrawDefault(), new DrawHeatOutput());
@@ -5519,7 +5521,7 @@ public class Blocks{
             heatOutput = 1000f;
             warmupRate = 1000f;
             regionRotated1 = 1;
-        }};*/
+        }};
 
         //TODO move
         illuminator = new LightBlock("illuminator"){{

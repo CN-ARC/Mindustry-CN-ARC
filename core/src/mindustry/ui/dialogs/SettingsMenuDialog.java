@@ -688,6 +688,7 @@ public class SettingsMenuDialog extends BaseDialog{
         specmode.sliderPref("itemSelectionSize",4,2,10,1,i->i + "");
         specmode.checkPref("researchViewer",false);
         specmode.checkPref("developMode", false);
+        specmode.checkPref("beMode",false);
         //////////cheating
         cheating.addCategory("arcWeakCheat");
         cheating.checkPref("forceIgnoreAttack",false);

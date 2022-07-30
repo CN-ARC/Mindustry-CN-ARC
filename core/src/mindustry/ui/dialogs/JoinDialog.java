@@ -135,7 +135,7 @@ public class JoinDialog extends BaseDialog{
             Button[] buttons = {null};
 
             Button button = buttons[0] = remote.button(b -> {}, style, () -> {
-
+                if(Core.settings.getBool("beMode")) ui.arcInfo("[red]警告：你开启了be模式，进入服务器可能导致不同步！",10f);
                 if(!buttons[0].childrenPressed()){
                     if(server.lastHost != null){
                         Events.fire(new ClientPreConnectEvent(server.lastHost));
