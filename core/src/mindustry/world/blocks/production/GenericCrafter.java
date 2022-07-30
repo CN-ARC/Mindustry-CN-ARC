@@ -334,7 +334,8 @@ public class GenericCrafter extends Block{
         public void displayBars(Table bars){
             super.displayBars(bars);
             //bar for shoot cd
-            bars.add(new Bar(() -> Core.bundle.format("bar.craftprogress", Strings.fixed(progress * 100f, 0))+Calwavetimeremain(progress,getProgressIncrease(craftTime)*timeScale*60), () -> Pal.ammo, () -> progress));
+            bars.add(new Bar(() -> Iconc.crafting + " " + Strings.fixed(progress * 100f, 0)  + " %" + Calwavetimeremain(progress,getProgressIncrease(craftTime)*timeScale*60),
+                    () -> Pal.ammo, () -> progress));
             bars.row();
         }
     }
