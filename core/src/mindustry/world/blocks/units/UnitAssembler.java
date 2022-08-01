@@ -96,7 +96,7 @@ public class UnitAssembler extends PayloadBlock{
         //addBar("progress", (UnitAssemblerBuild e) -> new Bar("bar.progress", Pal.ammo, () -> e.progress));
         addBar("progress", (UnitAssembler.UnitAssemblerBuild e) -> new Bar(() ->
                 Iconc.units + " " + (int)(e.progress * 100) + "%" + " | " +Strings.fixed((e.plan().time * (1-e.progress))/(60f * e.timeScale()),0) +  " s",
-                () -> Pal.ammo, e::progress
+                () -> Pal.ammo, () -> e.progress
 
         ));
 
