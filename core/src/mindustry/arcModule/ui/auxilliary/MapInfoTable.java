@@ -91,7 +91,7 @@ public class MapInfoTable extends BaseToolsTable{
 
     private void uiTable(){
         BaseDialog dialog = new BaseDialog("ARC-ui大全");
-
+        uiRowIndex = 0;
         TextField sField = dialog.cont.field("", text->{}).fillX().get();
         dialog.cont.row();
 
