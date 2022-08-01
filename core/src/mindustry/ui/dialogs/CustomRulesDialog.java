@@ -30,6 +30,8 @@ public class CustomRulesDialog extends BaseDialog{
     private Prov<Rules> resetter;
     private LoadoutDialog loadoutDialog;
 
+    private boolean allCheated = false;
+
     public CustomRulesDialog(){
         super("@mode.custom");
 
@@ -241,6 +243,10 @@ public class CustomRulesDialog extends BaseDialog{
         main.button("@rules.weather", this::weatherDialog).width(250f).left().row();
 
         title("@rules.title.arcExperimental");
+        check("[cyan]全局无限火力",b->{
+            allCheated = b;
+            for (Team team: Team.all)
+                team.rules().cheat = allCheated;},()->allCheated);
         check("@rules.logicUnitBuild", b -> rules.logicUnitBuild = b, () -> rules.logicUnitBuild);
         check("@rules.coreDestroyClear",b->rules.coreDestroyClear = b,()->rules.coreDestroyClear);
         check("@rules.unitPayloadUpdate",b->rules.unitPayloadUpdate = b,()->rules.unitPayloadUpdate);
@@ -248,7 +254,6 @@ public class CustomRulesDialog extends BaseDialog{
         check("@rules.canGameOver", b -> rules.canGameOver = b, () -> rules.canGameOver);
         main.button("@hiddenBuildItems", () -> showBanned("@hiddenBuildItems", ContentType.item, rules.hiddenBuildItems, Item::showUnlock)).left().width(300f).row();
 
-        check("@rules.limitarea", b -> rules.limitMapArea = b, () -> rules.limitMapArea);
         numberi("x", x -> state.rules.limitX = x, () -> state.rules.limitX, () -> state.rules.limitMapArea, 0, 10000);
         numberi("y", y -> state.rules.limitY = y, () -> state.rules.limitY, () -> state.rules.limitMapArea, 0, 10000);
         numberi("w", w -> state.rules.limitWidth = w, () -> state.rules.limitWidth, () -> state.rules.limitMapArea, 0, 10000);
