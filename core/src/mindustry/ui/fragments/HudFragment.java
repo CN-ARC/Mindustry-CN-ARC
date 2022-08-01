@@ -16,6 +16,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.Vars;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.Marker;
 import mindustry.arcModule.ui.*;
 import mindustry.arcModule.ui.auxilliary.*;
 import mindustry.content.*;
@@ -34,8 +35,7 @@ import mindustry.ui.dialogs.BaseDialog;
 
 import static mindustry.Vars.*;
 import static mindustry.gen.Tex.*;
-import static mindustry.ui.Styles.clearNonei;
-import static mindustry.ui.Styles.cleari;
+import static mindustry.ui.Styles.*;
 
 public class HudFragment{
     private static final float dsize = 65f, pauseHeight = 36f;
@@ -150,13 +150,22 @@ public class HudFragment{
             }
 
             //position
-            t.label(() -> player.unit().type.emoji() +
-                (Core.settings.getBool("position") ? player.tileX() + "," + player.tileY() + "\n" : "") +
-                            (Core.settings.getBool("mouseposition") ?  "[lightgray]" + "♐" + World.toTile(Core.input.mouseWorldX()) + "," + World.toTile(Core.input.mouseWorldY()) : ""))
-            .visible(() -> Core.settings.getBool("position") || Core.settings.getBool("mouseposition"))
-            .touchable(Touchable.disabled)
-            .style(Styles.outlineLabel)
-            .name("position");
+            t.table(tt-> {
+                tt.label(() -> player.unit().type.emoji() +
+                                (Core.settings.getBool("position") ? player.tileX() + "," + player.tileY() + "\n" : "") +
+                                (Core.settings.getBool("mouseposition") ? "[lightgray]" + "♐" + World.toTile(Core.input.mouseWorldX()) + "," + World.toTile(Core.input.mouseWorldY()) : ""))
+                        .visible(() -> Core.settings.getBool("position") || Core.settings.getBool("mouseposition"))
+                        .touchable(Touchable.disabled)
+                        .style(Styles.outlineLabel)
+                        .name("position");
+                    if(Core.settings.getBool("minimapTools")){
+                        tt.button(Iconc.cancel + "",cleart,()->Core.settings.put("minimap",!Core.settings.getBool("minimap"))).size(30,30);
+                        tt.button("+",cleart,()->Core.settings.put("minimapSize",(int)(Core.settings.getInt("minimapSize") * 1.2))).size(30,30);
+                        tt.button("-",cleart,()->Core.settings.put("minimapSize",(int)(Core.settings.getInt("minimapSize") / 1.2))).size(30,30);
+                        tt.button(Iconc.players + "",cleart,()-> renderer.minimap.forceShowPlayer = !renderer.minimap.forceShowPlayer).size(30,30);
+                    }
+                    tt.button("♐",cleart,()->Marker.lockonLastMark()).size(30,30);
+            }).style(Styles.outlineLabel);
             if(Core.settings.getInt("AuxiliaryTable") == 3){
                 t.row();
                 t.table(infoWave -> {

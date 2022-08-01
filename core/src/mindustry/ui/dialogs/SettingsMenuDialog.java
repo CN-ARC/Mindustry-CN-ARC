@@ -471,6 +471,7 @@ public class SettingsMenuDialog extends BaseDialog{
 
         graphics.checkPref("minimap", !mobile);
         graphics.sliderPref("minimapSize", 140, 40, 400, 10, i -> i + "");
+        graphics.checkPref("minimapTools",!mobile);
         graphics.checkPref("position", false);
         graphics.checkPref("mouseposition",false);
         graphics.sliderPref("chatopacity", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");

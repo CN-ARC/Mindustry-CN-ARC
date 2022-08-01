@@ -32,6 +32,7 @@ public class MinimapRenderer{
 
     private float lastX, lastY, lastW, lastH, lastScl;
     private boolean worldSpace;
+    public boolean forceShowPlayer = true;
 
     public MinimapRenderer(){
         Events.on(WorldLoadEvent.class, event -> {
@@ -159,7 +160,7 @@ public class MinimapRenderer{
             Draw.reset();
         }
 
-        if(net.active()){
+        if(net.active() && (withLabels || forceShowPlayer)){
             for(Player player : Groups.player){
                 if(!player.dead()){
                     float rx = !withLabels ? (player.x - rect.x) / rect.width * w : player.x / (world.width() * tilesize) * w;

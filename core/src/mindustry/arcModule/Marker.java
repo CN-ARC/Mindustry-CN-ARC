@@ -12,6 +12,7 @@ import mindustry.core.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
+import mindustry.input.DesktopInput;
 
 import static mindustry.Vars.*;
 
@@ -142,6 +143,18 @@ public class Marker{
 
     public static MarkType findLocalizedName(String localizedName){
         return markTypes.find(maskType -> maskType.localizedName.equals(localizedName));
+    }
+
+    public static void lockonLastMark(){
+        if(markList.size == 0) return;
+
+        if(control.input instanceof DesktopInput input){
+            input.panning = true;
+        }
+
+        Core.camera.position.set(Marker.markList.peek().markPos);
+
+        markList.peek().showEffect();
     }
 
     public static class MarkType{

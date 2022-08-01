@@ -12,7 +12,6 @@ import mindustry.arcModule.*;
 import mindustry.content.*;
 import mindustry.game.*;
 import mindustry.gen.*;
-import mindustry.input.*;
 
 import static mindustry.arcModule.ui.RStyles.*;
 import static mindustry.content.UnitTypes.vela;
@@ -39,15 +38,7 @@ public class ScriptTable extends BaseToolsTable{
         scriptButton(Blocks.buildTower.uiIcon, "在建造列表加入被摧毁建筑", () -> Vars.player.buildDestroyedBlocks());
 
         scriptButton(Blocks.message.uiIcon, "锁定上个标记点", () -> {
-            if(Marker.markList.size == 0) return;
-
-            if(Vars.control.input instanceof DesktopInput input){
-                input.panning = true;
-            }
-
-            Core.camera.position.set(Marker.markList.peek().markPos);
-
-            Marker.markList.peek().showEffect();
+            Marker.lockonLastMark();
         });
 
         scriptButton(Icon.modeAttack, "自动攻击", () -> {
