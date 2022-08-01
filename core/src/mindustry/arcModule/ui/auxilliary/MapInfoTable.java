@@ -1,6 +1,8 @@
 package mindustry.arcModule.ui.auxilliary;
 
 
+import arc.Core;
+import arc.scene.ui.TextField;
 import arc.scene.ui.layout.*;
 import mindustry.content.*;
 import mindustry.editor.*;
@@ -14,9 +16,12 @@ import static mindustry.Vars.*;
 import static mindustry.arcModule.ui.RStyles.*;
 import static mindustry.input.InputHandler.follow;
 import static mindustry.input.InputHandler.followIndex;
+import static mindustry.ui.Fonts.stringIcons;
+import static mindustry.ui.Styles.cleart;
 
 public class MapInfoTable extends BaseToolsTable{
     private final MapInfoDialog mapInfoDialog = new MapInfoDialog();
+    private int uiRowIndex = 0;
 
     public MapInfoTable(){
         super(Icon.map);
@@ -41,10 +46,11 @@ public class MapInfoTable extends BaseToolsTable{
                 ui.arcInfo("视角追踪：" + follow.name,3f);
             }
         }).tooltip("切换跟踪玩家");
+        button(Icon.editSmall,clearAccentNonei,this::uiTable).tooltip("ui大全");
     }
 
     private void floorStatisticDialog(){
-        BaseDialog dialog = new BaseDialog("矿物统计");
+        BaseDialog dialog = new BaseDialog("ARC-矿物统计");
         Table table = dialog.cont;
         table.clear();
 
@@ -79,6 +85,27 @@ public class MapInfoTable extends BaseToolsTable{
                 }
             }).row();
         });
+        dialog.addCloseButton();
+        dialog.show();
+    }
+
+    private void uiTable(){
+        BaseDialog dialog = new BaseDialog("ARC-ui大全");
+
+        TextField sField = dialog.cont.field("", text->{}).fillX().get();
+        dialog.cont.row();
+
+        dialog.cont.pane(c -> {
+            stringIcons.copy().each((name,iconc)->{
+                c.button(iconc,cleart, ()->{
+                    Core.app.setClipboardText(iconc);
+                    sField.setText(sField.getText() + iconc);
+                }).size(50f).tooltip(name);
+                uiRowIndex+=1;
+                if(uiRowIndex%15==0) c.row();
+            });
+        }).row();
+
         dialog.addCloseButton();
         dialog.show();
     }
