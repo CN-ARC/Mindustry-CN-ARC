@@ -159,12 +159,12 @@ public class HudFragment{
                         .style(Styles.outlineLabel)
                         .name("position");
                     if(Core.settings.getBool("minimapTools")){
-                        tt.button(Iconc.cancel + "",cleart,()->Core.settings.put("minimap",!Core.settings.getBool("minimap"))).size(30,30);
-                        tt.button("+",cleart,()->Core.settings.put("minimapSize",(int)(Core.settings.getInt("minimapSize") * 1.2))).size(30,30);
-                        tt.button("-",cleart,()->Core.settings.put("minimapSize",(int)(Core.settings.getInt("minimapSize") / 1.2))).size(30,30);
-                        tt.button(Iconc.players + "",cleart,()-> renderer.minimap.forceShowPlayer = !renderer.minimap.forceShowPlayer).size(30,30);
+                        tt.button(Iconc.cancel + "",cleart,()->Core.settings.put("minimap",!Core.settings.getBool("minimap"))).size(30,30).tooltip("关闭小地图(再次打开去设置里开)");
+                        tt.button("+",cleart,()->Core.settings.put("minimapSize",(int)(Core.settings.getInt("minimapSize") * 1.2))).size(30,30).tooltip("增加小地图大小");
+                        tt.button("-",cleart,()->Core.settings.put("minimapSize",(int)(Core.settings.getInt("minimapSize") / 1.2))).size(30,30).tooltip("减少小地图大小");
+                        tt.button(Iconc.players + "",cleart,()-> renderer.minimap.forceShowPlayer = !renderer.minimap.forceShowPlayer).size(30,30).tooltip("开关玩家名显示");
                     }
-                    tt.button("♐",cleart,()->Marker.lockonLastMark()).size(30,30);
+                    tt.button("♐",cleart,()->Marker.lockonLastMark()).size(30,30).tooltip("锁定上个标记点");
             }).style(Styles.outlineLabel);
             if(Core.settings.getInt("AuxiliaryTable") == 3){
                 t.row();
