@@ -28,7 +28,8 @@ import mindustry.world.blocks.ConstructBlock.*;
 import static mindustry.Vars.*;
 
 public class PlacementFragment{
-    final int rowWidth = Math.max(Core.settings.getInt("itemSelectionSize"),4);
+    private int rowWidth = Math.max(Core.settings.getInt("itemSelectionWidth"),4);
+    private int maxRow = Math.max(Core.settings.getInt("itemSelectionHeight"),4);
 
     public Category currentCategory = Category.distribution;
 
@@ -99,6 +100,16 @@ public class PlacementFragment{
             if(nextFlowBuild != null){
                 if(nextFlowBuild.flowItems() != null) nextFlowBuild.flowItems().updateFlow();
                 if(nextFlowBuild.liquids != null) nextFlowBuild.liquids.updateFlow();
+            }
+
+            if (rowWidth != Core.settings.getInt("itemSelectionWidth", 4)) {
+                rowWidth = Core.settings.getInt("itemSelectionWidth", 4);
+                rebuild();
+            }
+
+            if (maxRow != Core.settings.getInt("itemSelectionHeight", 4)) {
+                maxRow = Core.settings.getInt("itemSelectionHeight", 4);
+                rebuild();
             }
         });
     }
@@ -527,7 +538,7 @@ public class PlacementFragment{
                 {
                     blockCatTable.table(Tex.pane2, blocksSelect -> {
                         blocksSelect.margin(4).marginTop(0);
-                        blockPane = blocksSelect.pane(blocks -> blockTable = blocks).height(194f).update(pane -> {
+                        blockPane = blocksSelect.pane(blocks -> blockTable = blocks).height(maxRow * 46f + 10f).update(pane -> {
                             if(pane.hasScroll()){
                                 Element result = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
                                 if(result == null || !result.isDescendantOf(pane)){
