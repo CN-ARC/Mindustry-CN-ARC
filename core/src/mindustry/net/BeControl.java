@@ -145,7 +145,7 @@ public class BeControl{
                 }).height(50f).width(50f);
             });
         });
-        if(!mobile || Core.graphics.isPortrait()) {
+        if(!mobile || !Core.graphics.isPortrait()) {
             beTable.row();
             beTable.add("PC端").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
             beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
