@@ -133,7 +133,8 @@ public class StackConveyor extends Block implements Autotiler{
             //draw inputs
             if(state == stateLoad){
                 for(int i = 0; i < 4; i++){
-                    int dir = rotation - i;
+                    if((blendprox & (1 << i)) != 0 && i != 0){
+                        int dir = rotation - i;
                     var near = nearby(dir);
                     if((blendprox & (1 << i)) != 0 && i != 0 && near != null && !near.block.squareSprite){
                         Draw.rect(sliced(regions[0], SliceMode.bottom), x + Geometry.d4x(dir) * tilesize*0.75f, y + Geometry.d4y(dir) * tilesize*0.75f, (float)(dir*90));

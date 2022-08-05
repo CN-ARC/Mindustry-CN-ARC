@@ -295,11 +295,6 @@ public class UnitType extends UnlockableContent{
     /** if false, no sprite outlines are generated */
     public boolean outlines = true;
 
-    /** Commands available to this unit through RTS controls. An empty array means commands will be assigned based on unit capabilities in init(). */
-    public UnitCommand[] commands = {};
-    /** Command to assign to this unit upon creation. Null indicates the first command in the array. */
-    public @Nullable UnitCommand defaultCommand;
-
     /** amount of items this unit can carry; <0 to determine based on hitSize. */
     public int itemCapacity = -1;
     /** amount of ammo this unit can hold (if the rule is enabled); <0 to determine based on weapon fire rate. */

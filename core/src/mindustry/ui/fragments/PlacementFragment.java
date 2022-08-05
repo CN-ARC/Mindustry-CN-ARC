@@ -440,13 +440,12 @@ public class PlacementFragment{
                 mainStack.update(() -> {
                     if(control.input.commandMode != wasCommandMode){
                         mainStack.clearChildren();
-                        if((!mobile || Core.settings.getBool("mobileCommandMode")) || !control.input.commandMode)
+                        if((!mobile || Core.settings.getBool("mobileCommandMode")) || !control.input.commandMode){
                         mainStack.addChild(control.input.commandMode ? commandTable : blockCatTable);
 
                         //hacky, but forces command table to be same width as blocks
                         if(control.input.commandMode){
                             commandTable.getCells().peek().width(blockCatTable.getWidth() / Scl.scl(1f));
-
                         }
 
                         wasCommandMode = control.input.commandMode;
@@ -475,61 +474,56 @@ public class PlacementFragment{
                                     if (unit.health > unit.maxHealth * wound) counts_Full[unit.type.id] ++;
                                     else counts_Wound[unit.type.id] ++;
                                 }
-                                u.table(ut->{
-                                    int col = 0;
-                                    ut.add("残").color(Color.red);
-                                    ut.add("("+Core.keybinds.get(Binding.rtsSelectWound).key.toString()+")").color(getThemeColor()).visible(!android);
-                                    for(int i = 0; i < counts_Wound.length; i++){
-                                        if(counts_Wound[i] > 0){
-                                            var type = content.unit(i);
-                                            ut.add(new ItemImage(type.uiIcon, counts_Wound[i])).color(Color.red).tooltip(type.localizedName).pad(4).with(b -> {
-                                                ClickListener listener = new ClickListener();
-                                                //left click -> select
-                                                b.clicked(KeyCode.mouseLeft, () -> control.input.selectedUnits.removeAll(unit -> unit.type != type || unit.health >= unit.maxHealth * wound)   );
-                                                //right click -> remove
-                                                b.clicked(KeyCode.mouseRight, () -> control.input.selectedUnits.removeAll(unit -> unit.type == type && unit.health < unit.maxHealth * wound));
+                                int col = 0;
+                                u.add("残").color(Color.red);
+                                u.add("("+Core.keybinds.get(Binding.rtsSelectWound).key.toString()+")").color(getThemeColor()).visible(!android);
+                                for(int i = 0; i < counts_Wound.length; i++){
+                                    if(counts_Wound[i] > 0){
+                                        var type = content.unit(i);
+                                        u.add(new ItemImage(type.uiIcon, counts_Wound[i])).color(Color.red).tooltip(type.localizedName).pad(4).with(b -> {
+                                            ClickListener listener = new ClickListener();
+                                            //left click -> select
+                                            b.clicked(KeyCode.mouseLeft, () -> control.input.selectedUnits.removeAll(unit -> unit.type != type || unit.health >= unit.maxHealth * wound)   );
+                                            //right click -> remove
+                                            b.clicked(KeyCode.mouseRight, () -> control.input.selectedUnits.removeAll(unit -> unit.type == type && unit.health < unit.maxHealth * wound));
 
-                                                b.addListener(listener);
-                                                b.addListener(new HandCursorListener());
-                                                //gray on hover
-                                                b.update(() -> ((Group)b.getChildren().first()).getChildren().first().setColor(listener.isOver() ? Color.lightGray : Color.white));
-                                            });
+                                            b.addListener(listener);
+                                            b.addListener(new HandCursorListener());
+                                            //gray on hover
+                                            b.update(() -> ((Group)b.getChildren().first()).getChildren().first().setColor(listener.isOver() ? Color.lightGray : Color.white));
+                                        });
 
-                                            if(++col % 7 == 0){
-                                                ut.row();
-                                            }
+                                        if(++col % 7 == 0){
+                                            u.row();
                                         }
                                     }
-                                }).fillX();
-
+                                }
                                 u.row();
-                                u.table(ut-> {
-                                    int col = 0;
-                                    ut.add("满").color(Color.green);
-                                    ut.add("(" + Core.keybinds.get(Binding.rtsSelectHealth).key.toString() + ")").color(getThemeColor()).visible(!android);
-                                    for (int i = 0; i < counts_Full.length; i++) {
-                                        if (counts_Full[i] > 0) {
-                                            var type = content.unit(i);
-                                            ut.add(new ItemImage(type.uiIcon, counts_Full[i])).tooltip(type.localizedName).pad(4).with(b -> {
-                                                ClickListener listener = new ClickListener();
+                                col = 0;
+                                u.add("满").color(Color.green);
+                                u.add("("+Core.keybinds.get(Binding.rtsSelectHealth).key.toString()+")").color(getThemeColor()).visible(!android);
+                                for(int i = 0; i < counts_Full.length; i++){
+                                    if(counts_Full[i] > 0){
+                                        var type = content.unit(i);
+                                        u.add(new ItemImage(type.uiIcon, counts_Full[i])).tooltip(type.localizedName).pad(4).with(b -> {
+                                            ClickListener listener = new ClickListener();
 
-                                                //left click -> select
-                                                b.clicked(KeyCode.mouseLeft, () -> control.input.selectedUnits.removeAll(unit -> unit.type != type || unit.health <= unit.maxHealth * wound));
-                                                //right click -> remove
-                                                b.clicked(KeyCode.mouseRight, () -> control.input.selectedUnits.removeAll(unit -> unit.type == type && unit.health >= unit.maxHealth * wound));
+                                            //left click -> select
+                                            b.clicked(KeyCode.mouseLeft, () -> control.input.selectedUnits.removeAll(unit -> unit.type != type || unit.health <= unit.maxHealth * wound)   );
+                                            //right click -> remove
+                                            b.clicked(KeyCode.mouseRight, () -> control.input.selectedUnits.removeAll(unit -> unit.type == type && unit.health >= unit.maxHealth * wound));
 
-                                                b.addListener(listener);
-                                                b.addListener(new HandCursorListener());
-                                                //gray on hover
-                                                b.update(() -> ((Group) b.getChildren().first()).getChildren().first().setColor(listener.isOver() ? Color.lightGray : Color.white));
-                                            });
+                                            b.addListener(listener);
+                                            b.addListener(new HandCursorListener());
+                                            //gray on hover
+                                            b.update(() -> ((Group)b.getChildren().first()).getChildren().first().setColor(listener.isOver() ? Color.lightGray : Color.white));
+                                        });
 
-                                            if (++col % 7 == 0) {
-                                                ut.row();
-                                            }
+                                        if(++col % 7 == 0){
+                                            u.row();
                                         }
                                     }
-                                }).fillX();
+                                }
                             }else{
                                 u.add("[未选中单位]").color(Color.lightGray).growX().center().labelAlign(Align.center).pad(6);
                             }
