@@ -13,7 +13,6 @@ import static mindustry.Vars.*;
 
 public class LanguageDialog extends BaseDialog{
     public static final ObjectMap<String, String> displayNames = ObjectMap.of(
-    "ca", "Català",
     "id_ID", "Bahasa Indonesia",
     "da", "Dansk",
     "de", "Deutsch",

@@ -88,7 +88,7 @@ public class CommandAI extends AIController{
                         attackTarget != null && unit.within(attackTarget, engageRange) ? engageRange :
                         unit.isGrounded() ? 0f :
                         attackTarget != null ? engageRange :
-                        0f, unit.isFlying() ? 40f : 100f, false, null, true);
+                        0f, unit.isFlying() ? 40f : 100f, false, null);
                 }
 
                 //calculateFlock().limit(unit.speed() * flockMult)

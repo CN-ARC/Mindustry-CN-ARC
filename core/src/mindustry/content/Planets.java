@@ -131,8 +131,6 @@ public class Planets{
             allowLaunchSchematics = true;
             enemyCoreSpawnReplace = true;
             allowLaunchLoadout = true;
-            //doesn't play well with configs
-            prebuildBase = false;
             ruleSetter = r -> {
                 r.waveTeam = Team.crux;
                 r.placeRangeCheck = false;

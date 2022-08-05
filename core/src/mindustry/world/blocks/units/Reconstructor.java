@@ -82,8 +82,9 @@ public class Reconstructor extends UnitBlock{
             table.row();
             for(var upgrade : upgrades){
                 if(upgrade[0].unlockedNow() && upgrade[1].unlockedNow()){
-                    table.table(Styles.grayPanel, t -> {
+                    table.table(Tex.whiteui, t -> {
                         t.left();
+                        t.setColor(Pal.darkestGray);
 
                         t.image(upgrade[0].uiIcon).size(40).pad(10f).left();
                         t.table(info -> {
@@ -92,13 +93,16 @@ public class Reconstructor extends UnitBlock{
                         }).pad(10).left();
                     }).fill().padTop(5).padBottom(5);
 
-                    table.table(Styles.grayPanel, t -> {
+                    table.table(t -> {
+                        t.setBackground(Tex.whiteui);
+                        t.setColor(Pal.darkestGray);
 
                         t.image(Icon.right).color(Pal.darkishGray).size(40).pad(10f);
                     }).fill().padTop(5).padBottom(5);
 
-                    table.table(Styles.grayPanel, t -> {
+                    table.table(Tex.whiteui, t -> {
                         t.left();
+                        t.setColor(Pal.darkestGray);
 
                         t.image(upgrade[1].uiIcon).size(40).pad(10f).right();
                         t.table(info -> {

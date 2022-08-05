@@ -49,7 +49,6 @@ public class PlacementFragment{
     Table blockTable, toggler, topTable, blockCatTable, commandTable;
     Stack mainStack;
     ScrollPane blockPane;
-    Runnable rebuildCommand;
     boolean blockSelectEnd, wasCommandMode;
     int blockSelectSeq;
     long blockSelectSeqMillis;
@@ -77,12 +76,6 @@ public class PlacementFragment{
                 control.input.block = null;
                 rebuild();
             });
-        });
-
-        Events.run(Trigger.unitCommandChange, () -> {
-            if(rebuildCommand != null){
-                rebuildCommand.run();
-            }
         });
 
         Events.on(UnlockEvent.class, event -> {
@@ -441,11 +434,12 @@ public class PlacementFragment{
                     if(control.input.commandMode != wasCommandMode){
                         mainStack.clearChildren();
                         if((!mobile || Core.settings.getBool("mobileCommandMode")) || !control.input.commandMode){
-                        mainStack.addChild(control.input.commandMode ? commandTable : blockCatTable);
+                            mainStack.addChild(control.input.commandMode ? commandTable : blockCatTable);
 
-                        //hacky, but forces command table to be same width as blocks
-                        if(control.input.commandMode){
-                            commandTable.getCells().peek().width(blockCatTable.getWidth() / Scl.scl(1f));
+                            //hacky, but forces command table to be same width as blocks
+                            if(control.input.commandMode){
+                                commandTable.getCells().peek().width(blockCatTable.getWidth());
+                            }
                         }
 
                         wasCommandMode = control.input.commandMode;
@@ -463,7 +457,7 @@ public class PlacementFragment{
                         u.left();
                         int[] curCount = {0};
 
-                        rebuildCommand = () -> {
+                        Runnable rebuildCommand = () -> {
                             u.clearChildren();
                             var units = control.input.selectedUnits;
                             if(units.size > 0){
