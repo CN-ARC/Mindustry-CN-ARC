@@ -867,6 +867,30 @@ public class UnitType extends UnlockableContent{
 
         canAttack = weapons.contains(w -> !w.noAttack);
 
+        //assign default commands.
+        if(commands.length == 0){
+            Seq<UnitCommand> cmds = new Seq<>(UnitCommand.class);
+
+            cmds.add(UnitCommand.moveCommand);
+
+            //healing, mining and building is only supported for flying units; pathfinding to ambiguously reachable locations is hard.
+            if(flying){
+                if(canHeal){
+                    cmds.add(UnitCommand.repairCommand);
+                }
+
+                if(buildSpeed > 0){
+                    cmds.add(UnitCommand.rebuildCommand, UnitCommand.assistCommand);
+                }
+
+                if(mineTier > 0){
+                    cmds.add(UnitCommand.mineCommand);
+                }
+            }
+
+            commands = cmds.toArray();
+        }
+
         //dynamically create ammo capacity based on firing rate
         if(ammoCapacity < 0){
             float shotsPerSecond = weapons.sumf(w -> w.useAmmo ? 60f / w.reload : 0f);

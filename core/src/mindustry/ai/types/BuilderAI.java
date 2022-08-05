@@ -108,6 +108,10 @@ public class BuilderAI extends AIController{
             }
         }else{
 
+            if(assistFollowing != null){
+                moveTo(assistFollowing, assistFollowing.type.hitSize + unit.type.hitSize/2f + 60f);
+            }
+
             //follow someone and help them build
             if(timer.get(timerTarget2, 60f)){
                 found = false;
