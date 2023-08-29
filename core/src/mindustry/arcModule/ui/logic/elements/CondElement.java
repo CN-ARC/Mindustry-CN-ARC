@@ -15,11 +15,6 @@ public class CondElement extends ScratchElement {
     }
 
     @Override
-    public void setChild(ScratchElement child) {
-        this.child = child;
-    }
-
-    @Override
     public boolean accept(ScratchElement e) {
         return e.getType() == ElementType.condition;
     }

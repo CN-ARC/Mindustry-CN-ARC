@@ -15,7 +15,7 @@ import arc.struct.Seq;
 import arc.util.Align;
 
 abstract public class ScratchElement extends Table {
-    public static final float defHeight = 30f, addPadding = 10f, defWidth = 50f;
+    public static float defHeight = 30f, addPadding = 10f, defWidth = 50f;
     protected static final float padValue = 30f;
     protected final ObjectMap<Enum<ScratchEvents>, Seq<Cons<ScratchElement>>> events = new ObjectMap<>();
     public boolean selected = false;

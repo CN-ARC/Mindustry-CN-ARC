@@ -3,11 +3,13 @@ package mindustry.arcModule.ui.logic.elements;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.GlyphLayout;
+import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
+import arc.util.Tmp;
 import mindustry.arcModule.ui.logic.ElementType;
 import mindustry.arcModule.ui.logic.ScratchController;
 import mindustry.arcModule.ui.logic.ScratchElement;
@@ -68,7 +70,15 @@ public class InputElement extends ScratchElement {
     @Override
     public Element hit(float x, float y, boolean touchable) {
         if (ScratchController.dragging != null) {
-            return (!touchable || this.touchable == Touchable.enabled) && x >= -padValue && x <= width + padValue && y >= -padValue && y <= height + padValue ? this : null;
+            if ((!touchable || this.touchable == Touchable.enabled) && x >= -padValue && x <= width + padValue && y >= -padValue && y <= height + padValue) {
+                if (child != null) {
+                    Vec2 v = child.parentToLocalCoordinates(Tmp.v1.set(x, y));
+                    Element e = child.hit(v.x, v.y, touchable);
+                    if (e != null) return e;
+                }
+                return this;
+            }
+            return null;
         }
         return super.hit(x, y, touchable);
     }

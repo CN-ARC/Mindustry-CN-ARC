@@ -10,6 +10,8 @@ import arc.util.Tmp;
 
 public class ScratchInput {
     public static final float dragStartDistance = 20f;
+    public static final Vec2 tmp = new Vec2();
+    public static final Vec2 tmp2 = new Vec2();
     public static void addDraggingInput(ScratchElement e) {
         e.addListener(new InputListener() {
             float lastX, lastY;
@@ -18,7 +20,7 @@ public class ScratchInput {
             public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
                 e.toFront();
                 e.selected = true;
-                Vec2 v = e.localToParentCoordinates(Tmp.v1.set(x, y));
+                Vec2 v = e.localToParentCoordinates(tmp.set(x, y));
                 lastX = v.x;
                 lastY = v.y;
                 ScratchController.ui.pane.setFlickScroll(false);
@@ -30,11 +32,12 @@ public class ScratchInput {
                 if (ScratchController.dragging == e) {
                     ScratchElement sel = ScratchController.selected;
                     if (sel != null && sel.accept(e)) {
-                        if (sel.child != null) {
-                            ScratchController.ui.addElement(sel.child);
-                            sel.child.setPosition(e.x + 10, e.y - 10);
-                        }
+                        ScratchElement oldChild = sel.child;
                         e.asChild(sel);
+                        if (oldChild != null) {
+                            ScratchController.ui.addElement(oldChild);
+                            oldChild.setPosition(e.x + 10, e.y - 10);
+                        }
                     }
                     ScratchController.dragging = ScratchController.selected = null;
                 }
@@ -46,8 +49,8 @@ public class ScratchInput {
             public void touchDragged(InputEvent event, float x, float y, int pointer) {
                 if (e.child != null && e.child.selected) return;
                 e.toFront();
-                Vec2 v = e.localToParentCoordinates(Tmp.v1.set(x, y));
-                if (e.parent instanceof ScratchElement && ScratchController.dragging == null && Tmp.v2.set(v.x - lastX, v.y - lastY).len() < dragStartDistance) return;
+                Vec2 v = e.localToParentCoordinates(tmp.set(x, y));
+                if (e.parent instanceof ScratchElement && ScratchController.dragging == null && Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragStartDistance) return;
                 if (e.parent instanceof ScratchElement sel) {
                     sel.setChild(null);
                     ScratchController.ui.addElement(e);
