@@ -4,9 +4,6 @@ import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
-import arc.input.KeyCode;
-import arc.scene.event.InputEvent;
-import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
@@ -14,12 +11,12 @@ import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Align;
 
-abstract public class ScratchElement extends Table {
+abstract public class ScratchTable extends Table {
     public static float defHeight = 30f, addPadding = 10f, defWidth = 50f;
     protected static final float padValue = 30f;
-    protected final ObjectMap<Enum<ScratchEvents>, Seq<Cons<ScratchElement>>> events = new ObjectMap<>();
-    public boolean selected = false;
-    public ScratchElement child = null;
+    protected final ObjectMap<Enum<ScratchEvents>, Seq<Cons<ScratchTable>>> events = new ObjectMap<>();
+    public boolean selected = false, hitable = true;
+    public ScratchTable child = null;
     protected Color elemColor = new Color(1, 1, 1, 1);
 
     {
@@ -27,16 +24,16 @@ abstract public class ScratchElement extends Table {
         align(Align.left);
     }
 
-    public void addListener(Enum<ScratchEvents> type, Cons<ScratchElement> listener) {
+    public void addListener(Enum<ScratchEvents> type, Cons<ScratchTable> listener) {
         events.get(type, () -> new Seq<>(Cons.class)).add(listener);
     }
 
     public void fire(Enum<ScratchEvents> type) {
-        Seq<Cons<ScratchElement>> listeners = events.get(type);
+        Seq<Cons<ScratchTable>> listeners = events.get(type);
 
         if (listeners != null) {
             int len = listeners.size;
-            Cons<ScratchElement>[] items = listeners.items;
+            Cons<ScratchTable>[] items = listeners.items;
             for (int i = 0; i < len; i++) {
                 items[i].get(this);
             }
@@ -47,22 +44,32 @@ abstract public class ScratchElement extends Table {
         return null;
     }
 
-    public void asChild(ScratchElement parent) {
+    public void asChild(ScratchTable parent) {
         parent.setChild(this);
     }
 
-    public void setChild(ScratchElement child) {
+    public void setChild(ScratchTable child) {
         if (this.child != null) removeChild(this.child);
         this.child = child;
         if (child != null) add(child);
     }
 
-    public boolean accept(ScratchElement e) {
+    public boolean accept(ScratchTable e) {
         return false;
     }
 
-    public void cell(Cell<ScratchElement> c) {
+    public void cell(Cell<ScratchTable> c) {
         c.minWidth(defWidth).minHeight(defHeight).pad(addPadding);
+    }
+
+    public Cell<?> getCell() {
+        if (parent instanceof ScratchTable se) {
+            return se.getCell(this);
+        }
+        return null;
+    }
+
+    public void setValue(Object value) {
     }
 
     @Override
@@ -72,7 +79,7 @@ abstract public class ScratchElement extends Table {
         Lines.stroke(1f);
         Lines.rect(x, y, width, height);
         Draw.color(ScratchController.selected == this ? Color.blue.cpy().mulA(0.5f) : Color.green.cpy().mulA(0.5f));
-        if (ScratchController.dragging != null) {
+        if (ScratchController.dragging != null && hitable) {
             Lines.rect(x - padValue, y - padValue, width + padValue * 2, height + padValue * 2);
         } else {
             Lines.rect(x, y, width, height);
@@ -86,5 +93,5 @@ abstract public class ScratchElement extends Table {
         parent.toFront();
     }
 
-    abstract public ElementType getType();
+    abstract public ScratchType getType();
 }

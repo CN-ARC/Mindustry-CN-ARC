@@ -2,12 +2,10 @@ package mindustry.arcModule.ui.logic.elements;
 
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
-import arc.scene.ui.layout.Cell;
-import mindustry.arcModule.ui.logic.ElementType;
-import mindustry.arcModule.ui.logic.ScratchElement;
-import mindustry.arcModule.ui.logic.ScratchInput;
+import mindustry.arcModule.ui.logic.ScratchType;
+import mindustry.arcModule.ui.logic.ScratchTable;
 import mindustry.arcModule.ui.logic.ScratchStyles;
-import mindustry.arcModule.ui.logic.blockbase.InputBlock;
+import mindustry.arcModule.ui.logic.ScratchBlock;
 
 public class CondElement extends ScratchElement {
     public CondElement() {
@@ -15,13 +13,13 @@ public class CondElement extends ScratchElement {
     }
 
     @Override
-    public boolean accept(ScratchElement e) {
-        return e.getType() == ElementType.condition;
+    public boolean accept(ScratchTable e) {
+        return e.getType() == ScratchType.condition;
     }
 
     @Override
-    public ElementType getType() {
-        return ElementType.condition;
+    public ScratchType getType() {
+        return ScratchType.condition;
     }
 
     @Override
@@ -29,5 +27,12 @@ public class CondElement extends ScratchElement {
         if (child == null) ScratchStyles.drawCond(x, y, width, height, elemColor);
         super.draw();
         Draw.reset();
+    }
+
+    @Override
+    public ScratchElement copy() {
+        CondElement e = new CondElement();
+        if (child instanceof ScratchBlock sb) sb.copy().asChild(e);
+        return e;
     }
 }

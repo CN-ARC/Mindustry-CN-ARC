@@ -1,32 +1,12 @@
 package mindustry.arcModule.ui.logic;
 
 import arc.graphics.Color;
-import arc.graphics.Pixmap;
-import arc.graphics.Texture;
-import arc.graphics.g2d.*;
-import arc.math.Mat;
-import arc.math.Mathf;
-import arc.scene.style.NinePatchDrawable;
-import arc.struct.FloatSeq;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
 import arc.util.Tmp;
 
 public class ScratchStyles {
-    private static final int quality = 256;
-    private static final int lineColor = Color.green.rgba8888();//new Color(0, 0, 0, 0.7f).rgba8888();
-
-    public static NinePatchDrawable createSwitchBackground(int left, int top, int bottom, Color c) {
-        Pixmap p = new Pixmap(quality, quality);
-        p.fill(lineColor);
-        int color = c.rgba8888();
-        p.fillRect(1, 1, quality - 1 - 1, quality - 1 - 1, color);
-        p.fillRect(left - 1, bottom - 1, quality - left + 1, quality - top - bottom + 2, lineColor);
-        p.fillRect(left, bottom, quality - left, quality - top - bottom, 0);
-        NinePatch n = new NinePatch(new TextureRegion(new Texture(p)), left, 2, top, bottom);
-        NinePatchDrawable d = new NinePatchDrawable(n);
-        p.dispose();
-        return d;
-    }
-
     public static void drawInput(float x, float y, float w, float h, Color c) {
         Draw.color(c);
         float halfH = h / 2;
@@ -40,13 +20,6 @@ public class ScratchStyles {
         Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
         Lines.line(x + halfH, y + 1, x + w - halfH, y + 1);
         Lines.line(x + halfH, y + h, x + w - halfH, y + h);
-    }
-
-    public static boolean withinInput(float x, float y, float w, float h, float x2, float y2) {
-        float halfH = h / 2;
-        return Mathf.within(x + halfH, y + halfH, x2, y2, halfH) ||
-                Mathf.within(x + w - halfH, y + halfH, x2, y2, halfH) ||
-                x2 > x + w / 2 && x2 < x + w - 2 * halfH && y2 > y + halfH && y2 < y + h;
     }
 
     public static void drawCond(float x, float y, float w, float h, Color c) {
@@ -63,6 +36,36 @@ public class ScratchStyles {
         Lines.linePoint(x + w - halfH, y + h);
         Lines.linePoint(x + w, y + halfH);
         Lines.linePoint(x + w - halfH, y);
+        Lines.endLine();
+    }
+
+    public static void drawBlock(float x, float y, float w, float h, Color c) {
+        Draw.color(c);
+        Fill.quad(x, y + h, x + 10, y + h, x + 15, y + h - 7, x, y + h - 7);
+        Fill.quad(x + 30, y + h - 7, x + 35, y + h, x + w, y + h, x + w, y + h - 7);
+        Fill.polyBegin();
+        Fill.polyPoint(x, y + h - 7);
+        Fill.polyPoint(x + w, y + h - 7);
+        Fill.polyPoint(x + w, y + 7);
+        Fill.polyPoint(x + 35, y + 7);
+        Fill.polyPoint(x + 30, y);
+        Fill.polyPoint(x + 15, y);
+        Fill.polyPoint(x + 10, y + 7);
+        Fill.polyPoint(x, y + 7);
+        Fill.polyEnd();
+        Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
+        Lines.beginLine();
+        Lines.linePoint(x + 10, y + h);
+        Lines.linePoint(x + 15, y + h - 7);
+        Lines.linePoint(x + 30, y + h - 7);
+        Lines.linePoint(x + 35, y + h);
+        Lines.linePoint(x + w, y + h);
+        Lines.linePoint(x + w, y + 7);
+        Lines.linePoint(x + 35, y + 7);
+        Lines.linePoint(x + 30, y);
+        Lines.linePoint(x + 15, y);
+        Lines.linePoint(x + 10, y + 7);
+        Lines.linePoint(x, y + 7);
         Lines.endLine();
     }
 }

@@ -1,13 +1,6 @@
 package mindustry.arcModule.ui.logic;
 
 import arc.graphics.Color;
-import arc.scene.Element;
-import arc.scene.ui.Label;
-import arc.scene.ui.layout.Table;
-import mindustry.Vars;
-import mindustry.arcModule.ui.logic.blockbase.CondBlock;
-import mindustry.arcModule.ui.logic.blockbase.InputBlock;
-import mindustry.arcModule.ui.window.Window;
 
 public class Test {
     public static void test() {
@@ -16,20 +9,33 @@ public class Test {
         testUI();
     }
 
-    public static void testSwitch() {
-        Table t = new Table();
-        t.table(tt -> tt.setBackground(ScratchStyles.createSwitchBackground(20, 30, 20, Color.white))).pad(1).grow();
-
-        Window w = Vars.ui.WindowManager.createWindow();
-        w.setBody(t);
-    }
-
     public static void testBlocks() {
-        ScratchController.ui.addElement(new CondBlock(new Element[]{ScratchComponents.cond(), new Label("&"), ScratchComponents.cond()}));
-        ScratchController.ui.addElement(new CondBlock(new Element[]{ScratchComponents.input(""), new Label(">"), ScratchComponents.input("")}));
-        ScratchController.ui.addElement(new InputBlock(new Element[]{ScratchComponents.input(""), new Label("+"), ScratchComponents.input("")}));
-        ScratchController.ui.addElement(new InputBlock(new Element[]{ScratchComponents.input(""), new Label("+"), ScratchComponents.input("")}));
-        ScratchController.ui.addElement(new InputBlock(new Element[]{ScratchComponents.input(""), new Label("+"), ScratchComponents.input("")}));
+        ScratchController.ui.addElement(new ScratchBlock("test", ScratchType.condition, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
+            @Override
+            public void build(ScratchBlock block) {
+                block.input();
+                block.label("aaaaaa");
+                block.cond();
+                block.input();
+            }
+        }));
+        ScratchController.ui.addElement(new ScratchBlock("test", ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
+            @Override
+            public void build(ScratchBlock block) {
+                block.input();
+                block.label("aaaaaa");
+                block.input();
+            }
+        }));
+        ScratchController.ui.addElement(new ScratchBlock("test", ScratchType.input, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
+            @Override
+            public void build(ScratchBlock block) {
+                block.input();
+                block.label("aaaaaa");
+                block.cond();
+                block.input();
+            }
+        }));
     }
 
     public static void testUI() {

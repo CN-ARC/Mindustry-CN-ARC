@@ -3,29 +3,24 @@ package mindustry.arcModule.ui.logic.elements;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.GlyphLayout;
-import arc.math.geom.Vec2;
 import arc.scene.Element;
-import arc.scene.event.Touchable;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
-import arc.util.Tmp;
-import mindustry.arcModule.ui.logic.ElementType;
-import mindustry.arcModule.ui.logic.ScratchController;
-import mindustry.arcModule.ui.logic.ScratchElement;
-import mindustry.arcModule.ui.logic.ScratchStyles;
+import mindustry.arcModule.ui.logic.*;
 import mindustry.ui.Styles;
 
 public class InputElement extends ScratchElement {
     protected static TextField.TextFieldStyle style;
     protected static GlyphLayout prefSizeLayout = new GlyphLayout();
     private static final float minWidth = 40f;
-    TextField field;
+    public TextField field;
     Cell<TextField> cell;
     public InputElement() {
         this("");
     }
     public InputElement(String def) {
+        super();
         field = new TextField(def, getStyle()) {
             @Override
             public Element hit(float x, float y, boolean touchable) {
@@ -43,7 +38,7 @@ public class InputElement extends ScratchElement {
     }
 
     @Override
-    public void setChild(ScratchElement child) {
+    public void setChild(ScratchTable child) {
         this.child = child;
         if (child == null) {
             cell.setElement(field).left().pad(0, 10f, 0, 10f).width(20f);
@@ -54,8 +49,8 @@ public class InputElement extends ScratchElement {
     }
 
     @Override
-    public ElementType getType() {
-        return ElementType.input;
+    public ScratchType getType() {
+        return ScratchType.input;
     }
 
     @Override
@@ -68,24 +63,18 @@ public class InputElement extends ScratchElement {
     }
 
     @Override
-    public Element hit(float x, float y, boolean touchable) {
-        if (ScratchController.dragging != null) {
-            if ((!touchable || this.touchable == Touchable.enabled) && x >= -padValue && x <= width + padValue && y >= -padValue && y <= height + padValue) {
-                if (child != null) {
-                    Vec2 v = child.parentToLocalCoordinates(Tmp.v1.set(x, y));
-                    Element e = child.hit(v.x, v.y, touchable);
-                    if (e != null) return e;
-                }
-                return this;
-            }
-            return null;
-        }
-        return super.hit(x, y, touchable);
+    public boolean accept(ScratchTable e) {
+        return e.getType() == ScratchType.input || e.getType() == ScratchType.condition;
     }
 
     @Override
-    public boolean accept(ScratchElement e) {
-        return e.getType() == ElementType.input || e.getType() == ElementType.condition;
+    public Object getValue() {
+        return field.getText();
+    }
+
+    @Override
+    public void setValue(Object value) {
+        field.setText((String) value);
     }
 
     private TextField.TextFieldStyle getStyle() {
@@ -97,5 +86,12 @@ public class InputElement extends ScratchElement {
             style.fontColor = Color.black;
         }
         return style;
+    }
+
+    @Override
+    public ScratchElement copy() {
+        InputElement e = new InputElement(field.getText());
+        if (child instanceof ScratchBlock sb) sb.copy().asChild(e);
+        return e;
     }
 }

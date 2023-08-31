@@ -5,11 +5,9 @@ import arc.graphics.Color;
 import arc.graphics.Pixmap;
 import arc.graphics.Texture;
 import arc.graphics.g2d.TextureRegion;
-import arc.scene.Group;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.style.TiledDrawable;
 import arc.scene.ui.ScrollPane;
-import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
 import arc.scene.ui.layout.WidgetGroup;
 import mindustry.gen.Tex;
@@ -47,7 +45,7 @@ public class LogicUI extends Table {
         parent.removeChild(this);
     }
 
-    public void addElement(ScratchElement e) {
+    public void addElement(ScratchTable e) {
         group.addChild(e);
     }
 
