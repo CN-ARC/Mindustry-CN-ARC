@@ -7,7 +7,7 @@ public class LabelElement extends ScratchElement {
     private final Label l;
 
     {
-        hitable = false;
+        hittable = false;
     }
 
     public LabelElement(String str) {

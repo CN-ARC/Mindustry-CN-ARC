@@ -1,5 +1,5 @@
 package mindustry.arcModule.ui.logic;
 
 public enum ScratchType {
-    none, input, condition, block, conditionInner
+    none, input, condition, block, conditionInner, blockInner
 }

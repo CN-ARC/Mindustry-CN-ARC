@@ -7,12 +7,11 @@ import arc.util.Tmp;
 import mindustry.arcModule.ui.logic.ScratchController;
 import mindustry.arcModule.ui.logic.ScratchTable;
 
-abstract public class ScratchElement extends ScratchTable {
+public abstract class ScratchElement extends ScratchTable {
     abstract public ScratchElement copy();
 
     @Override
     public Element hit(float x, float y, boolean touchable) {
-        if (!hitable) return null;
         if (ScratchController.dragging != null) {
             if ((!touchable || this.touchable == Touchable.enabled) && x >= -padValue && x <= width + padValue && y >= -padValue && y <= height + padValue) {
                 if (child != null) {
@@ -20,7 +19,7 @@ abstract public class ScratchElement extends ScratchTable {
                     Element e = child.hit(v.x, v.y, touchable);
                     if (e != null) return e;
                 }
-                return this;
+                return hittable ? this : null;
             }
             return null;
         }

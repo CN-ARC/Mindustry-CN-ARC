@@ -8,6 +8,7 @@ import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
 import mindustry.arcModule.ui.logic.*;
+import mindustry.arcModule.ui.logic.blocks.ScratchBlock;
 import mindustry.ui.Styles;
 
 public class InputElement extends ScratchElement {
@@ -15,11 +16,12 @@ public class InputElement extends ScratchElement {
     protected static GlyphLayout prefSizeLayout = new GlyphLayout();
     private static final float minWidth = 40f;
     public TextField field;
+    private boolean num;
     Cell<TextField> cell;
     public InputElement() {
-        this("");
+        this(false, "");
     }
-    public InputElement(String def) {
+    public InputElement(boolean num, String def) {
         super();
         field = new TextField(def, getStyle()) {
             @Override
@@ -27,6 +29,8 @@ public class InputElement extends ScratchElement {
                 return ScratchController.dragging == null ? super.hit(x, y, touchable) : null;
             }
         };
+        this.num = num;
+        if (num) field.setFilter(TextField.TextFieldFilter.digitsOnly);
         field.setAlignment(Align.center);
         elemColor = Color.white;
         cell = add(field).left().pad(0, 10f, 0, 10f).width(20f);
@@ -90,7 +94,7 @@ public class InputElement extends ScratchElement {
 
     @Override
     public ScratchElement copy() {
-        InputElement e = new InputElement(field.getText());
+        InputElement e = new InputElement(num, field.getText());
         if (child instanceof ScratchBlock sb) sb.copy().asChild(e);
         return e;
     }

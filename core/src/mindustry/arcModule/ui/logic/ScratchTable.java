@@ -11,11 +11,11 @@ import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Align;
 
-abstract public class ScratchTable extends Table {
+public abstract class ScratchTable extends Table {
     public static float defHeight = 30f, addPadding = 10f, defWidth = 50f;
     protected static final float padValue = 30f;
     protected final ObjectMap<Enum<ScratchEvents>, Seq<Cons<ScratchTable>>> events = new ObjectMap<>();
-    public boolean selected = false, hitable = true;
+    public boolean selected = false, hittable = true;
     public ScratchTable child = null;
     protected Color elemColor = new Color(1, 1, 1, 1);
 
@@ -79,7 +79,7 @@ abstract public class ScratchTable extends Table {
         Lines.stroke(1f);
         Lines.rect(x, y, width, height);
         Draw.color(ScratchController.selected == this ? Color.blue.cpy().mulA(0.5f) : Color.green.cpy().mulA(0.5f));
-        if (ScratchController.dragging != null && hitable) {
+        if (ScratchController.dragging != null && hittable) {
             Lines.rect(x - padValue, y - padValue, width + padValue * 2, height + padValue * 2);
         } else {
             Lines.rect(x, y, width, height);

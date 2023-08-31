@@ -40,9 +40,7 @@ public class ScratchStyles {
     }
 
     public static void drawBlock(float x, float y, float w, float h, Color c) {
-        Draw.color(c);
-        Fill.quad(x, y + h, x + 10, y + h, x + 15, y + h - 7, x, y + h - 7);
-        Fill.quad(x + 30, y + h - 7, x + 35, y + h, x + w, y + h, x + w, y + h - 7);
+        drawBlockHeader(x, y, w, h, c);
         Fill.polyBegin();
         Fill.polyPoint(x, y + h - 7);
         Fill.polyPoint(x + w, y + h - 7);
@@ -55,17 +53,31 @@ public class ScratchStyles {
         Fill.polyEnd();
         Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
         Lines.beginLine();
+        drawBlockBorderTop(x, y, w, h);
+        drawBlockBorderBottom(x, y, w, h);
+        Lines.endLine();
+    }
+
+    public static void drawBlockHeader(float x, float y, float w, float h, Color c) {
+        Draw.color(c);
+        Fill.quad(x, y + h, x + 10, y + h, x + 15, y + h - 7, x, y + h - 7);
+        Fill.quad(x + 30, y + h - 7, x + 35, y + h, x + w, y + h, x + w, y + h - 7);
+    }
+
+    public static void drawBlockBorderTop(float x, float y, float w, float h) {
         Lines.linePoint(x + 10, y + h);
         Lines.linePoint(x + 15, y + h - 7);
         Lines.linePoint(x + 30, y + h - 7);
         Lines.linePoint(x + 35, y + h);
         Lines.linePoint(x + w, y + h);
         Lines.linePoint(x + w, y + 7);
+    }
+
+    public static void drawBlockBorderBottom(float x, float y, float w, float h) {
         Lines.linePoint(x + 35, y + 7);
         Lines.linePoint(x + 30, y);
         Lines.linePoint(x + 15, y);
         Lines.linePoint(x + 10, y + 7);
         Lines.linePoint(x, y + 7);
-        Lines.endLine();
     }
 }

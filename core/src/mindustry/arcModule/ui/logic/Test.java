@@ -1,6 +1,9 @@
 package mindustry.arcModule.ui.logic;
 
 import arc.graphics.Color;
+import mindustry.arcModule.ui.logic.blocks.ForkBlock;
+import mindustry.arcModule.ui.logic.blocks.ScratchBlock;
+import mindustry.arcModule.ui.logic.blocks.fork.ForkHeader;
 
 public class Test {
     public static void test() {
@@ -34,6 +37,17 @@ public class Test {
                 block.label("aaaaaa");
                 block.cond();
                 block.input();
+            }
+        }));
+        ScratchController.ui.addElement(new ForkBlock("test", ScratchType.block, new Color(Color.packRgba(89, 192, 89, 255)), new ForkBlock.ForkInfo() {
+            @Override
+            public void build(ForkBlock block) {
+                block.header(new ForkBlock.ForkInfo() {
+                    @Override
+                    public void build(ScratchBlock block) {
+                        block.label("test");
+                    }
+                });
             }
         }));
     }

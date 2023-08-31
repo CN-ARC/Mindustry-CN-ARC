@@ -1,9 +1,9 @@
-package mindustry.arcModule.ui.logic;
+package mindustry.arcModule.ui.logic.blocks;
 
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
-import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Cell;
+import mindustry.arcModule.ui.logic.*;
 import mindustry.arcModule.ui.logic.elements.CondElement;
 import mindustry.arcModule.ui.logic.elements.InputElement;
 import mindustry.arcModule.ui.logic.elements.LabelElement;
@@ -14,7 +14,11 @@ public class ScratchBlock extends ScratchTable {
     private final BlockInfo info;
 
     public ScratchBlock(String name, ScratchType type, Color color, BlockInfo info) {
-        ScratchController.registerBlock(name, this);
+        this(name, type, color, info, true);
+    }
+
+    public ScratchBlock(String name, ScratchType type, Color color, BlockInfo info, boolean draggingEnabled) {
+        if (name != null) ScratchController.registerBlock(name, this);
         this.type = type;
         elemColor = color;
         this.info = info;
@@ -27,7 +31,7 @@ public class ScratchBlock extends ScratchTable {
                 getCell(e).padRight(addPadding + 10);
             }
         }
-        ScratchInput.addDraggingInput(this);
+        if (draggingEnabled) ScratchInput.addDraggingInput(this);
     }
 
     public LabelElement label(String str) {
@@ -51,12 +55,9 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public InputElement input(boolean num, String def) {
-        InputElement e = new InputElement(def);
+        InputElement e = new InputElement(num, def);
         Cell<ScratchTable> c;
         e.cell(c = add(e));
-        if (num) {
-            e.field.setFilter(TextField.TextFieldFilter.digitsOnly);
-        }
         if (children.size == 1) {
             c.padLeft(addPadding + 10);
         }

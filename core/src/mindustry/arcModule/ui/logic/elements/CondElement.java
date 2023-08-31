@@ -5,7 +5,7 @@ import arc.graphics.g2d.Draw;
 import mindustry.arcModule.ui.logic.ScratchType;
 import mindustry.arcModule.ui.logic.ScratchTable;
 import mindustry.arcModule.ui.logic.ScratchStyles;
-import mindustry.arcModule.ui.logic.ScratchBlock;
+import mindustry.arcModule.ui.logic.blocks.ScratchBlock;
 
 public class CondElement extends ScratchElement {
     public CondElement() {
