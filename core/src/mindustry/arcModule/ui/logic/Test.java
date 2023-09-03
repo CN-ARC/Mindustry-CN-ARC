@@ -3,7 +3,6 @@ package mindustry.arcModule.ui.logic;
 import arc.graphics.Color;
 import mindustry.arcModule.ui.logic.blocks.ForkBlock;
 import mindustry.arcModule.ui.logic.blocks.ScratchBlock;
-import mindustry.arcModule.ui.logic.blocks.fork.ForkHeader;
 
 public class Test {
     public static void test() {
