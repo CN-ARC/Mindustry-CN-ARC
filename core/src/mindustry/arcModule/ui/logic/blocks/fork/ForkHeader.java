@@ -34,6 +34,6 @@ public class ForkHeader extends ForkComponent {
         Lines.beginLine();
         ScratchStyles.drawBlockBorderTop(x, y, width, height);
         Lines.endLine(true);
-        ((Table) this).draw();
+        drawSuper();
     }
 }

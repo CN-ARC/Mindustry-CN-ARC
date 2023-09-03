@@ -74,6 +74,10 @@ public class ScratchBlock extends ScratchTable {
         return sb;
     }
 
+    public void drawSuper() {
+        super.draw();
+    }
+
     @Override
     public Object getValue() {
         return info.getValue(children);
