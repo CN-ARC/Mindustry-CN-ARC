@@ -252,9 +252,11 @@ public class RFuncs {
     }
 
     public static Graphics.Cursor customCursor(String name, int scale) {
-        Fi path = getCursorDir(), child;
-        if (path != null && (child = path.child(name + ".png")).exists()) {
-            Pixmap base = new Pixmap(child);
+        Fi path = getCursorDir();
+        if (path != null && path.isDirectory()) {
+            Fi child = path.child(name + ".png");
+            if (child.exists()) {
+                Pixmap base = new Pixmap(child);
             if (scale == 1 || OS.isAndroid || OS.isIos) {
                 return Core.graphics.newCursor(base, base.width / 2, base.height / 2);
             }
