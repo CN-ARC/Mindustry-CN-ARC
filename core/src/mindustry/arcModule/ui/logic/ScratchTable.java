@@ -18,6 +18,7 @@ public abstract class ScratchTable extends Table {
     public boolean selected = false, hittable = true;
     public ScratchTable child = null;
     protected Color elemColor = new Color(1, 1, 1, 1);
+    public Color tmpColor;
 
     {
         touchable = Touchable.enabled;

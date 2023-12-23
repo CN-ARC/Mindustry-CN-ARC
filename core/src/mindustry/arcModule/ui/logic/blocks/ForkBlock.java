@@ -2,7 +2,9 @@ package mindustry.arcModule.ui.logic.blocks;
 
 import arc.func.Cons;
 import arc.graphics.Color;
+import arc.scene.ui.layout.Cell;
 import mindustry.arcModule.ui.logic.BlockInfo;
+import mindustry.arcModule.ui.logic.ScratchTable;
 import mindustry.arcModule.ui.logic.ScratchType;
 import mindustry.arcModule.ui.logic.blocks.fork.*;
 
@@ -38,8 +40,14 @@ public class ForkBlock extends ScratchBlock {
     }
 
     @Override
+    public void cell(Cell<ScratchTable> c) {
+        super.cell(c);
+        c.pad(0);
+    }
+
+    @Override
     public void draw() {
-        super.draw();
+        super.drawSuper();
     }
 
     public static class ForkInfo extends BlockInfo {

@@ -39,7 +39,7 @@ public class ScratchStyles {
         Lines.endLine();
     }
 
-    public static void drawBlock(float x, float y, float w, float h, Color c) {
+    public static void drawBlock(float x, float y, float w, float h, Color c, boolean noBorder) {
         drawBlockHeader(x, y, w, h, c);
         Fill.polyBegin();
         Fill.polyPoint(x, y + h - 7);
@@ -52,10 +52,12 @@ public class ScratchStyles {
         Fill.polyPoint(x, y + 7);
         Fill.polyEnd();
         Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
-        Lines.beginLine();
-        drawBlockBorderTop(x, y, w, h);
-        drawBlockBorderBottom(x, y, w, h);
-        Lines.endLine();
+        if (!noBorder) {
+            Lines.beginLine();
+            drawBlockBorderTop(x, y, w, h);
+            drawBlockBorderBottom(x, y, w, h);
+            Lines.endLine();
+        }
     }
 
     public static void drawBlockHeader(float x, float y, float w, float h, Color c) {

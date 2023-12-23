@@ -29,6 +29,14 @@ public class Test {
                 block.input();
             }
         }));
+        ScratchController.ui.addElement(new ScratchBlock("test", ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
+            @Override
+            public void build(ScratchBlock block) {
+                block.input();
+                block.label("aaaaaa");
+                block.input();
+            }
+        }));
         ScratchController.ui.addElement(new ScratchBlock("test", ScratchType.input, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
             @Override
             public void build(ScratchBlock block) {

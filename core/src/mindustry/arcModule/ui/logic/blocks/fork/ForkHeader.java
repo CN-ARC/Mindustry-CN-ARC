@@ -22,15 +22,9 @@ public class ForkHeader extends ForkComponent {
     }
 
     @Override
-    public void cell(Cell<ScratchTable> c) {
-        super.cell(c);
-        c.row();
-    }
-
-    @Override
     public void draw() {
         ScratchStyles.drawBlockHeader(x, y, width, height, elemColor);
-        Fill.rect(x, y, width, height - 7);
+        Fill.crect(x, y, width, height - 7);
         Lines.beginLine();
         ScratchStyles.drawBlockBorderTop(x, y, width, height);
         Lines.endLine(true);
