@@ -72,7 +72,7 @@ public class ScratchInput {
                 if (e.child != null && e.child.selected) return;
                 e.toFront();
                 Vec2 v = e.localToParentCoordinates(tmp.set(x, y));
-                if (((e.parent instanceof ScratchTable) || (e instanceof ScratchBlock b && b.type == ScratchType.block)) && ScratchController.dragging == null && Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragStartDistance || Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragMinDistance) return;
+                if (((e.parent instanceof ScratchTable) || (e instanceof ScratchBlock b && b.type == ScratchType.block)) && ScratchController.dragging == null && Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragStartDistance || !dragged && Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragMinDistance) return;
                 dragged = true;
                 if (e.parent instanceof ScratchTable sel) {
                     e.localToAscendantCoordinates(ScratchController.ui.group, Tmp.v1.set(e.x, e.y));

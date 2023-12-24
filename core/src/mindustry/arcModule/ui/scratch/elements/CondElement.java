@@ -1,5 +1,6 @@
 package mindustry.arcModule.ui.scratch.elements;
 
+import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import mindustry.arcModule.ui.scratch.ScratchType;
@@ -20,6 +21,16 @@ public class CondElement extends ScratchElement {
     @Override
     public ScratchType getType() {
         return ScratchType.condition;
+    }
+
+    @Override
+    public Object getValue() {
+        return child != null ? child.getValue() : null;
+    }
+
+    @Override
+    public void getValue(Cons<Object> callback) {
+        callback.get(child != null ? child.getValue() : null);
     }
 
     @Override

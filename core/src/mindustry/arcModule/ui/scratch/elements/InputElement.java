@@ -17,7 +17,7 @@ public class InputElement extends ScratchElement {
     protected static GlyphLayout prefSizeLayout = new GlyphLayout();
     private static final float minWidth = 40f;
     public TextField field;
-    private boolean num;
+    private final boolean num;
     Cell<TextField> cell;
     public InputElement() {
         this(false, "");
@@ -74,7 +74,19 @@ public class InputElement extends ScratchElement {
 
     @Override
     public void getValue(Cons<Object> callback) {
-        callback.get(field.getText());
+        if (child != null) {
+            child.getValue(callback);
+            return;
+        }
+        if (!num) {
+            callback.get(field.getText());
+            return;
+        }
+        try {
+            callback.get(Double.parseDouble(field.getText()));
+        } catch (Exception e) {
+            callback.get(Double.NaN);
+        }
     }
 
     @Override

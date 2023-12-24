@@ -16,6 +16,11 @@ public class LabelElement extends ScratchElement {
     }
 
     @Override
+    public Object getValue() {
+        return l.getText();
+    }
+
+    @Override
     public void getValue(Cons<Object> callback) {
         callback.get(l.getText());
     }
