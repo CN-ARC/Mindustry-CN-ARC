@@ -1,15 +1,15 @@
-package mindustry.arcModule.ui.logic;
+package mindustry.arcModule.ui.scratch;
 
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 
 public class ScratchController {
-    public static LogicUI ui;
+    public static ScratchUI ui;
     public static ScratchTable dragging, selected;
     protected static ObjectMap<String, Integer> map = new ObjectMap<>();
     protected static Seq<ScratchTable> list = new Seq<>();
     public static void init() {
-        ui = new LogicUI();
+        ui = new ScratchUI();
     }
 
     public static void registerBlock(String name, ScratchTable e) {

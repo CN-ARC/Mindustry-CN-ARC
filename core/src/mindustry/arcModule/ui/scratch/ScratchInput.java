@@ -1,4 +1,4 @@
-package mindustry.arcModule.ui.logic;
+package mindustry.arcModule.ui.scratch;
 
 import arc.Core;
 import arc.input.KeyCode;
@@ -8,16 +8,18 @@ import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
 import arc.util.Align;
+import arc.util.Log;
 import arc.util.Tmp;
-import mindustry.arcModule.ui.logic.blocks.FakeBlock;
-import mindustry.arcModule.ui.logic.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.blocks.FakeBlock;
+import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 
 public class ScratchInput {
-    public static final float dragStartDistance = 20f;
+    public static final float dragStartDistance = 20f, dragMinDistance = 3f;
     public static final Vec2 tmp = new Vec2();
     public static final Vec2 tmp2 = new Vec2();
     public static ScratchTable cur = null;
     public static FakeBlock fake = new FakeBlock();
+    public static boolean dragged = false;
     public static void addDraggingInput(ScratchTable e) {
         e.addListener(new InputListener() {
             float lastX, lastY;
@@ -25,6 +27,7 @@ public class ScratchInput {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
                 if (cur != null) return false;
+                dragged = false;
                 e.toFront();
                 e.selected = true;
                 Vec2 v = e.localToParentCoordinates(tmp.set(x, y));
@@ -49,13 +52,19 @@ public class ScratchInput {
                         }
                     }
                     if (e instanceof ScratchBlock block && (fake.linkTo != null || fake.linkFrom != null)) {
-                        block.insertLinkBottom(fake);
+                        block.insertLinkTop(fake);
                         fake.removeAndKeepLink();
                     }
                     ScratchController.dragging = ScratchController.selected = null;
                 }
                 e.selected = false;
                 ScratchController.ui.pane.setFlickScroll(true);
+                if (!dragged) {
+                    e.getValue(o -> {
+                        if (o == null) return;
+                        Log.info(o);
+                    });
+                }
             }
 
             @Override
@@ -63,7 +72,8 @@ public class ScratchInput {
                 if (e.child != null && e.child.selected) return;
                 e.toFront();
                 Vec2 v = e.localToParentCoordinates(tmp.set(x, y));
-                if (((e.parent instanceof ScratchTable) || (e instanceof ScratchBlock b && b.type == ScratchType.block)) && ScratchController.dragging == null && Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragStartDistance) return;
+                if (((e.parent instanceof ScratchTable) || (e instanceof ScratchBlock b && b.type == ScratchType.block)) && ScratchController.dragging == null && Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragStartDistance || Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragMinDistance) return;
+                dragged = true;
                 if (e.parent instanceof ScratchTable sel) {
                     e.localToAscendantCoordinates(ScratchController.ui.group, Tmp.v1.set(e.x, e.y));
                     float ox = Tmp.v1.x, oy = Tmp.v1.y;
@@ -85,9 +95,7 @@ public class ScratchInput {
                 lastY = v.y;
                 Element selected = ScratchController.ui.group.hit(e.x + e.getHeight() / 2, e.y + e.getHeight() / 2, true);
                 e.touchable = Touchable.enabled;
-                if (selected != null && e instanceof ScratchBlock block && block.type == ScratchType.block &&
-                        (selected instanceof ScratchBlock sb && sb.type == ScratchType.block ||
-                                selected.parent instanceof ScratchBlock sb2 && sb2.type == ScratchType.block)) {
+                if (e instanceof ScratchBlock block && block.type == ScratchType.block && selected instanceof ScratchTable t && t.acceptLink(block)) {
                     ScratchBlock b = (ScratchBlock) (selected instanceof ScratchBlock ? selected : selected.parent);
                     if (b.linkTo != e && b.linkFrom != e) {
                         fake.setReal(block);

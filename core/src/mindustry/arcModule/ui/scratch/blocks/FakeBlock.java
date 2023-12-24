@@ -1,11 +1,10 @@
-package mindustry.arcModule.ui.logic.blocks;
+package mindustry.arcModule.ui.scratch.blocks;
 
 import arc.graphics.Color;
 import arc.scene.Element;
-import arc.util.Align;
-import mindustry.arcModule.ui.logic.BlockInfo;
-import mindustry.arcModule.ui.logic.ScratchStyles;
-import mindustry.arcModule.ui.logic.ScratchType;
+import mindustry.arcModule.ui.scratch.BlockInfo;
+import mindustry.arcModule.ui.scratch.ScratchStyles;
+import mindustry.arcModule.ui.scratch.ScratchType;
 
 public class FakeBlock extends ScratchBlock {
     private ScratchBlock real;

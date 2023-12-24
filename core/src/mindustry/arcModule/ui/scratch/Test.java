@@ -1,8 +1,8 @@
-package mindustry.arcModule.ui.logic;
+package mindustry.arcModule.ui.scratch;
 
 import arc.graphics.Color;
-import mindustry.arcModule.ui.logic.blocks.ForkBlock;
-import mindustry.arcModule.ui.logic.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.blocks.ForkBlock;
+import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 
 public class Test {
     public static void test() {
@@ -18,6 +18,14 @@ public class Test {
                 block.input();
                 block.label("aaaaaa");
                 block.cond();
+                block.input();
+            }
+        }));
+        ScratchController.ui.addElement(new ScratchBlock("test", ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
+            @Override
+            public void build(ScratchBlock block) {
+                block.input();
+                block.label("aaaaaa");
                 block.input();
             }
         }));

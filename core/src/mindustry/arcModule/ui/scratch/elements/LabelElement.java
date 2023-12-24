@@ -1,7 +1,8 @@
-package mindustry.arcModule.ui.logic.elements;
+package mindustry.arcModule.ui.scratch.elements;
 
+import arc.func.Cons;
 import arc.scene.ui.Label;
-import mindustry.arcModule.ui.logic.ScratchType;
+import mindustry.arcModule.ui.scratch.ScratchType;
 
 public class LabelElement extends ScratchElement {
     private final Label l;
@@ -15,8 +16,8 @@ public class LabelElement extends ScratchElement {
     }
 
     @Override
-    public Object getValue() {
-        return l.getText();
+    public void getValue(Cons<Object> callback) {
+        callback.get(l.getText());
     }
 
     @Override

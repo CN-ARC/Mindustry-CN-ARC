@@ -1,5 +1,6 @@
-package mindustry.arcModule.ui.logic.elements;
+package mindustry.arcModule.ui.scratch.elements;
 
+import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.GlyphLayout;
@@ -7,8 +8,8 @@ import arc.scene.Element;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
-import mindustry.arcModule.ui.logic.*;
-import mindustry.arcModule.ui.logic.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.*;
+import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 import mindustry.ui.Styles;
 
 public class InputElement extends ScratchElement {
@@ -72,8 +73,8 @@ public class InputElement extends ScratchElement {
     }
 
     @Override
-    public Object getValue() {
-        return field.getText();
+    public void getValue(Cons<Object> callback) {
+        callback.get(field.getText());
     }
 
     @Override

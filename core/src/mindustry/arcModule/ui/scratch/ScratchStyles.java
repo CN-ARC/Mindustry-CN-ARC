@@ -1,4 +1,4 @@
-package mindustry.arcModule.ui.logic;
+package mindustry.arcModule.ui.scratch;
 
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;

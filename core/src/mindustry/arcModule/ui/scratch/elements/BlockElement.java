@@ -1,9 +1,9 @@
-package mindustry.arcModule.ui.logic.elements;
+package mindustry.arcModule.ui.scratch.elements;
 
 import arc.scene.ui.layout.Cell;
-import mindustry.arcModule.ui.logic.blocks.ScratchBlock;
-import mindustry.arcModule.ui.logic.ScratchTable;
-import mindustry.arcModule.ui.logic.ScratchType;
+import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.ScratchTable;
+import mindustry.arcModule.ui.scratch.ScratchType;
 
 public class BlockElement extends ScratchElement {
     @Override

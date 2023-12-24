@@ -1,5 +1,6 @@
-package mindustry.arcModule.ui.logic.blocks;
+package mindustry.arcModule.ui.scratch.blocks;
 
+import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
@@ -8,11 +9,11 @@ import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
 import arc.util.Nullable;
-import mindustry.arcModule.ui.logic.*;
-import mindustry.arcModule.ui.logic.elements.CondElement;
-import mindustry.arcModule.ui.logic.elements.InputElement;
-import mindustry.arcModule.ui.logic.elements.LabelElement;
-import mindustry.arcModule.ui.logic.elements.ScratchElement;
+import mindustry.arcModule.ui.scratch.*;
+import mindustry.arcModule.ui.scratch.elements.CondElement;
+import mindustry.arcModule.ui.scratch.elements.InputElement;
+import mindustry.arcModule.ui.scratch.elements.LabelElement;
+import mindustry.arcModule.ui.scratch.elements.ScratchElement;
 
 public class ScratchBlock extends ScratchTable {
     public ScratchType type;
@@ -96,16 +97,19 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public void insertLinkTop(ScratchBlock before) {
-        x = before.x;
-        y = before.y;
-        if (before.linkTo != null) linkTo(before.linkTo);
+        if (before.linkTo != null) {
+            linkTo(before.linkTo);
+        } else {
+            x = before.x;
+            y = before.y;
+        }
         ScratchBlock l = this;
         while (l.linkFrom != null) l = l.linkFrom;
         before.linkTo(l);
     }
 
     public void insertLinkBottom(ScratchBlock after) {
-        ScratchBlock target = linkFrom;
+        ScratchBlock target = after.linkFrom;
         linkTo(after);
         ScratchBlock l = this;
         while (l.linkFrom != null) l = l.linkFrom;
@@ -113,7 +117,10 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public void removeAndKeepLink() {
-        if (linkFrom != null && linkTo != null) linkFrom.linkTo(linkTo);
+        boolean linked = linkFrom != null && linkTo != null;
+        if (linked) {
+            linkFrom.linkTo(linkTo);
+        }
         if (linkFrom != null && linkTo == null) {
             linkFrom.x = x;
             linkFrom.y = y;
@@ -124,7 +131,7 @@ public class ScratchBlock extends ScratchTable {
 
     public ScratchBlock unlink() {
         if (linkTo == null) return null;
-        linkTo.linkFrom(null);
+        if (linkTo.linkFrom == this) linkTo.linkFrom(null);
         ScratchBlock s = linkTo;
         linkTo = null;
         return s;
@@ -132,7 +139,7 @@ public class ScratchBlock extends ScratchTable {
 
     public ScratchBlock unlinkFrom() {
         if (linkFrom == null) return null;
-        linkFrom.unlink();
+        if (linkFrom.linkTo == this) linkFrom.unlink();
         return linkFrom;
     }
 
@@ -142,8 +149,14 @@ public class ScratchBlock extends ScratchTable {
     }
 
     @Override
-    public Object getValue() {
-        return info.getValue(children);
+    public boolean acceptLink(ScratchBlock block) {
+        return type == ScratchType.block;
+    }
+
+    @Override
+    public void getValue(Cons<Object> callback) {
+        if (type == ScratchType.block) callback.get(null);
+        info.getValue(children, callback);
     }
 
     @Override
@@ -156,11 +169,11 @@ public class ScratchBlock extends ScratchTable {
         if (!(ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block) || ScratchController.dragging == linkTo || ScratchController.dragging == linkFrom) return super.hit(x, y, touchable);
         if(touchable && this.touchable != Touchable.enabled) return null;
         if (x >= 0 && x < width) {
-            if (y >= -padValue * 2 && y < height + padValue) {
+            if (y >= -padValue * 2 && y < 0) {
                 dir = Align.bottom;
                 return this;
             }
-            if (linkTo == null && y >= height + padValue && y < height + padValue * 2) {
+            if ((linkTo == null || linkTo instanceof FakeBlock) && y >= height + padValue && y < height + padValue * 2 + (linkTo != null ? linkTo.getHeight() : 0)) {
                 dir = Align.top;
                 return this;
             }
@@ -180,8 +193,8 @@ public class ScratchBlock extends ScratchTable {
         if (ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block && type == ScratchType.block) {
             Lines.stroke(1f);
             Draw.color(Color.gold.cpy().mulA(0.5f));
-            Lines.rect(x, y - padValue * 2, width, height + padValue);
-            if (linkTo == null) {
+            Lines.rect(x, y - padValue * 2, width, padValue);
+            if (linkTo == null || linkTo instanceof FakeBlock) {
                 Draw.color(Color.blue.cpy().mulA(0.5f));
                 Lines.rect(x, y + padValue, width, height + padValue * 2);
             }
@@ -190,6 +203,13 @@ public class ScratchBlock extends ScratchTable {
 
     @Override
     public void act(float delta) {
+        if (linkTo == null) {
+            ScratchBlock b = this;
+            do {
+                b.toFront();
+                b = b.linkFrom;
+            } while (b != null);
+        }
         if (linkTo != null) {
             x = linkTo.x;
             y = linkTo.y - getHeight() + 7f;

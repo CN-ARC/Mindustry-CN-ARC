@@ -1,15 +1,12 @@
-package mindustry.arcModule.ui.logic.blocks.fork;
+package mindustry.arcModule.ui.scratch.blocks.fork;
 
 import arc.graphics.Color;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
-import arc.scene.ui.layout.Cell;
-import arc.scene.ui.layout.Table;
-import mindustry.arcModule.ui.logic.ScratchStyles;
-import mindustry.arcModule.ui.logic.ScratchTable;
-import mindustry.arcModule.ui.logic.ScratchType;
-import mindustry.arcModule.ui.logic.blocks.ForkBlock;
-import mindustry.arcModule.ui.logic.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.ScratchStyles;
+import mindustry.arcModule.ui.scratch.ScratchType;
+import mindustry.arcModule.ui.scratch.blocks.ForkBlock;
+import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 
 public class ForkHeader extends ForkComponent {
     public ForkHeader(ForkBlock.ForkInfo info, Color c) {

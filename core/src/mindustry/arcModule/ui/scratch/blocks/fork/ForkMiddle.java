@@ -1,12 +1,11 @@
-package mindustry.arcModule.ui.logic.blocks.fork;
+package mindustry.arcModule.ui.scratch.blocks.fork;
 
 import arc.graphics.Color;
 import arc.scene.ui.layout.Cell;
-import mindustry.arcModule.ui.logic.BlockInfo;
-import mindustry.arcModule.ui.logic.ScratchTable;
-import mindustry.arcModule.ui.logic.ScratchType;
-import mindustry.arcModule.ui.logic.blocks.ForkBlock;
-import mindustry.arcModule.ui.logic.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.ScratchTable;
+import mindustry.arcModule.ui.scratch.ScratchType;
+import mindustry.arcModule.ui.scratch.blocks.ForkBlock;
+import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 
 public class ForkMiddle extends ForkComponent {
     public ForkMiddle(ForkBlock.ForkInfo info, Color c) {

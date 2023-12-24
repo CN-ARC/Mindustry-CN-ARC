@@ -1,11 +1,11 @@
-package mindustry.arcModule.ui.logic.elements;
+package mindustry.arcModule.ui.scratch.elements;
 
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
-import mindustry.arcModule.ui.logic.ScratchType;
-import mindustry.arcModule.ui.logic.ScratchTable;
-import mindustry.arcModule.ui.logic.ScratchStyles;
-import mindustry.arcModule.ui.logic.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.ScratchType;
+import mindustry.arcModule.ui.scratch.ScratchTable;
+import mindustry.arcModule.ui.scratch.ScratchStyles;
+import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 
 public class CondElement extends ScratchElement {
     public CondElement() {

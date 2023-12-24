@@ -1,4 +1,4 @@
-package mindustry.arcModule.ui.logic;
+package mindustry.arcModule.ui.scratch;
 
 import arc.Core;
 import arc.graphics.Color;
@@ -13,9 +13,9 @@ import arc.scene.ui.layout.WidgetGroup;
 import mindustry.gen.Tex;
 import mindustry.ui.Styles;
 
-public class LogicUI extends Table {
+public class ScratchUI extends Table {
     public Table table = new Table();
-    public WidgetGroup group = new LogicGroup();
+    public WidgetGroup group = new ScratchGroup();
     public ScrollPane pane = new ScrollPane(table, Styles.horizontalPane);
     static TiledDrawable bg;
 
@@ -27,7 +27,7 @@ public class LogicUI extends Table {
         pix.dispose();
     }
 
-    public LogicUI() {
+    public ScratchUI() {
         setFillParent(true);
         table().growY().width(64f).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.red));
         table().growY().width(128f).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.green));
@@ -49,7 +49,7 @@ public class LogicUI extends Table {
         group.addChild(e);
     }
 
-    private static class LogicGroup extends WidgetGroup {
+    private static class ScratchGroup extends WidgetGroup {
         @Override
         public float getPrefWidth() {
             return 10000;

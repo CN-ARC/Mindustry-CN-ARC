@@ -1,4 +1,4 @@
-package mindustry.arcModule.ui.logic;
+package mindustry.arcModule.ui.scratch;
 
 import arc.func.Cons;
 import arc.graphics.Color;
@@ -10,6 +10,7 @@ import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Align;
+import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 
 public abstract class ScratchTable extends Table {
     public static float defHeight = 30f, addPadding = 10f, defWidth = 50f;
@@ -41,10 +42,6 @@ public abstract class ScratchTable extends Table {
         }
     }
 
-    public Object getValue() {
-        return null;
-    }
-
     public void asChild(ScratchTable parent) {
         parent.setChild(this);
     }
@@ -70,6 +67,10 @@ public abstract class ScratchTable extends Table {
         return null;
     }
 
+    public void getValue(Cons<Object> callback) {
+        callback.get(null);
+    }
+
     public void setValue(Object value) {
     }
 
@@ -93,6 +94,8 @@ public abstract class ScratchTable extends Table {
         super.toFront();
         parent.toFront();
     }
+
+    abstract public boolean acceptLink(ScratchBlock block);
 
     abstract public ScratchType getType();
 }
