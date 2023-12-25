@@ -63,20 +63,21 @@ public class Test {
             }
         }));
         for (LogicOp logicOp : LogicOp.all) {
+            final LogicOp op = logicOp;
             ScratchController.ui.addElement(new ScratchBlock(logicOp.name(), ScratchType.input, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
                 @Override
                 public void build(ScratchBlock block) {
-                    if (logicOp.function2 == null) {
-                        block.label(logicOp.symbol);
+                    if (op.function2 == null) {
+                        block.label(op.symbol);
                         block.input();
                     } else {
-                        if (logicOp.func) {
-                            block.label(logicOp.symbol);
+                        if (op.func) {
+                            block.label(op.symbol);
                             block.input();
                             block.input();
                         } else {
                             block.input();
-                            block.label(logicOp.symbol);
+                            block.label(op.symbol);
                             block.input();
                         }
                     }
@@ -84,16 +85,16 @@ public class Test {
 
                 @Override
                 public void getValue(SnapshotSeq<Element> elements, Cons<Object> callback) {
-                    if (logicOp.function1 == null) {
-                        ScratchAsync.asyncGet((InputElement) elements.get(logicOp.func ? 1 : 0), (InputElement) elements.get(2), s -> {
+                    if (op.function2 == null) {
+                        ScratchAsync.asyncGet((InputElement) elements.get(1), s -> callback.get(Objects.requireNonNull(op.function1).get(s.d1)));
+                    } else {
+                        ScratchAsync.asyncGet((InputElement) elements.get(op.func ? 1 : 0), (InputElement) elements.get(2), s -> {
                             if (s.success) {
-                                callback.get(Objects.requireNonNull(logicOp.function2).get(s.d1, s.d2));
-                            } else if (logicOp.objFunction2 != null) {
-                                callback.get(Objects.requireNonNull(logicOp.objFunction2).get(s.o1, s.o2));
+                                callback.get(Objects.requireNonNull(op.function2).get(s.d1, s.d2));
+                            } else if (op.objFunction2 != null) {
+                                callback.get(Objects.requireNonNull(op.objFunction2).get(s.o1, s.o2));
                             }
                         });
-                    } else {
-                        ScratchAsync.asyncGet((InputElement) elements.get(1), s -> callback.get(Objects.requireNonNull(logicOp.function1).get(s.d1)));
                     }
                 }
             }));

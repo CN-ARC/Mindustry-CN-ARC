@@ -1,5 +1,6 @@
 package mindustry.arcModule.ui.scratch.elements;
 
+import arc.func.Boolf;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.event.Touchable;

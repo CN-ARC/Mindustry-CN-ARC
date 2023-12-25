@@ -10,6 +10,7 @@ import arc.scene.ui.layout.Cell;
 import arc.util.Align;
 import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 
 public class InputElement extends ScratchElement {
@@ -73,6 +74,17 @@ public class InputElement extends ScratchElement {
     }
 
     @Override
+    public Object getValue() {
+        if (child != null) return child.getValue();
+        if (!num) return field.getText();
+        try {
+            return Double.parseDouble(field.getText());
+        } catch (Exception e) {
+            return Double.NaN;
+        }
+    }
+
+    @Override
     public void getValue(Cons<Object> callback) {
         if (child != null) {
             child.getValue(callback);
@@ -100,7 +112,9 @@ public class InputElement extends ScratchElement {
             style.focusedBackground = null;
             style.disabledBackground = null;
             style.background = null;
-            style.fontColor = Color.black;
+            style.invalidBackground = null;
+            style.font = Fonts.outline;
+            style.fontColor = Color.gray;
         }
         return style;
     }

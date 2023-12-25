@@ -51,8 +51,8 @@ public class ScratchStyles {
         Fill.polyPoint(x + 10, y + 7);
         Fill.polyPoint(x, y + 7);
         Fill.polyEnd();
-        Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
         if (!noBorder) {
+            Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
             Lines.beginLine();
             drawBlockBorderTop(x, y, w, h);
             drawBlockBorderBottom(x, y, w, h);

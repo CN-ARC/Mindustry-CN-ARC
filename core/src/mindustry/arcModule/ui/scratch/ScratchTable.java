@@ -14,11 +14,11 @@ import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 
 public abstract class ScratchTable extends Table {
     public static float defHeight = 30f, addPadding = 10f, defWidth = 50f;
-    protected static final float padValue = 30f;
+    protected static final float padValue = 25f;
     protected final ObjectMap<Enum<ScratchEvents>, Seq<Cons<ScratchTable>>> events = new ObjectMap<>();
     public boolean selected = false, hittable = true;
     public ScratchTable child = null;
-    protected Color elemColor = new Color(1, 1, 1, 1);
+    public Color elemColor = new Color(1, 1, 1, 1);
 
     {
         touchable = Touchable.enabled;

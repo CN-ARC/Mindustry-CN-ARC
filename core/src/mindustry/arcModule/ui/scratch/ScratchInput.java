@@ -7,11 +7,13 @@ import arc.scene.Element;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
+import arc.scene.ui.TextField;
 import arc.util.Align;
 import arc.util.Log;
 import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.blocks.FakeBlock;
 import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.elements.InputElement;
 
 public class ScratchInput {
     public static final float dragStartDistance = 20f, dragMinDistance = 3f;
@@ -26,7 +28,7 @@ public class ScratchInput {
 
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
-                if (cur != null) return false;
+                if (cur != null || Core.scene.getKeyboardFocus() instanceof TextField f && f.parent instanceof InputElement el &&  el.parent == e) return false;
                 dragged = false;
                 e.toFront();
                 e.selected = true;
@@ -60,10 +62,16 @@ public class ScratchInput {
                 e.selected = false;
                 ScratchController.ui.pane.setFlickScroll(true);
                 if (!dragged) {
-                    e.getValue(o -> {
-                        if (o == null) return;
-                        Log.info(o);
-                    });
+                    try {
+                        e.getValue(o -> {
+                            if (o == null) return;
+                            Log.info(o);
+                            ScratchController.ui.showResult((ScratchBlock) e, o.toString());
+                        });
+                    } catch (Exception ex) {
+                        Log.err(ex);
+                        ScratchController.ui.showResult((ScratchBlock) e, ex.getMessage());
+                    }
                 }
             }
 
@@ -93,7 +101,7 @@ public class ScratchInput {
                 e.touchable = Touchable.disabled;
                 lastX = v.x;
                 lastY = v.y;
-                Element selected = ScratchController.ui.group.hit(e.x + e.getHeight() / 2, e.y + e.getHeight() / 2, true);
+                Element selected = ScratchController.ui.group.hit(e.x + 10, e.y + e.getHeight() / 2, true);
                 e.touchable = Touchable.enabled;
                 if (e instanceof ScratchBlock block && block.type == ScratchType.block && selected instanceof ScratchTable t && t.acceptLink(block)) {
                     ScratchBlock b = (ScratchBlock) (selected instanceof ScratchBlock ? selected : selected.parent);

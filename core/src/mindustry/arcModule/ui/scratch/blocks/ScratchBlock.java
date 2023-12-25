@@ -44,7 +44,7 @@ public class ScratchBlock extends ScratchTable {
 
     public LabelElement label(String str) {
         LabelElement l = new LabelElement(str);
-        add(l);
+        l.cell(add(l));
         return l;
     }
 
@@ -73,12 +73,14 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public ScratchBlock copy() {
-        ScratchBlock sb = new ScratchBlock(name, type, elemColor, new BlockInfo());
-        children.each(e -> {
-            if (e instanceof ScratchElement se) {
-                se.cell(sb.add(se.copy()));
+        ScratchBlock sb = new ScratchBlock(name, type, elemColor, info);
+        for (int i = 0; i < children.size; i++) {
+            Element child = children.get(i);
+            Element target = sb.children.get(i);
+            if (child instanceof ScratchTable st1 && target instanceof ScratchTable st2) {
+                st2.setValue(st1.getValue());
             }
-        });
+        }
         return sb;
     }
 
