@@ -1,6 +1,5 @@
 package mindustry.arcModule.ui.scratch.elements;
 
-import arc.func.Cons;
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.Cell;
 import mindustry.arcModule.ui.scratch.ScratchTable;
@@ -24,12 +23,12 @@ public class LabelElement extends ScratchElement {
 
     @Override
     public Object getValue() {
-        return l.getText();
+        return l.getText().toString();
     }
 
     @Override
     public void setValue(Object value) {
-        l.setText((String) value);
+        l.setText(String.valueOf(value));
     }
 
     @Override

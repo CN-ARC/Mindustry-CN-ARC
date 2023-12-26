@@ -2,17 +2,18 @@ package mindustry.arcModule.ui.scratch;
 
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
+import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 
 public class ScratchController {
     public static ScratchUI ui;
     public static ScratchTable dragging, selected;
     protected static ObjectMap<String, Integer> map = new ObjectMap<>();
-    protected static Seq<ScratchTable> list = new Seq<>();
+    protected static Seq<ScratchBlock> list = new Seq<>();
     public static void init() {
         ui = new ScratchUI();
     }
 
-    public static void registerBlock(String name, ScratchTable e) {
+    public static void registerBlock(String name, ScratchBlock e) {
         map.put(name, list.add(e).size - 1);
     }
 

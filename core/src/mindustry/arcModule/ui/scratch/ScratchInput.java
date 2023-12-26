@@ -4,6 +4,7 @@ import arc.Core;
 import arc.input.KeyCode;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
+import arc.scene.event.HandCursorListener;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
@@ -21,7 +22,7 @@ public class ScratchInput {
     public static final Vec2 tmp2 = new Vec2();
     public static ScratchTable cur = null;
     public static FakeBlock fake = new FakeBlock();
-    public static boolean dragged = false;
+    public static boolean dragged = false, menu = false;
     public static void addDraggingInput(ScratchTable e) {
         e.addListener(new InputListener() {
             float lastX, lastY;
@@ -37,6 +38,7 @@ public class ScratchInput {
                 lastY = v.y;
                 ScratchController.ui.pane.setFlickScroll(false);
                 cur = e;
+                menu = button == KeyCode.mouseRight;
                 return true;
             }
 
@@ -61,14 +63,18 @@ public class ScratchInput {
                 }
                 e.selected = false;
                 ScratchController.ui.pane.setFlickScroll(true);
-                if (!dragged && e.getType() != ScratchType.block) {
-                    try {
-                        Object o = e.getValue();
-                        Log.info(o);
-                        ScratchController.ui.showResult((ScratchBlock) e, String.valueOf(o));
-                    } catch (Exception ex) {
-                        Log.err(ex);
-                        ScratchController.ui.showResult((ScratchBlock) e, ex.getMessage());
+                if (!dragged) {
+                    if (!menu && e.getType() != ScratchType.block) {
+                        try {
+                            Object o = e.getValue();
+                            Log.info(o);
+                            ScratchController.ui.showResult((ScratchBlock) e, String.valueOf(o));
+                        } catch (Exception ex) {
+                            Log.err(ex);
+                            ScratchController.ui.showResult((ScratchBlock) e, ex.getMessage());
+                        }
+                    } else if (menu) {
+                        ScratchController.ui.showMenu((ScratchBlock) e);
                     }
                 }
             }
@@ -127,5 +133,6 @@ public class ScratchInput {
                 }
             }
         });
+        e.addListener(new HandCursorListener());
     }
 }

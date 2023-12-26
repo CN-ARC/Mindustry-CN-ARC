@@ -1,6 +1,5 @@
 package mindustry.arcModule.ui.scratch.elements;
 
-import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.GlyphLayout;
@@ -8,7 +7,10 @@ import arc.scene.Element;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
-import mindustry.arcModule.ui.scratch.*;
+import mindustry.arcModule.ui.scratch.ScratchController;
+import mindustry.arcModule.ui.scratch.ScratchStyles;
+import mindustry.arcModule.ui.scratch.ScratchTable;
+import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
@@ -20,9 +22,7 @@ public class InputElement extends ScratchElement {
     public TextField field;
     private final boolean num;
     Cell<TextField> cell;
-    public InputElement() {
-        this(false, "");
-    }
+
     public InputElement(boolean num, String def) {
         super();
         field = new TextField(def, getStyle()) {
@@ -41,6 +41,7 @@ public class InputElement extends ScratchElement {
             cell.width(Math.max(minWidth, prefSizeLayout.width));
             invalidateHierarchy();
         });
+        field.setProgrammaticChangeEvents(true);
     }
 
     @Override
