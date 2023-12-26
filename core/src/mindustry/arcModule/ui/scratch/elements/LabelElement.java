@@ -22,16 +22,6 @@ public class LabelElement extends ScratchElement {
     }
 
     @Override
-    public Object getValue() {
-        return l.getText().toString();
-    }
-
-    @Override
-    public void setValue(Object value) {
-        l.setText(String.valueOf(value));
-    }
-
-    @Override
     public ScratchType getType() {
         return ScratchType.none;
     }

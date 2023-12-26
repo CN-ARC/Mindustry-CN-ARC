@@ -1,25 +1,25 @@
 package mindustry.arcModule.ui.scratch.blocks;
 
-import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
+import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Nullable;
 import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.elements.CondElement;
 import mindustry.arcModule.ui.scratch.elements.InputElement;
 import mindustry.arcModule.ui.scratch.elements.LabelElement;
-import mindustry.arcModule.ui.scratch.elements.ScratchElement;
 
 public class ScratchBlock extends ScratchTable {
     public ScratchType type;
     private final BlockInfo info;
     public ScratchBlock linkTo, linkFrom;
     public byte dir = 0;
+    public Seq<Element> elements = new Seq<>();
 
     public ScratchBlock(String name, ScratchType type, Color color, BlockInfo info) {
         this(name, type, color, info, true);
@@ -42,43 +42,41 @@ public class ScratchBlock extends ScratchTable {
         if (draggingEnabled) ScratchInput.addDraggingInput(this);
     }
 
-    public LabelElement label(String str) {
+    public void label(String str) {
         LabelElement l = new LabelElement(str);
         l.cell(add(l));
-        return l;
     }
 
-    public CondElement cond() {
+    public void cond() {
         CondElement e = new CondElement();
         e.cell(add(e));
-        return e;
     }
 
-    public InputElement input() {
-        return input(false);
+    public void input() {
+        input(false);
     }
 
-    public InputElement input(boolean num) {
-        return input(num, "");
+    public void input(boolean num) {
+        input(num, "");
     }
 
-    public InputElement input(boolean num, String def) {
+    public void input(boolean num, String def) {
         InputElement e = new InputElement(num, def);
         Cell<ScratchTable> c;
         e.cell(c = add(e));
         if (children.size == 1) {
             c.padLeft(addPadding + 10);
         }
-        return e;
     }
 
     public ScratchBlock copy() {
         ScratchBlock sb = new ScratchBlock(name, type, elemColor, info);
-        for (int i = 0; i < children.size; i++) {
-            Element child = children.get(i);
-            Element target = sb.children.get(i);
+        for (int i = 0; i < elements.size; i++) {
+            Element child = elements.get(i);
+            Element target = sb.elements.get(i);
             if (child instanceof ScratchTable st1 && target instanceof ScratchTable st2) {
-                st2.setValue(st1.getValue());
+                st2.setValue(st1.getElementValue());
+                if (st1.child instanceof ScratchBlock sb2) st2.setChild(sb2.copy());
             }
         }
         return sb;
@@ -131,18 +129,15 @@ public class ScratchBlock extends ScratchTable {
         remove();
     }
 
-    public ScratchBlock unlink() {
-        if (linkTo == null) return null;
+    public void unlink() {
+        if (linkTo == null) return;
         if (linkTo.linkFrom == this) linkTo.linkFrom(null);
-        ScratchBlock s = linkTo;
         linkTo = null;
-        return s;
     }
 
-    public ScratchBlock unlinkFrom() {
-        if (linkFrom == null) return null;
+    public void unlinkFrom() {
+        if (linkFrom == null) return;
         if (linkFrom.linkTo == this) linkFrom.unlink();
-        return linkFrom;
     }
 
     public void unlinkAll() {
@@ -158,7 +153,7 @@ public class ScratchBlock extends ScratchTable {
     @Override
     public Object getValue() {
         if (type == ScratchType.block) return null;
-        return info.getValue(children);
+        return info.getValue(elements);
     }
 
     @Override
@@ -224,5 +219,11 @@ public class ScratchBlock extends ScratchTable {
         unlinkAll();
         if (parent != null) return parent.removeChild(this);
         return false;
+    }
+
+    @Override
+    public void addChild(Element actor) {
+        super.addChild(actor);
+        elements.add(actor);
     }
 }

@@ -2,7 +2,7 @@ package mindustry.arcModule.ui.scratch;
 
 import arc.graphics.Color;
 import arc.scene.Element;
-import arc.struct.SnapshotSeq;
+import arc.struct.Seq;
 import arc.util.Structs;
 import mindustry.arcModule.ui.scratch.blocks.ForkBlock;
 import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
@@ -90,19 +90,19 @@ public class Test {
                 }
 
                 @Override
-                public Object getValue(SnapshotSeq<Element> elements) {
+                public Object getValue(Seq<Element> elements) {
                     if (op == LogicOp.strictEqual) {
                         ScratchController.DoubleResult s = ScratchController.checkDouble(((InputElement) elements.get(0)).getValue(), ((InputElement) elements.get(2)).getValue());
-                        return s.success && s.d1 == s.d2 || !s.success && Structs.eq(s.o1, s.o2) ? 1 : 0;
+                        return s.success && s.doubles[0] == s.doubles[1] || !s.success && Structs.eq(s.objects[0], s.objects[1]) ? 1 : 0;
                     }
                     if (op.function2 == null) {
-                        return Objects.requireNonNull(op.function1).get(ScratchController.checkDouble(((InputElement) elements.get(1)).getValue(), null).d1);
+                        return Objects.requireNonNull(op.function1).get(ScratchController.checkDouble(((InputElement) elements.get(1)).getValue(), null).doubles[0]);
                     } else {
                         ScratchController.DoubleResult s = ScratchController.checkDouble(((InputElement) elements.get(op.func ? 1 : 0)).getValue(), ((InputElement) elements.get(2)).getValue());
                         if (s.success || op.objFunction2 == null) {
-                            return Objects.requireNonNull(op.function2).get(s.d1, s.d2);
+                            return Objects.requireNonNull(op.function2).get(s.doubles[0], s.doubles[1]);
                         } else {
-                            return Objects.requireNonNull(op.objFunction2).get(s.o1, s.o2);
+                            return Objects.requireNonNull(op.objFunction2).get(s.objects[0], s.objects[1]);
                         }
                     }
                 }

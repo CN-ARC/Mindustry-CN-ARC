@@ -19,7 +19,6 @@ import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.util.Tmp;
-import mindustry.arcModule.ui.RStyles;
 import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 import mindustry.gen.Tex;
 import mindustry.ui.Fonts;
@@ -34,7 +33,7 @@ public class ScratchUI extends Table {
     public Stack stack = new Stack();
     private static final TiledDrawable bg;
     private static final TextureRegionDrawable bg2;
-    private static final Vec2 vec = new Vec2();
+    private static final Vec2 v1 = new Vec2();
     private static Label.LabelStyle ls;
 
     static {
@@ -80,8 +79,8 @@ public class ScratchUI extends Table {
         overlay.addChild(t = new Table(bg2));
         t.add(new Label(str, ls));
         t.touchable = Touchable.disabled;
-        stack.localToDescendantCoordinates(overlay, table.localToAscendantCoordinates(stack, vec.set(e.x + e.getWidth() / 2 - t.getPrefWidth() / 2, e.y)));
-        t.setPosition(vec.x, vec.y);
+        stack.localToDescendantCoordinates(overlay, table.localToAscendantCoordinates(stack, v1.set(e.x + e.getWidth() / 2 - t.getPrefWidth() / 2, e.y)));
+        t.setPosition(v1.x, v1.y);
         t.addAction(Actions.moveBy(0, -15, 0.2f));
         t.update(() -> {
             if (Core.input.keyTap(KeyCode.mouseLeft) || Core.input.keyTap(KeyCode.mouseRight)) t.remove();
@@ -90,7 +89,7 @@ public class ScratchUI extends Table {
 
     public void showMenu(ScratchBlock e) {
         overlay.addChild(new Table(t -> {
-            t.setBackground(RStyles.black1);
+            t.setBackground(Styles.black3);
             t.defaults().size(100, 30);
             t.button("copy", Styles.nonet, () -> {
                 ScratchBlock b = e.copy();
@@ -99,8 +98,8 @@ public class ScratchUI extends Table {
             });
             t.row();
             t.button("delete", Styles.nonet, e::remove);
-            stack.localToDescendantCoordinates(overlay, table.localToAscendantCoordinates(stack, vec.set(e.x + e.getWidth() / 2 - t.getPrefWidth() / 2, e.y)));
-            t.setPosition(vec.x, vec.y);
+            overlay.stageToLocalCoordinates(v1.set(input.mouseX(), input.mouseY()));
+            t.setPosition(v1.x + t.getPrefWidth() / 2, v1.y - t.getPrefHeight() / 2);
             t.getChildren().forEach(c -> c.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
@@ -110,8 +109,8 @@ public class ScratchUI extends Table {
             t.update(() -> {
                 boolean[] b = {true};
                 t.getChildren().forEach(element -> {
-                    element.stageToLocalCoordinates(vec.set(input.mouseX(), input.mouseY()));
-                    if (((ClickListener) element.getListeners().find(ee -> ee instanceof ClickListener)).isOver(element, vec.x, vec.y)) {
+                    element.stageToLocalCoordinates(v1.set(input.mouseX(), input.mouseY()));
+                    if (((ClickListener) element.getListeners().find(ee -> ee instanceof ClickListener)).isOver(element, v1.x, v1.y)) {
                         b[0] = false;
                     }
                 });

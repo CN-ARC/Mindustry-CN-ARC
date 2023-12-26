@@ -1,8 +1,7 @@
 package mindustry.arcModule.ui.scratch;
 
-import arc.func.Cons;
 import arc.scene.Element;
-import arc.struct.SnapshotSeq;
+import arc.struct.Seq;
 import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 
 public class BlockInfo {
@@ -10,7 +9,7 @@ public class BlockInfo {
 
     }
 
-    public Object getValue(SnapshotSeq<Element> elements) {
+    public Object getValue(Seq<Element> elements) {
         return null;
     }
 }

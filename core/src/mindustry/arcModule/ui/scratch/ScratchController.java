@@ -25,32 +25,25 @@ public class ScratchController {
         return list.get(i);
     }
 
-    public static DoubleResult checkDouble(Object o1, Object o2) {
-        if (o2 == null) {
-            if (isNumber(o1)) return new DoubleResult((double) o1, Double.NaN);
-            if (o1 instanceof String s) {
+    public static DoubleResult checkDouble(Object ...objects) {
+        double[] doubles = new double[objects.length];
+        boolean success = true;
+        for (int i = 0; i < objects.length; i++) {
+            Object obj = objects[i];
+            if (isNumber(obj)) {
+                doubles[i] = (double) obj;
+                continue;
+            }
+            if (obj instanceof String s) {
                 try {
-                    return new DoubleResult(Double.parseDouble(s), Double.NaN);
+                    doubles[i] = Double.parseDouble(s);
+                    continue;
                 } catch (Exception ignored) {
                 }
             }
-            return new DoubleResult(o1, null);
+            success = false;
         }
-        if (isNumber(o1) && isNumber(o2)) {
-            return new DoubleResult((double) o1, (double) o2);
-        }
-        double tmp1, tmp2;
-        try {
-            if (o1 instanceof String s1 && o2 instanceof String s2) {
-                tmp1 = Double.parseDouble(s1);
-                tmp2 = Double.parseDouble(s2);
-            } else {
-                return new DoubleResult(o1, o2);
-            }
-        } catch (Exception e) {
-            return new DoubleResult(o1, o2);
-        }
-        return new DoubleResult(tmp1, tmp2);
+        return success ? new DoubleResult(doubles) : new DoubleResult(objects);
     }
 
     public static boolean isNumber(Object o) {
@@ -59,18 +52,14 @@ public class ScratchController {
 
     public static class DoubleResult {
         boolean success;
-        double d1 = Double.NaN;
-        Object o1;
-        double d2 = Double.NaN;
-        Object o2;
-        DoubleResult(double d1, double d2) {
-            this.d1 = d1;
-            this.d2 = d2;
+        double[] doubles;
+        Object[] objects;
+        DoubleResult(double[] doubles) {
+            this.doubles = doubles;
             this.success = true;
         }
-        DoubleResult(Object o1, Object o2) {
-            this.o1 = o1;
-            this.o2 = o2;
+        DoubleResult(Object[] objects) {
+            this.objects = objects;
             this.success = false;
         }
     }

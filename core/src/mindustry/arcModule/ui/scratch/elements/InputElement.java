@@ -86,6 +86,11 @@ public class InputElement extends ScratchElement {
     }
 
     @Override
+    public Object getElementValue() {
+        return field.getText();
+    }
+
+    @Override
     public void setValue(Object value) {
         field.setText((String) value);
     }

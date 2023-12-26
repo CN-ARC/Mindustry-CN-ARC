@@ -70,6 +70,10 @@ public abstract class ScratchTable extends Table {
         return null;
     }
 
+    public Object getElementValue() {
+        return null;
+    }
+
     public void setValue(Object value) {
     }
 
