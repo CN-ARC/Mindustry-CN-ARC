@@ -1,11 +1,10 @@
 package mindustry.arcModule.ui.scratch;
 
-import arc.func.Cons;
 import arc.graphics.Color;
 import arc.scene.Element;
 import arc.struct.SnapshotSeq;
+import arc.util.Structs;
 import mindustry.arcModule.ui.scratch.blocks.ForkBlock;
-import mindustry.arcModule.ui.scratch.blocks.ScratchAsync;
 import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 import mindustry.arcModule.ui.scratch.elements.InputElement;
 import mindustry.logic.LogicOp;
@@ -64,7 +63,14 @@ public class Test {
         }));
         for (LogicOp logicOp : LogicOp.all) {
             final LogicOp op = logicOp;
-            ScratchController.ui.addElement(new ScratchBlock(logicOp.name(), ScratchType.input, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
+            ScratchController.ui.addElement(new ScratchBlock(logicOp.name(), op == LogicOp.equal ||
+                            op == LogicOp.notEqual ||
+                            op == LogicOp.land ||
+                            op == LogicOp.lessThan ||
+                            op == LogicOp.lessThanEq ||
+                            op == LogicOp.greaterThan ||
+                            op == LogicOp.greaterThanEq ||
+                            op == LogicOp.strictEqual ? ScratchType.condition : ScratchType.input, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
                 @Override
                 public void build(ScratchBlock block) {
                     if (op.function2 == null) {
@@ -84,17 +90,20 @@ public class Test {
                 }
 
                 @Override
-                public void getValue(SnapshotSeq<Element> elements, Cons<Object> callback) {
+                public Object getValue(SnapshotSeq<Element> elements) {
+                    if (op == LogicOp.strictEqual) {
+                        ScratchController.DoubleResult s = ScratchController.checkDouble(((InputElement) elements.get(0)).getValue(), ((InputElement) elements.get(2)).getValue());
+                        return s.success && s.d1 == s.d2 || !s.success && Structs.eq(s.o1, s.o2) ? 1 : 0;
+                    }
                     if (op.function2 == null) {
-                        ScratchAsync.asyncGet((InputElement) elements.get(1), s -> callback.get(Objects.requireNonNull(op.function1).get(s.d1)));
+                        return Objects.requireNonNull(op.function1).get(ScratchController.checkDouble(((InputElement) elements.get(1)).getValue(), null).d1);
                     } else {
-                        ScratchAsync.asyncGet((InputElement) elements.get(op.func ? 1 : 0), (InputElement) elements.get(2), s -> {
-                            if (s.success) {
-                                callback.get(Objects.requireNonNull(op.function2).get(s.d1, s.d2));
-                            } else if (op.objFunction2 != null) {
-                                callback.get(Objects.requireNonNull(op.objFunction2).get(s.o1, s.o2));
-                            }
-                        });
+                        ScratchController.DoubleResult s = ScratchController.checkDouble(((InputElement) elements.get(op.func ? 1 : 0)).getValue(), ((InputElement) elements.get(2)).getValue());
+                        if (s.success || op.objFunction2 == null) {
+                            return Objects.requireNonNull(op.function2).get(s.d1, s.d2);
+                        } else {
+                            return Objects.requireNonNull(op.objFunction2).get(s.o1, s.o2);
+                        }
                     }
                 }
             }));

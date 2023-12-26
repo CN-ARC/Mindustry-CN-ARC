@@ -157,15 +157,8 @@ public class ScratchBlock extends ScratchTable {
 
     @Override
     public Object getValue() {
-        Object[] obj = new Object[]{null};
-        info.getValue(children, s -> obj[0] = s);
-        return obj;
-    }
-
-    @Override
-    public void getValue(Cons<Object> callback) {
-        if (type == ScratchType.block) callback.get(null);
-        info.getValue(children, callback);
+        if (type == ScratchType.block) return null;
+        return info.getValue(children);
     }
 
     @Override

@@ -26,7 +26,7 @@ public class ScratchController {
 
     public static DoubleResult checkDouble(Object o1, Object o2) {
         if (o2 == null) {
-            if (o1 instanceof Double) return new DoubleResult((double) o1, Double.NaN);
+            if (isNumber(o1)) return new DoubleResult((double) o1, Double.NaN);
             if (o1 instanceof String s) {
                 try {
                     return new DoubleResult(Double.parseDouble(s), Double.NaN);
@@ -35,7 +35,7 @@ public class ScratchController {
             }
             return new DoubleResult(o1, null);
         }
-        if (o1 instanceof Double && o2 instanceof Double) {
+        if (isNumber(o1) && isNumber(o2)) {
             return new DoubleResult((double) o1, (double) o2);
         }
         double tmp1, tmp2;
@@ -50,6 +50,10 @@ public class ScratchController {
             return new DoubleResult(o1, o2);
         }
         return new DoubleResult(tmp1, tmp2);
+    }
+
+    public static boolean isNumber(Object o) {
+        return o instanceof Double || o instanceof Integer || o instanceof Boolean || o instanceof Float || o instanceof Long || o instanceof Short;
     }
 
     public static class DoubleResult {

@@ -61,13 +61,11 @@ public class ScratchInput {
                 }
                 e.selected = false;
                 ScratchController.ui.pane.setFlickScroll(true);
-                if (!dragged) {
+                if (!dragged && e.getType() != ScratchType.block) {
                     try {
-                        e.getValue(o -> {
-                            if (o == null) return;
-                            Log.info(o);
-                            ScratchController.ui.showResult((ScratchBlock) e, o.toString());
-                        });
+                        Object o = e.getValue();
+                        Log.info(o);
+                        ScratchController.ui.showResult((ScratchBlock) e, String.valueOf(o));
                     } catch (Exception ex) {
                         Log.err(ex);
                         ScratchController.ui.showResult((ScratchBlock) e, ex.getMessage());

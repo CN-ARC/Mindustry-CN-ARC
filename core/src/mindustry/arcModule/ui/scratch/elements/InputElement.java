@@ -85,23 +85,6 @@ public class InputElement extends ScratchElement {
     }
 
     @Override
-    public void getValue(Cons<Object> callback) {
-        if (child != null) {
-            child.getValue(callback);
-            return;
-        }
-        if (!num) {
-            callback.get(field.getText());
-            return;
-        }
-        try {
-            callback.get(Double.parseDouble(field.getText()));
-        } catch (Exception e) {
-            callback.get(Double.NaN);
-        }
-    }
-
-    @Override
     public void setValue(Object value) {
         field.setText((String) value);
     }

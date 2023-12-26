@@ -10,7 +10,7 @@ public class BlockInfo {
 
     }
 
-    public void getValue(SnapshotSeq<Element> elements, Cons<Object> callback) {
-
+    public Object getValue(SnapshotSeq<Element> elements) {
+        return null;
     }
 }

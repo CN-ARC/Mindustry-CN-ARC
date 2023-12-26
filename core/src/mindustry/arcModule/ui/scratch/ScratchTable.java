@@ -70,10 +70,6 @@ public abstract class ScratchTable extends Table {
         return null;
     }
 
-    public void getValue(Cons<Object> callback) {
-        callback.get(null);
-    }
-
     public void setValue(Object value) {
     }
 

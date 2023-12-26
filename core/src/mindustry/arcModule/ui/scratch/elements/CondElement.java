@@ -29,11 +29,6 @@ public class CondElement extends ScratchElement {
     }
 
     @Override
-    public void getValue(Cons<Object> callback) {
-        callback.get(child != null ? child.getValue() : null);
-    }
-
-    @Override
     public void draw() {
         if (child == null) ScratchStyles.drawCond(x, y, width, height, elemColor);
         super.draw();

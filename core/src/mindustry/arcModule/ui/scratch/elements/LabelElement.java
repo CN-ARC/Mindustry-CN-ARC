@@ -28,11 +28,6 @@ public class LabelElement extends ScratchElement {
     }
 
     @Override
-    public void getValue(Cons<Object> callback) {
-        callback.get(l.getText());
-    }
-
-    @Override
     public void setValue(Object value) {
         l.setText((String) value);
     }
