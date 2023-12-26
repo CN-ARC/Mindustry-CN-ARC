@@ -9,7 +9,7 @@ import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 public class ForkInner extends ForkComponent {
 
     public ForkInner(String name, ScratchType type, Color color, BlockInfo info) {
-        super(name, type, color, info);
+        super(type, color, info);
     }
 
     @Override

@@ -12,7 +12,7 @@ import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 
 public class ForkHeader extends ForkComponent {
     public ForkHeader(ForkBlock.ForkInfo info, Color c) {
-        super(null, ScratchType.none, c, info);
+        super(ScratchType.none, c, info);
     }
 
     @Override

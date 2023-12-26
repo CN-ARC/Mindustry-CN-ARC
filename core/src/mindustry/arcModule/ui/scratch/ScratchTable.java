@@ -74,7 +74,7 @@ public abstract class ScratchTable extends Table {
         return null;
     }
 
-    public void setValue(Object value) {
+    public void setElementValue(Object value) {
     }
 
     @Override

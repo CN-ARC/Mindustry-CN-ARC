@@ -9,7 +9,7 @@ import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 
 public class ForkMiddle extends ForkComponent {
     public ForkMiddle(ForkBlock.ForkInfo info, Color c) {
-        super(null, ScratchType.none, c, info);
+        super(ScratchType.none, c, info);
     }
 
     @Override

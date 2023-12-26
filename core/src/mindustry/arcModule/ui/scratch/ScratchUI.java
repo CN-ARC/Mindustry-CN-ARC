@@ -18,8 +18,10 @@ import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
 import arc.scene.ui.layout.WidgetGroup;
+import arc.util.Align;
 import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.window.Window;
 import mindustry.gen.Tex;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
@@ -27,9 +29,9 @@ import mindustry.ui.Styles;
 import static arc.Core.input;
 
 public class ScratchUI extends Table {
-    public Table table = new Table();
+    public Table table = new Table(), blocks = new Table();
     public WidgetGroup group = new ScratchGroup(), overlay = new WidgetGroup();
-    public ScrollPane pane = new ScrollPane(table, Styles.horizontalPane);
+    public ScrollPane pane = new ScrollPane(table, Styles.horizontalPane), blocksPane = new ScrollPane(blocks);
     public Stack stack = new Stack();
     private static final TiledDrawable bg;
     private static final TextureRegionDrawable bg2;
@@ -59,7 +61,9 @@ public class ScratchUI extends Table {
         stack.add(new Table(t -> {
             t.setFillParent(true);
             t.table().growY().width(64f).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.red));
-            t.table().growY().width(128f).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.green));
+            t.add(blocksPane).growY().width(256f);
+            blocks.setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Tmp.c1.set(Color.white).mulA(0.3f)));
+            blocks.align(Align.left);
             t.add(pane);
             t.table().growY().width(128f).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.sky));
         }));
@@ -72,6 +76,7 @@ public class ScratchUI extends Table {
             font = Fonts.outline;
             fontColor = Color.gray;
         }};
+        blocks.defaults().pad(10);
     }
 
     public void showResult(ScratchBlock e, String str) {
@@ -119,12 +124,14 @@ public class ScratchUI extends Table {
         }));
     }
 
-    public void show() {
-        Core.scene.add(this);
+    public void createWindow() {
+        Window w = new Window();
+        w.setBody(this);
+        w.add();
     }
 
-    public void hide() {
-        parent.removeChild(this);
+    public void addBlocks(ScratchBlock b) {
+        blocks.add(b).row();
     }
 
     public void addElement(ScratchTable e) {

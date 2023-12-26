@@ -9,8 +9,8 @@ import mindustry.arcModule.ui.scratch.blocks.fork.*;
 
 public class ForkBlock extends ScratchBlock {
 
-    public ForkBlock(String name, ScratchType type, Color color, ForkInfo info) {
-        super(name, type, color, new BlockInfo() {
+    public ForkBlock(ScratchType type, Color color, ForkInfo info) {
+        super(type, color, new BlockInfo() {
             @Override
             public void build(ScratchBlock block) {
                 info.build((ForkBlock) block);

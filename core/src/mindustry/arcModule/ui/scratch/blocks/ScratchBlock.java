@@ -21,12 +21,11 @@ public class ScratchBlock extends ScratchTable {
     public byte dir = 0;
     public Seq<Element> elements = new Seq<>();
 
-    public ScratchBlock(String name, ScratchType type, Color color, BlockInfo info) {
-        this(name, type, color, info, true);
+    public ScratchBlock(ScratchType type, Color color, BlockInfo info) {
+        this(type, color, info, true);
     }
 
-    public ScratchBlock(String name, ScratchType type, Color color, BlockInfo info, boolean draggingEnabled) {
-        if (name != null) ScratchController.registerBlock(name, this);
+    public ScratchBlock(ScratchType type, Color color, BlockInfo info, boolean draggingEnabled) {
         this.type = type;
         elemColor = color;
         this.info = info;
@@ -70,12 +69,12 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public ScratchBlock copy() {
-        ScratchBlock sb = new ScratchBlock(name, type, elemColor, info);
+        ScratchBlock sb = new ScratchBlock(type, elemColor, info);
         for (int i = 0; i < elements.size; i++) {
             Element child = elements.get(i);
             Element target = sb.elements.get(i);
             if (child instanceof ScratchTable st1 && target instanceof ScratchTable st2) {
-                st2.setValue(st1.getElementValue());
+                st2.setElementValue(st1.getElementValue());
                 if (st1.child instanceof ScratchBlock sb2) st2.setChild(sb2.copy());
             }
         }

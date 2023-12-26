@@ -9,7 +9,7 @@ import mindustry.arcModule.ui.scratch.ScratchType;
 public class FakeBlock extends ScratchBlock {
     private ScratchBlock real;
     public FakeBlock() {
-        super("", ScratchType.fake, Color.black.cpy().mulA(0.3f), new BlockInfo());
+        super(ScratchType.fake, Color.black.cpy().mulA(0.3f), new BlockInfo());
     }
 
     public void setReal(ScratchBlock real) {

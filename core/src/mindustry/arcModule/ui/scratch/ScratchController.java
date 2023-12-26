@@ -14,7 +14,10 @@ public class ScratchController {
     }
 
     public static void registerBlock(String name, ScratchBlock e) {
-        map.put(name, list.add(e).size - 1);
+        if (!list.contains(e)) {
+            map.put(name, list.add(e).size - 1);
+            ui.addBlocks(e);
+        }
     }
 
     public static ScratchTable get(String name) {
@@ -42,8 +45,9 @@ public class ScratchController {
                 }
             }
             success = false;
+            doubles[i] = Double.NaN;
         }
-        return success ? new DoubleResult(doubles) : new DoubleResult(objects);
+        return new DoubleResult(objects, doubles, success);
     }
 
     public static boolean isNumber(Object o) {
@@ -54,13 +58,11 @@ public class ScratchController {
         boolean success;
         double[] doubles;
         Object[] objects;
-        DoubleResult(double[] doubles) {
-            this.doubles = doubles;
-            this.success = true;
-        }
-        DoubleResult(Object[] objects) {
+
+        DoubleResult(Object[] objects, double[] doubles, boolean success) {
             this.objects = objects;
-            this.success = false;
+            this.doubles = doubles;
+            this.success = success;
         }
     }
 }

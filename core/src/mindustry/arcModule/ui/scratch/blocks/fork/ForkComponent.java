@@ -15,8 +15,8 @@ public abstract class ForkComponent extends ScratchBlock {
         hittable = false;
     }
 
-    public ForkComponent(String name, ScratchType type, Color color, BlockInfo info) {
-        super(name, type, color, info, false);
+    public ForkComponent(ScratchType type, Color color, BlockInfo info) {
+        super(type, color, info, false);
         this.info = (ForkBlock.ForkInfo) info;
         margin(10);
     }

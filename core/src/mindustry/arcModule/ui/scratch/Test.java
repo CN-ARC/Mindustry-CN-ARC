@@ -19,7 +19,7 @@ public class Test {
     }
 
     public static void testBlocks() {
-        ScratchController.ui.addElement(new ScratchBlock("test", ScratchType.condition, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
+        ScratchController.ui.addElement(new ScratchBlock(ScratchType.condition, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
             @Override
             public void build(ScratchBlock block) {
                 block.input();
@@ -28,7 +28,7 @@ public class Test {
                 block.input();
             }
         }));
-        ScratchController.ui.addElement(new ScratchBlock("test", ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
+        ScratchController.ui.addElement(new ScratchBlock(ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
             @Override
             public void build(ScratchBlock block) {
                 block.input();
@@ -36,7 +36,7 @@ public class Test {
                 block.input();
             }
         }));
-        ScratchController.ui.addElement(new ScratchBlock("test", ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
+        ScratchController.ui.addElement(new ScratchBlock(ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
             @Override
             public void build(ScratchBlock block) {
                 block.input();
@@ -44,7 +44,7 @@ public class Test {
                 block.input();
             }
         }));
-        ScratchController.ui.addElement(new ScratchBlock("test", ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
+        ScratchController.ui.addElement(new ScratchBlock(ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
             @Override
             public void build(ScratchBlock block) {
                 block.input();
@@ -52,7 +52,7 @@ public class Test {
                 block.input();
             }
         }));
-        ScratchController.ui.addElement(new ScratchBlock("test", ScratchType.input, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
+        ScratchController.ui.addElement(new ScratchBlock(ScratchType.input, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
             @Override
             public void build(ScratchBlock block) {
                 block.input();
@@ -63,7 +63,7 @@ public class Test {
         }));
         for (LogicOp logicOp : LogicOp.all) {
             final LogicOp op = logicOp;
-            ScratchController.ui.addElement(new ScratchBlock(logicOp.name(), op == LogicOp.equal ||
+            ScratchController.registerBlock("op" + op.name(), new ScratchBlock(op == LogicOp.equal ||
                             op == LogicOp.notEqual ||
                             op == LogicOp.land ||
                             op == LogicOp.lessThan ||
@@ -96,7 +96,7 @@ public class Test {
                         return s.success && s.doubles[0] == s.doubles[1] || !s.success && Structs.eq(s.objects[0], s.objects[1]) ? 1 : 0;
                     }
                     if (op.function2 == null) {
-                        return Objects.requireNonNull(op.function1).get(ScratchController.checkDouble(((InputElement) elements.get(1)).getValue(), null).doubles[0]);
+                        return Objects.requireNonNull(op.function1).get(ScratchController.checkDouble(((InputElement) elements.get(1)).getValue()).doubles[0]);
                     } else {
                         ScratchController.DoubleResult s = ScratchController.checkDouble(((InputElement) elements.get(op.func ? 1 : 0)).getValue(), ((InputElement) elements.get(2)).getValue());
                         if (s.success || op.objFunction2 == null) {
@@ -108,7 +108,7 @@ public class Test {
                 }
             }));
         }
-        ScratchController.ui.addElement(new ForkBlock("test", ScratchType.block, new Color(Color.packRgba(89, 192, 89, 255)), new ForkBlock.ForkInfo() {
+        ScratchController.ui.addElement(new ForkBlock(ScratchType.block, new Color(Color.packRgba(89, 192, 89, 255)), new ForkBlock.ForkInfo() {
             @Override
             public void build(ForkBlock block) {
                 block.header(new ForkBlock.ForkInfo() {
@@ -122,6 +122,6 @@ public class Test {
     }
 
     public static void testUI() {
-        ScratchController.ui.show();
+        ScratchController.ui.createWindow();
     }
 }
