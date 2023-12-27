@@ -30,7 +30,12 @@ import static arc.Core.input;
 
 public class ScratchUI extends Table {
     public Table table = new Table(), blocks = new Table();
-    public WidgetGroup group = new ScratchGroup(), overlay = new WidgetGroup();
+    public WidgetGroup group = new ScratchGroup(), overlay = new WidgetGroup() {
+        @Override
+        public void layout() {
+            children.each(e -> e.setBounds(e.x, e.y, e.getPrefWidth(), e.getPrefHeight()));
+        }
+    };
     public ScrollPane pane = new ScrollPane(table, Styles.horizontalPane), blocksPane = new ScrollPane(blocks);
     public Stack stack = new Stack();
     private static final TiledDrawable bg;
@@ -62,8 +67,8 @@ public class ScratchUI extends Table {
             t.setFillParent(true);
             t.table().growY().width(64f).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.red));
             t.add(blocksPane).growY().width(256f);
+            blocksPane.addListener(new ClickListener());
             blocks.setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Tmp.c1.set(Color.white).mulA(0.3f)));
-            blocks.align(Align.left);
             t.add(pane);
             t.table().growY().width(128f).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.sky));
         }));
@@ -84,7 +89,7 @@ public class ScratchUI extends Table {
         overlay.addChild(t = new Table(bg2));
         t.add(new Label(str, ls));
         t.touchable = Touchable.disabled;
-        stack.localToDescendantCoordinates(overlay, table.localToAscendantCoordinates(stack, v1.set(e.x + e.getWidth() / 2 - t.getPrefWidth() / 2, e.y)));
+        stack.localToDescendantCoordinates(overlay, table.localToAscendantCoordinates(stack, v1.set(e.x + e.getWidth() / 2 - t.getPrefWidth() / 2, e.y - e.getHeight())));
         t.setPosition(v1.x, v1.y);
         t.addAction(Actions.moveBy(0, -15, 0.2f));
         t.update(() -> {
@@ -92,34 +97,31 @@ public class ScratchUI extends Table {
         });
     }
 
-    public void showMenu(ScratchBlock e) {
+    public void showMenu(Object e, boolean inStage) {
         overlay.addChild(new Table(t -> {
             t.setBackground(Styles.black3);
             t.defaults().size(100, 30);
-            t.button("copy", Styles.nonet, () -> {
-                ScratchBlock b = e.copy();
-                group.addChild(b);
-                b.setPosition(e.x + 15, e.y - 15);
-            });
-            t.row();
-            t.button("delete", Styles.nonet, e::remove);
+            if (e instanceof ScratchBlock sb && inStage) {
+                t.button("copy", Styles.nonet, () -> {
+                    ScratchBlock b = sb.copy();
+                    group.addChild(b);
+                    b.setPosition(sb.x + 15, sb.y - 15);
+                });
+                t.row();
+                t.button("delete", Styles.nonet, sb::remove);
+                t.setPosition(0, -sb.getHeight());
+            }
             overlay.stageToLocalCoordinates(v1.set(input.mouseX(), input.mouseY()));
-            t.setPosition(v1.x + t.getPrefWidth() / 2, v1.y - t.getPrefHeight() / 2);
+            t.setPosition(v1.x, t.y + v1.y);
             t.getChildren().forEach(c -> c.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     t.remove();
                 }
             }));
+            t.addListener(new ClickListener());
             t.update(() -> {
-                boolean[] b = {true};
-                t.getChildren().forEach(element -> {
-                    element.stageToLocalCoordinates(v1.set(input.mouseX(), input.mouseY()));
-                    if (((ClickListener) element.getListeners().find(ee -> ee instanceof ClickListener)).isOver(element, v1.x, v1.y)) {
-                        b[0] = false;
-                    }
-                });
-                if ((Core.input.keyTap(KeyCode.mouseLeft) || Core.input.keyTap(KeyCode.mouseRight)) && b[0]) t.remove();
+                if (!((ClickListener) t.getListeners().find(ee -> ee instanceof ClickListener)).isOver()) if ((Core.input.keyTap(KeyCode.mouseLeft) || Core.input.keyTap(KeyCode.mouseRight))) t.remove();
             });
         }));
     }
@@ -127,11 +129,12 @@ public class ScratchUI extends Table {
     public void createWindow() {
         Window w = new Window();
         w.setBody(this);
+        w.maximize(true);
         w.add();
     }
 
     public void addBlocks(ScratchBlock b) {
-        blocks.add(b).row();
+        blocks.add(b).align(Align.left).row();
     }
 
     public void addElement(ScratchTable e) {

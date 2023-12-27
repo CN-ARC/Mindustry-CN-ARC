@@ -25,7 +25,7 @@ public class ScratchBlock extends ScratchTable {
         this(type, color, info, true);
     }
 
-    public ScratchBlock(ScratchType type, Color color, BlockInfo info, boolean draggingEnabled) {
+    public ScratchBlock(ScratchType type, Color color, BlockInfo info, boolean dragEnabled) {
         this.type = type;
         elemColor = color;
         this.info = info;
@@ -38,7 +38,7 @@ public class ScratchBlock extends ScratchTable {
                 getCell(e).padRight(addPadding + 10);
             }
         }
-        if (draggingEnabled) ScratchInput.addDraggingInput(this);
+        if (dragEnabled) ScratchInput.addDraggingInput(this);
     }
 
     public void label(String str) {

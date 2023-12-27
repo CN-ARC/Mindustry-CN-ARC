@@ -4,10 +4,7 @@ import arc.Core;
 import arc.input.KeyCode;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
-import arc.scene.event.HandCursorListener;
-import arc.scene.event.InputEvent;
-import arc.scene.event.InputListener;
-import arc.scene.event.Touchable;
+import arc.scene.event.*;
 import arc.scene.ui.TextField;
 import arc.util.Align;
 import arc.util.Log;
@@ -74,9 +71,10 @@ public class ScratchInput {
                             ScratchController.ui.showResult((ScratchBlock) e, ex.getMessage());
                         }
                     } else if (menu) {
-                        ScratchController.ui.showMenu((ScratchBlock) e);
+                        ScratchController.ui.showMenu(e, true);
                     }
                 }
+                if (((ClickListener) ScratchController.ui.blocksPane.getListeners().find(e -> e instanceof ClickListener)).isOver()) e.remove();
             }
 
             @Override
