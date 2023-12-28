@@ -3,6 +3,7 @@ package mindustry.arcModule.ui.scratch.blocks;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
+import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
@@ -13,6 +14,8 @@ import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.elements.CondElement;
 import mindustry.arcModule.ui.scratch.elements.InputElement;
 import mindustry.arcModule.ui.scratch.elements.LabelElement;
+
+import static mindustry.arcModule.ui.scratch.ScratchController.ui;
 
 public class ScratchBlock extends ScratchTable {
     public ScratchType type;
@@ -69,13 +72,17 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public ScratchBlock copy() {
-        ScratchBlock sb = new ScratchBlock(type, elemColor, info);
+        return copy(true);
+    }
+
+    public ScratchBlock copy(boolean drag) {
+        ScratchBlock sb = new ScratchBlock(type, elemColor, info, drag);
         for (int i = 0; i < elements.size; i++) {
             Element child = elements.get(i);
             Element target = sb.elements.get(i);
             if (child instanceof ScratchTable st1 && target instanceof ScratchTable st2) {
                 st2.setElementValue(st1.getElementValue());
-                if (st1.child instanceof ScratchBlock sb2) st2.setChild(sb2.copy());
+                if (st1.child instanceof ScratchBlock sb2) st2.setChild(sb2.copy(drag));
             }
         }
         return sb;
@@ -207,8 +214,14 @@ public class ScratchBlock extends ScratchTable {
             } while (b != null);
         }
         if (linkTo != null) {
-            x = linkTo.x;
-            y = linkTo.y - getHeight() + 7f;
+            if (linkTo.parent != parent) {
+                Vec2 tmp = ScratchUI.oldPosToNewPos(ui.stack, linkTo, ui.group);
+                x = tmp.x;
+                y = tmp.y - getHeight() + 7f;
+            } else {
+                x = linkTo.x;
+                y = linkTo.y - getHeight() + 7f;
+            }
         }
         super.act(delta);
     }

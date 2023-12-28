@@ -7,6 +7,8 @@ import arc.graphics.Texture;
 import arc.graphics.g2d.TextureRegion;
 import arc.input.KeyCode;
 import arc.math.geom.Vec2;
+import arc.scene.Element;
+import arc.scene.Group;
 import arc.scene.actions.Actions;
 import arc.scene.event.ClickListener;
 import arc.scene.event.InputEvent;
@@ -20,6 +22,7 @@ import arc.scene.ui.layout.Table;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.util.Align;
 import arc.util.Tmp;
+import mindustry.arcModule.ui.BoundedGroup;
 import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
 import mindustry.arcModule.ui.window.Window;
 import mindustry.gen.Tex;
@@ -30,17 +33,12 @@ import static arc.Core.input;
 
 public class ScratchUI extends Table {
     public Table table = new Table(), blocks = new Table();
-    public WidgetGroup group = new ScratchGroup(), overlay = new WidgetGroup() {
-        @Override
-        public void layout() {
-            children.each(e -> e.setBounds(e.x, e.y, e.getPrefWidth(), e.getPrefHeight()));
-        }
-    };
+    public WidgetGroup group = new ScratchGroup(), overlay = new BoundedGroup();
     public ScrollPane pane = new ScrollPane(table, Styles.horizontalPane), blocksPane = new ScrollPane(blocks);
     public Stack stack = new Stack();
     private static final TiledDrawable bg;
     private static final TextureRegionDrawable bg2;
-    private static final Vec2 v1 = new Vec2();
+    private static final Vec2 v1 = new Vec2(), v2 = new Vec2();
     private static Label.LabelStyle ls;
 
     static {
@@ -84,13 +82,19 @@ public class ScratchUI extends Table {
         blocks.defaults().pad(10);
     }
 
+    public static Vec2 oldPosToNewPos(Group top, Element e, Element target) {
+        top.localToDescendantCoordinates(target, e.parent.localToAscendantCoordinates(top, v2.set(e.x, e.y)));
+        return v2;
+    }
+
     public void showResult(ScratchBlock e, String str) {
         Table t;
         overlay.addChild(t = new Table(bg2));
         t.add(new Label(str, ls));
         t.touchable = Touchable.disabled;
-        stack.localToDescendantCoordinates(overlay, table.localToAscendantCoordinates(stack, v1.set(e.x + e.getWidth() / 2 - t.getPrefWidth() / 2, e.y - e.getHeight())));
-        t.setPosition(v1.x, v1.y);
+        e.setPosition(e.x + e.getWidth() / 2 - t.getPrefWidth() / 2, e.y - e.getHeight());
+        Vec2 v = oldPosToNewPos(stack, e, overlay);
+        t.setPosition(v.x, v.y);
         t.addAction(Actions.moveBy(0, -15, 0.2f));
         t.update(() -> {
             if (Core.input.keyTap(KeyCode.mouseLeft) || Core.input.keyTap(KeyCode.mouseRight)) t.remove();
@@ -109,10 +113,9 @@ public class ScratchUI extends Table {
                 });
                 t.row();
                 t.button("delete", Styles.nonet, sb::remove);
-                t.setPosition(0, -sb.getHeight());
             }
             overlay.stageToLocalCoordinates(v1.set(input.mouseX(), input.mouseY()));
-            t.setPosition(v1.x, t.y + v1.y);
+            t.setPosition(v1.x, v1.y - t.getPrefHeight());
             t.getChildren().forEach(c -> c.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
@@ -127,10 +130,11 @@ public class ScratchUI extends Table {
     }
 
     public void createWindow() {
-        Window w = new Window();
+        /*Window w = new Window();
         w.setBody(this);
         w.maximize(true);
-        w.add();
+        w.add();*/
+        Core.scene.add(this);
     }
 
     public void addBlocks(ScratchBlock b) {
@@ -141,7 +145,7 @@ public class ScratchUI extends Table {
         group.addChild(e);
     }
 
-    private static class ScratchGroup extends WidgetGroup {
+    private static class ScratchGroup extends BoundedGroup {
         @Override
         public float getPrefWidth() {
             return 10000;
@@ -150,11 +154,6 @@ public class ScratchUI extends Table {
         @Override
         public float getPrefHeight() {
             return 10000;
-        }
-
-        @Override
-        public void layout() {
-            children.each(e -> e.setBounds(e.x, e.y, e.getPrefWidth(), e.getPrefHeight()));
         }
     }
 }

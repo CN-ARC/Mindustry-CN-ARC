@@ -17,6 +17,7 @@ public class ScratchController {
         if (!list.contains(e)) {
             map.put(name, list.add(e).size - 1);
             ui.addBlocks(e);
+            ScratchInput.addNewInput(e);
         }
     }
 
