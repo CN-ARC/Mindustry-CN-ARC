@@ -1,60 +1,20 @@
-package mindustry.arcModule.ui.scratch;
+package mindustry.arcModule.ui.scratch.blocks;
 
 import arc.graphics.Color;
 import arc.scene.Element;
 import arc.struct.Seq;
 import arc.util.Structs;
-import mindustry.arcModule.ui.scratch.blocks.ForkBlock;
-import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
-import mindustry.arcModule.ui.scratch.elements.InputElement;
+import mindustry.arcModule.ui.scratch.BlockInfo;
+import mindustry.arcModule.ui.scratch.ScratchController;
+import mindustry.arcModule.ui.scratch.ScratchType;
+import mindustry.arcModule.ui.scratch.block.ScratchBlock;
+import mindustry.arcModule.ui.scratch.element.InputElement;
 import mindustry.logic.LogicOp;
 
 import java.util.Objects;
 
 public class LogicBlocks {
     public static void init() {
-        ScratchController.ui.addElement(new ScratchBlock(ScratchType.condition, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
-            @Override
-            public void build(ScratchBlock block) {
-                block.input();
-                block.label("aaaaaa");
-                block.cond();
-                block.input();
-            }
-        }));
-        ScratchController.ui.addElement(new ScratchBlock(ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
-            @Override
-            public void build(ScratchBlock block) {
-                block.input();
-                block.label("aaaaaa");
-                block.input();
-            }
-        }));
-        ScratchController.ui.addElement(new ScratchBlock(ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
-            @Override
-            public void build(ScratchBlock block) {
-                block.input();
-                block.label("aaaaaa");
-                block.input();
-            }
-        }));
-        ScratchController.ui.addElement(new ScratchBlock(ScratchType.block, new Color(Color.packRgba(76, 151, 255, 255)), new BlockInfo() {
-            @Override
-            public void build(ScratchBlock block) {
-                block.input();
-                block.label("aaaaaa");
-                block.input();
-            }
-        }));
-        ScratchController.ui.addElement(new ScratchBlock(ScratchType.input, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo() {
-            @Override
-            public void build(ScratchBlock block) {
-                block.input();
-                block.label("aaaaaa");
-                block.cond();
-                block.input();
-            }
-        }));
         for (LogicOp logicOp : LogicOp.all) {
             final LogicOp op = logicOp;
             ScratchController.registerBlock("op" + op.name(), new ScratchBlock(op == LogicOp.equal ||
@@ -102,16 +62,5 @@ public class LogicBlocks {
                 }
             }, false));
         }
-        ScratchController.ui.addElement(new ForkBlock(ScratchType.block, new Color(Color.packRgba(89, 192, 89, 255)), new ForkBlock.ForkInfo() {
-            @Override
-            public void build(ForkBlock block) {
-                block.header(new ForkBlock.ForkInfo() {
-                    @Override
-                    public void build(ScratchBlock block) {
-                        block.label("test");
-                    }
-                });
-            }
-        }));
     }
 }

@@ -1,11 +1,11 @@
-package mindustry.arcModule.ui.scratch.blocks;
+package mindustry.arcModule.ui.scratch.block;
 
 import arc.graphics.Color;
 import arc.scene.ui.layout.Cell;
 import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
-import mindustry.arcModule.ui.scratch.blocks.fork.*;
+import mindustry.arcModule.ui.scratch.block.fork.*;
 
 public class ForkBlock extends ScratchBlock {
 

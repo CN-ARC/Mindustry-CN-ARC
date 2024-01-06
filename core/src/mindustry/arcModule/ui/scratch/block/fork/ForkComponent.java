@@ -1,12 +1,12 @@
-package mindustry.arcModule.ui.scratch.blocks.fork;
+package mindustry.arcModule.ui.scratch.block.fork;
 
 import arc.graphics.Color;
 import arc.scene.ui.layout.Cell;
 import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
-import mindustry.arcModule.ui.scratch.blocks.ForkBlock;
-import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.block.ForkBlock;
+import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public abstract class ForkComponent extends ScratchBlock {
     public static final float padLeft = 10f;

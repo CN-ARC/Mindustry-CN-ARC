@@ -80,7 +80,6 @@ public class LoadRenderer implements Disposable{
     }
 
     public void draw(){
-        if (true) return;
         if(!preview){
             if(lastFrameTime == 0){
                 lastFrameTime = Time.millis();

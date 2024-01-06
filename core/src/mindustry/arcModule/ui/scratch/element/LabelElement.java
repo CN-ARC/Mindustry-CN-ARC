@@ -1,4 +1,4 @@
-package mindustry.arcModule.ui.scratch.elements;
+package mindustry.arcModule.ui.scratch.element;
 
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.Cell;

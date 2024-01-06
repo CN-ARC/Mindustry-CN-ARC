@@ -9,12 +9,13 @@ import arc.scene.ui.TextField;
 import arc.util.Align;
 import arc.util.Log;
 import arc.util.Tmp;
-import mindustry.arcModule.ui.scratch.blocks.FakeBlock;
-import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
-import mindustry.arcModule.ui.scratch.elements.InputElement;
-import mindustry.arcModule.ui.scratch.elements.ScratchElement;
+import mindustry.arcModule.ui.scratch.block.FakeBlock;
+import mindustry.arcModule.ui.scratch.block.ScratchBlock;
+import mindustry.arcModule.ui.scratch.element.InputElement;
+import mindustry.arcModule.ui.scratch.element.ScratchElement;
 
 import static arc.Core.input;
+import static arc.Core.scene;
 import static mindustry.arcModule.ui.scratch.ScratchController.dragging;
 import static mindustry.arcModule.ui.scratch.ScratchController.ui;
 
@@ -32,7 +33,7 @@ public class ScratchInput {
     }
 
     public static void checkHit(float posX, float posY) {
-        Element hit = ui.group.hit(posX, posY + dragging.getHeight() / 2, true);
+        Element hit = ui.group.hit(posX, posY, true);
         if (dragging instanceof ScratchBlock block && block.type == ScratchType.block && hit instanceof ScratchTable t && t.acceptLink(block)) {
             ScratchBlock b = (ScratchBlock) (hit instanceof ScratchBlock ? hit : hit.parent);
             if (b.linkTo != dragging && b.linkFrom != dragging) {
@@ -115,18 +116,21 @@ public class ScratchInput {
         }
 
         public void checkClick() {
-            if (!dragged && layer == SLayer.group) {
-                if (!menu && target.getType() != ScratchType.block) {
+            if (!dragged && layer == SLayer.group && (scene.getKeyboardFocus() == null || !(scene.getKeyboardFocus().parent instanceof InputElement e && ((ClickListener) e.getListeners().find(l -> l instanceof ClickListener)).isOver()))) {
+                ScratchBlock b = target.getTopBlock();
+                if (menu) {
+                    ui.showMenu(b, true);
+                } else {
                     try {
-                        Object o = target.getValue();
-                        Log.info(o);
-                        ui.showResult(target, String.valueOf(o));
+                        Object o = b.getValue();
+                        if (b.getType() != ScratchType.block) {
+                            Log.info(o);
+                            ui.showResult(b, String.valueOf(o));
+                        }
                     } catch (Exception ex) {
                         Log.err(ex);
-                        ui.showResult(target, ex.getMessage());
+                        ui.showResult(b, ex.getMessage());
                     }
-                } else if (menu) {
-                    ui.showMenu(target, true);
                 }
             }
         }
@@ -152,6 +156,18 @@ public class ScratchInput {
             target.setPosition(pos.x, pos.y);
         }
 
+        public void ensureParent() {
+            if (target.getType() == ScratchType.block) {
+                ScratchBlock b = target.linkFrom;
+                if (b != null && b.parent == target.parent) return;
+                while (b != null) {
+                    b.parent.removeChild(b);
+                    target.parent.addChild(b);
+                    b = b.linkFrom;
+                }
+            }
+        }
+
         @Override
         public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
             if (cur != target && cur != null || Core.scene.getKeyboardFocus() instanceof TextField f && f.parent instanceof InputElement el && el.parent == target)
@@ -173,7 +189,7 @@ public class ScratchInput {
             if (target.child != null && target.child.selected) return;
             target.toFront();
             Vec2 v = target.localToParentCoordinates(v1.set(x, y));
-            if (((target.parent instanceof ScratchTable) || target.type == ScratchType.block) && dragging == null && Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragStartDistance || !dragged && Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragMinDistance)
+            if (target.parent instanceof ScratchTable && dragging == null && Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragStartDistance || !dragged && Tmp.v1.set(v.x - lastX, v.y - lastY).len() < dragMinDistance)
                 return;
             ScratchElement old = target.parent instanceof ScratchElement el ? el : null;
             if (layer == SLayer.group) toOverlay(x, y, pointer);
@@ -187,6 +203,7 @@ public class ScratchInput {
             target.touchable = Touchable.disabled;
             checkHit(pos.x + 10, pos.y + target.getHeight() / 2);
             target.touchable = Touchable.enabled;
+            ensureParent();
         }
 
         @Override
@@ -205,6 +222,7 @@ public class ScratchInput {
             if (((ClickListener) ui.blocksPane.getListeners().find(e -> e instanceof ClickListener)).isOver(ui.blocksPane, v1.x, v1.y))
                 target.remove();
             layer = SLayer.group;
+            ensureParent();
         }
     }
 

@@ -1,9 +1,10 @@
-package mindustry.arcModule.ui.scratch.elements;
+package mindustry.arcModule.ui.scratch.element;
 
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.GlyphLayout;
 import arc.scene.Element;
+import arc.scene.event.ClickListener;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
@@ -11,7 +12,7 @@ import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchStyles;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
-import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 
@@ -42,6 +43,7 @@ public class InputElement extends ScratchElement {
             invalidateHierarchy();
         });
         field.setProgrammaticChangeEvents(true);
+        addListener(new ClickListener());
     }
 
     @Override
@@ -49,6 +51,7 @@ public class InputElement extends ScratchElement {
         this.child = child;
         if (child == null) {
             cell.setElement(field).left().pad(0, 10f, 0, 10f).width(20f);
+            field.change();
         } else {
             cell.pad(0).width(0);
             cell.setElement(child);
@@ -61,11 +64,11 @@ public class InputElement extends ScratchElement {
     }
 
     @Override
-    public void draw() {
+    public void drawChildren() {
         if (child == null) {
             ScratchStyles.drawInput(x, y, width, height, elemColor);
         }
-        super.draw();
+        super.drawChildren();
         Draw.reset();
     }
 

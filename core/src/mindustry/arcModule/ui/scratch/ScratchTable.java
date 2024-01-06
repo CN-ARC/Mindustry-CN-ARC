@@ -10,7 +10,7 @@ import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Align;
-import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public abstract class ScratchTable extends Table {
     public static float defHeight = 30f, addPadding = 10f, defWidth = 50f;
@@ -78,8 +78,8 @@ public abstract class ScratchTable extends Table {
     }
 
     @Override
-    public void draw() {
-        super.draw();
+    public void drawChildren() {
+        super.drawChildren();
         Draw.color(Color.red.cpy().mulA(0.5f));
         Lines.stroke(1f);
         Lines.rect(x, y, width, height);
@@ -95,7 +95,7 @@ public abstract class ScratchTable extends Table {
     @Override
     public void toFront() {
         super.toFront();
-        parent.toFront();
+        if (parent != null) parent.toFront();
     }
 
     abstract public boolean acceptLink(ScratchBlock block);

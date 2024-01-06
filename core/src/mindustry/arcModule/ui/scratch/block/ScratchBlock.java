@@ -1,9 +1,8 @@
-package mindustry.arcModule.ui.scratch.blocks;
+package mindustry.arcModule.ui.scratch.block;
 
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
-import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
@@ -11,13 +10,13 @@ import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Nullable;
 import mindustry.arcModule.ui.scratch.*;
-import mindustry.arcModule.ui.scratch.elements.CondElement;
-import mindustry.arcModule.ui.scratch.elements.InputElement;
-import mindustry.arcModule.ui.scratch.elements.LabelElement;
-
-import static mindustry.arcModule.ui.scratch.ScratchController.ui;
+import mindustry.arcModule.ui.scratch.element.CondElement;
+import mindustry.arcModule.ui.scratch.element.InputElement;
+import mindustry.arcModule.ui.scratch.element.LabelElement;
+import mindustry.arcModule.ui.scratch.element.ScratchElement;
 
 public class ScratchBlock extends ScratchTable {
+    public static boolean removing = false;
     public ScratchType type;
     private final BlockInfo info;
     public ScratchBlock linkTo, linkFrom;
@@ -25,7 +24,7 @@ public class ScratchBlock extends ScratchTable {
     public Seq<Element> elements = new Seq<>();
 
     public ScratchBlock(ScratchType type, Color color, BlockInfo info) {
-        this(type, color, info, true);
+        this(type, color, info, false);
     }
 
     public ScratchBlock(ScratchType type, Color color, BlockInfo info, boolean dragEnabled) {
@@ -151,6 +150,24 @@ public class ScratchBlock extends ScratchTable {
         unlinkFrom();
     }
 
+    public ScratchBlock getTopBlock() {
+        ScratchBlock b = this;
+        if (getType() == ScratchType.block) {
+            while (b.linkTo != null) b = b.linkTo;
+        } else {
+            while (b.parent instanceof ScratchElement se) b = (ScratchBlock) se.parent;
+        }
+        return b;
+    }
+
+    public void removeLinked() {
+        ScratchBlock b = linkFrom;
+        while (b != null) {
+            b.remove();
+            b = b.linkFrom;
+        }
+    }
+
     @Override
     public boolean acceptLink(ScratchBlock block) {
         return type == ScratchType.block;
@@ -158,7 +175,14 @@ public class ScratchBlock extends ScratchTable {
 
     @Override
     public Object getValue() {
-        if (type == ScratchType.block) return null;
+        if (type == ScratchType.block) {
+            ScratchBlock b = this;
+            while (b != null) {
+                b.info.getValue(b.elements);
+                b = b.linkFrom;
+            }
+            return null;
+        }
         return info.getValue(elements);
     }
 
@@ -185,14 +209,13 @@ public class ScratchBlock extends ScratchTable {
     }
 
     @Override
-    public void draw() {
-        Draw.reset();
+    public void drawChildren() {
         switch (type) {
             case input -> ScratchStyles.drawInput(x, y, width, height, elemColor);
             case condition, conditionInner -> ScratchStyles.drawCond(x, y, width, height, elemColor);
             case block -> ScratchStyles.drawBlock(x, y, width, height, elemColor, false);
         }
-        super.draw();
+        super.drawChildren();
         if (ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block && type == ScratchType.block) {
             Lines.stroke(1f);
             Draw.color(Color.gold.cpy().mulA(0.5f));
@@ -214,21 +237,19 @@ public class ScratchBlock extends ScratchTable {
             } while (b != null);
         }
         if (linkTo != null) {
-            if (linkTo.parent != parent) {
-                Vec2 tmp = ScratchUI.oldPosToNewPos(ui.stack, linkTo, ui.group);
-                x = tmp.x;
-                y = tmp.y - getHeight() + 7f;
-            } else {
-                x = linkTo.x;
-                y = linkTo.y - getHeight() + 7f;
-            }
+            x = linkTo.x;
+            y = linkTo.y - getHeight() + 7f;
         }
         super.act(delta);
     }
 
     @Override
     public boolean remove() {
-        unlinkAll();
+        if (!removing) {
+            removing = true;
+            removeLinked();
+            removing = false;
+        }
         if (parent != null) return parent.removeChild(this);
         return false;
     }

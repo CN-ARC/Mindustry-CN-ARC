@@ -2,7 +2,7 @@ package mindustry.arcModule.ui.scratch;
 
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
-import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public class ScratchController {
     public static ScratchUI ui;
@@ -19,6 +19,13 @@ public class ScratchController {
             ui.addBlocks(e);
             ScratchInput.addNewInput(e);
         }
+    }
+
+    public static void reset() {
+        dragging = selected = null;
+        map.clear();
+        list.clear();
+        ui.clearBlocks();
     }
 
     public static ScratchTable get(String name) {
@@ -56,9 +63,9 @@ public class ScratchController {
     }
 
     public static class DoubleResult {
-        boolean success;
-        double[] doubles;
-        Object[] objects;
+        public boolean success;
+        public double[] doubles;
+        public Object[] objects;
 
         DoubleResult(Object[] objects, double[] doubles, boolean success) {
             this.objects = objects;

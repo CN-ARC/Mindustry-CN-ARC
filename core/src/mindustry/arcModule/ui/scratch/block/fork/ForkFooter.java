@@ -1,9 +1,9 @@
-package mindustry.arcModule.ui.scratch.blocks.fork;
+package mindustry.arcModule.ui.scratch.block.fork;
 
 import arc.graphics.Color;
 import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchType;
-import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public class ForkFooter extends ForkComponent {
 

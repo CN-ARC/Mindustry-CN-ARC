@@ -1,12 +1,11 @@
-package mindustry.arcModule.ui.scratch.elements;
+package mindustry.arcModule.ui.scratch.element;
 
-import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchStyles;
-import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public class CondElement extends ScratchElement {
     public CondElement() {
@@ -29,9 +28,9 @@ public class CondElement extends ScratchElement {
     }
 
     @Override
-    public void draw() {
+    public void drawChildren() {
         if (child == null) ScratchStyles.drawCond(x, y, width, height, elemColor);
-        super.draw();
+        super.drawChildren();
         Draw.reset();
     }
 

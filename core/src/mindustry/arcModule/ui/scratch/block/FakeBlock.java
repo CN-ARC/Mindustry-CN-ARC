@@ -1,4 +1,4 @@
-package mindustry.arcModule.ui.scratch.blocks;
+package mindustry.arcModule.ui.scratch.block;
 
 import arc.graphics.Color;
 import arc.scene.Element;

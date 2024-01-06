@@ -1,13 +1,12 @@
-package mindustry.arcModule.ui.scratch.elements;
+package mindustry.arcModule.ui.scratch.element;
 
-import arc.func.Boolf;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
 import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
-import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public abstract class ScratchElement extends ScratchTable {
     abstract public ScratchElement copy();

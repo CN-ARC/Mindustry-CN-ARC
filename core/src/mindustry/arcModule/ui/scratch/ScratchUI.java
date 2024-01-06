@@ -22,8 +22,8 @@ import arc.scene.ui.layout.Table;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.util.Align;
 import arc.util.Tmp;
-import mindustry.arcModule.ui.BoundedGroup;
-import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.block.ScratchBlock;
+import mindustry.arcModule.ui.widgets.BoundedGroup;
 import mindustry.arcModule.ui.window.Window;
 import mindustry.gen.Tex;
 import mindustry.ui.Fonts;
@@ -87,13 +87,17 @@ public class ScratchUI extends Table {
         return v2;
     }
 
+    public static Vec2 oldPosToNewPos(Group top, Element e, Vec2 v, Element target) {
+        top.localToDescendantCoordinates(target, e.parent.localToAscendantCoordinates(top, v));
+        return v2;
+    }
+
     public void showResult(ScratchBlock e, String str) {
         Table t;
         overlay.addChild(t = new Table(bg2));
         t.add(new Label(str, ls));
         t.touchable = Touchable.disabled;
-        e.setPosition(e.x + e.getWidth() / 2 - t.getPrefWidth() / 2, e.y - e.getHeight());
-        Vec2 v = oldPosToNewPos(stack, e, overlay);
+        Vec2 v = oldPosToNewPos(stack, e, v2.set(e.x + e.getWidth() / 2 - t.getPrefWidth() / 2, e.y - e.getHeight()), overlay);
         t.setPosition(v.x, v.y);
         t.addAction(Actions.moveBy(0, -15, 0.2f));
         t.update(() -> {
@@ -110,6 +114,17 @@ public class ScratchUI extends Table {
                     ScratchBlock b = sb.copy();
                     group.addChild(b);
                     b.setPosition(sb.x + 15, sb.y - 15);
+                    if (sb.getType() == ScratchType.block) {
+                        ScratchBlock from = sb.linkFrom;
+                        ScratchBlock to = b;
+                        while (from != null) {
+                            ScratchBlock copy = from.copy();
+                            copy.linkTo(to);
+                            group.addChild(copy);
+                            to = copy;
+                            from = from.linkFrom;
+                        }
+                    }
                 });
                 t.row();
                 t.button("delete", Styles.nonet, sb::remove);
@@ -130,15 +145,19 @@ public class ScratchUI extends Table {
     }
 
     public void createWindow() {
-        /*Window w = new Window();
+        Window w = new Window();
         w.setBody(this);
-        w.maximize(true);
-        w.add();*/
-        Core.scene.add(this);
+        w.add();
     }
 
     public void addBlocks(ScratchBlock b) {
         blocks.add(b).align(Align.left).row();
+    }
+
+    public void clearBlocks() {
+        blocks.clear();
+        group.clear();
+        overlay.clear();
     }
 
     public void addElement(ScratchTable e) {

@@ -1,4 +1,4 @@
-package mindustry.arcModule.ui.scratch.blocks.fork;
+package mindustry.arcModule.ui.scratch.block.fork;
 
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
@@ -7,8 +7,8 @@ import arc.graphics.g2d.Lines;
 import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.ScratchStyles;
 import mindustry.arcModule.ui.scratch.ScratchType;
-import mindustry.arcModule.ui.scratch.blocks.ForkBlock;
-import mindustry.arcModule.ui.scratch.blocks.ScratchBlock;
+import mindustry.arcModule.ui.scratch.block.ForkBlock;
+import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public class ForkHeader extends ForkComponent {
     public ForkHeader(ForkBlock.ForkInfo info, Color c) {
@@ -21,7 +21,7 @@ public class ForkHeader extends ForkComponent {
     }
 
     @Override
-    public void draw() {
+    public void drawChildren() {
         Color col = ((ForkBlock) parent).elemColor;
         ScratchStyles.drawBlockHeader(x, y, width, height, col);
         Fill.crect(x, y, width, height - 7);
@@ -29,6 +29,6 @@ public class ForkHeader extends ForkComponent {
         Lines.beginLine();
         ScratchStyles.drawBlockBorderTop(x, y, width, height);
         Lines.endLine(true);
-        drawSuper();
+        super.drawChildren();
     }
 }
