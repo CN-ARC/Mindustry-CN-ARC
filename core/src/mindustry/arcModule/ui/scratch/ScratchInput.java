@@ -257,6 +257,18 @@ public class ScratchInput {
 
         @Override
         public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button) {
+            if (!dragged) {
+                try {
+                    Object o = target.getValue();
+                    if (target.getType() != ScratchType.block) {
+                        Log.info(o);
+                        ui.showResult(target, String.valueOf(o));
+                    }
+                } catch (Exception ex) {
+                    Log.err(ex);
+                    ui.showResult(target, ex.getMessage());
+                }
+            }
             ui.blocksPane.setFlickScroll(true);
             dragged = false;
         }
