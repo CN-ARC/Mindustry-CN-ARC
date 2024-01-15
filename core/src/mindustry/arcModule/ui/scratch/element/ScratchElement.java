@@ -11,6 +11,13 @@ import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 public abstract class ScratchElement extends ScratchTable {
     abstract public ScratchElement copy();
 
+    public Object getElementValue() {
+        return null;
+    }
+
+    public void setElementValue(Object value) {
+    }
+
     @Override
     public Element hit(float x, float y, boolean touchable) {
         if (ScratchController.dragging != null) {

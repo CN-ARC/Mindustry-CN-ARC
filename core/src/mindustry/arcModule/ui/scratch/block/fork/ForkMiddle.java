@@ -4,26 +4,26 @@ import arc.graphics.Color;
 import arc.scene.ui.layout.Cell;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
-import mindustry.arcModule.ui.scratch.block.ForkBlock;
-import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public class ForkMiddle extends ForkComponent {
-    public ForkMiddle(ForkBlock.ForkInfo info, Color c) {
-        super(ScratchType.none, c, info);
+    public ForkMiddle(Color c) {
+        super(ScratchType.none, c, emptyInfo);
     }
 
     @Override
-    public ScratchBlock copy() {
+    public ForkComponent copy(boolean drag) {
         return null;
     }
 
     @Override
     public void cell(Cell<ScratchTable> c) {
-        c.row();
+        super.cell(c);
+        c.minHeight(40).padLeft(0);
     }
 
     @Override
     public void draw() {
-
+        super.draw();
+        drawDebug();
     }
 }

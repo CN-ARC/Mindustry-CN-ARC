@@ -18,7 +18,7 @@ import mindustry.arcModule.ui.scratch.element.ScratchElement;
 public class ScratchBlock extends ScratchTable {
     public static boolean removing = false;
     public ScratchType type;
-    private final BlockInfo info;
+    public final BlockInfo info;
     public ScratchBlock linkTo, linkFrom;
     public byte dir = 0;
     public Seq<Element> elements = new Seq<>();
@@ -76,19 +76,19 @@ public class ScratchBlock extends ScratchTable {
 
     public ScratchBlock copy(boolean drag) {
         ScratchBlock sb = new ScratchBlock(type, elemColor, info, drag);
+        copyChildrenValue(sb, drag);
+        return sb;
+    }
+
+    public void copyChildrenValue(ScratchBlock target, boolean drag) {
         for (int i = 0; i < elements.size; i++) {
             Element child = elements.get(i);
-            Element target = sb.elements.get(i);
-            if (child instanceof ScratchTable st1 && target instanceof ScratchTable st2) {
+            Element element = target.elements.get(i);
+            if (child instanceof ScratchElement st1 && element instanceof ScratchElement st2) {
                 st2.setElementValue(st1.getElementValue());
                 if (st1.child instanceof ScratchBlock sb2) st2.setChild(sb2.copy(drag));
             }
         }
-        return sb;
-    }
-
-    public void drawSuper() {
-        super.draw();
     }
 
     public void linkFrom(@Nullable ScratchBlock source) {
@@ -208,14 +208,16 @@ public class ScratchBlock extends ScratchTable {
         return super.hit(x, y, touchable);
     }
 
-    @Override
-    public void drawChildren() {
+    public void drawBackground() {
         switch (type) {
-            case input -> ScratchStyles.drawInput(x, y, width, height, elemColor);
+            case input -> ScratchStyles.drawInput(x, y, width, height, elemColor, false);
             case condition, conditionInner -> ScratchStyles.drawCond(x, y, width, height, elemColor);
             case block -> ScratchStyles.drawBlock(x, y, width, height, elemColor, false);
         }
-        super.drawChildren();
+    }
+
+    public void drawDebug() {
+        super.drawDebug();
         if (ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block && type == ScratchType.block) {
             Lines.stroke(1f);
             Draw.color(Color.gold.cpy().mulA(0.5f));
@@ -227,6 +229,17 @@ public class ScratchBlock extends ScratchTable {
         }
     }
 
+    public void linkUpdate(ScratchBlock target) {
+        target.setPosition(x, y - target.getHeight() + 7);
+    }
+
+    @Override
+    public void drawChildren() {
+        drawBackground();
+        super.drawChildren();
+        //drawDebug();
+    }
+
     @Override
     public void act(float delta) {
         if (linkTo == null) {
@@ -235,10 +248,8 @@ public class ScratchBlock extends ScratchTable {
                 b.toFront();
                 b = b.linkFrom;
             } while (b != null);
-        }
-        if (linkTo != null) {
-            x = linkTo.x;
-            y = linkTo.y - getHeight() + 7f;
+        } else {
+            linkTo.linkUpdate(this);
         }
         super.act(delta);
     }

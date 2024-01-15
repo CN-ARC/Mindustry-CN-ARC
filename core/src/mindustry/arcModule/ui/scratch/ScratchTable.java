@@ -70,16 +70,7 @@ public abstract class ScratchTable extends Table {
         return null;
     }
 
-    public Object getElementValue() {
-        return null;
-    }
-
-    public void setElementValue(Object value) {
-    }
-
-    @Override
-    public void drawChildren() {
-        super.drawChildren();
+    public void drawDebug() {
         Draw.color(Color.red.cpy().mulA(0.5f));
         Lines.stroke(1f);
         Lines.rect(x, y, width, height);
@@ -89,7 +80,11 @@ public abstract class ScratchTable extends Table {
         } else {
             Lines.rect(x, y, width, height);
         }
-        Draw.reset();
+    }
+
+    @Override
+    public void drawChildren() {
+        super.drawChildren();
     }
 
     @Override

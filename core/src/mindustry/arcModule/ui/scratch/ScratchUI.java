@@ -145,9 +145,10 @@ public class ScratchUI extends Table {
     }
 
     public void createWindow() {
-        Window w = new Window();
+        Core.scene.add(this);
+        /*Window w = new Window();
         w.setBody(this);
-        w.add();
+        w.add();*/
     }
 
     public void addBlocks(ScratchBlock b) {

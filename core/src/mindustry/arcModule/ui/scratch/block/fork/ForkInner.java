@@ -4,11 +4,10 @@ import arc.graphics.Color;
 import arc.scene.Element;
 import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchType;
-import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public class ForkInner extends ForkComponent {
 
-    public ForkInner(String name, ScratchType type, Color color, BlockInfo info) {
+    public ForkInner(ScratchType type, Color color, BlockInfo info) {
         super(type, color, info);
     }
 
@@ -18,7 +17,7 @@ public class ForkInner extends ForkComponent {
     }
 
     @Override
-    public ScratchBlock copy() {
+    public ForkComponent copy(boolean drag) {
         return null;
     }
 }

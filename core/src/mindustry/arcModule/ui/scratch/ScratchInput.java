@@ -237,6 +237,7 @@ public class ScratchInput {
         @Override
         public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
             ui.blocksPane.setFlickScroll(false);
+            ui.pane.setFlickScroll(false);
             return true;
         }
 
@@ -270,6 +271,7 @@ public class ScratchInput {
                 }
             }
             ui.blocksPane.setFlickScroll(true);
+            ui.pane.setFlickScroll(true);
             dragged = false;
         }
     }

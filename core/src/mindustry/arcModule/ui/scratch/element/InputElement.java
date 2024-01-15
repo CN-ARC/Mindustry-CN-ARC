@@ -19,7 +19,7 @@ import mindustry.ui.Styles;
 public class InputElement extends ScratchElement {
     protected static TextField.TextFieldStyle style;
     protected static GlyphLayout prefSizeLayout = new GlyphLayout();
-    private static final float minWidth = 40f;
+    private static final float minWidth = 30;
     public TextField field;
     private final boolean num;
     Cell<TextField> cell;
@@ -36,14 +36,17 @@ public class InputElement extends ScratchElement {
         if (num) field.setFilter(TextField.TextFieldFilter.digitsOnly);
         field.setAlignment(Align.center);
         elemColor = Color.white;
-        cell = add(field).left().pad(0, 10f, 0, 10f).width(20f);
-        field.changed(() -> {
-            prefSizeLayout.setText(style.font, field.getText() + " ");
-            cell.width(Math.max(minWidth, prefSizeLayout.width));
-            invalidateHierarchy();
-        });
+        cell = add(field).left().pad(0, 10f, 0, 10f).width(minWidth);
+        field.changed(this::calcWidth);
         field.setProgrammaticChangeEvents(true);
         addListener(new ClickListener());
+        calcWidth();
+    }
+
+    private void calcWidth() {
+        prefSizeLayout.setText(style.font, field.getText() + " ");
+        cell.width(Math.max(minWidth, prefSizeLayout.width));
+        invalidateHierarchy();
     }
 
     @Override
@@ -65,9 +68,7 @@ public class InputElement extends ScratchElement {
 
     @Override
     public void drawChildren() {
-        if (child == null) {
-            ScratchStyles.drawInput(x, y, width, height, elemColor);
-        }
+        if (child == null) ScratchStyles.drawInput(x, y, width, height, elemColor, ScratchController.selected == this);
         super.drawChildren();
         Draw.reset();
     }
