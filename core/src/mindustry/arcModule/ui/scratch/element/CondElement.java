@@ -29,7 +29,7 @@ public class CondElement extends ScratchElement {
 
     @Override
     public void drawChildren() {
-        if (child == null) ScratchStyles.drawCond(x, y, width, height, elemColor);
+        if (child == null) ScratchStyles.drawCond(x, y, width, height, elemColor, false);
         super.drawChildren();
         Draw.reset();
     }

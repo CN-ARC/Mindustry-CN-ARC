@@ -5,9 +5,14 @@ import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.scene.Element;
+import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
 import arc.struct.Seq;
-import mindustry.arcModule.ui.scratch.*;
+import arc.util.Align;
+import mindustry.arcModule.ui.scratch.BlockInfo;
+import mindustry.arcModule.ui.scratch.ScratchController;
+import mindustry.arcModule.ui.scratch.ScratchTable;
+import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.block.fork.*;
 
 public class ForkBlock extends ScratchBlock {
@@ -68,6 +73,14 @@ public class ForkBlock extends ScratchBlock {
     @Override
     public void drawChildren() {
         super.drawChildren();
+    }
+
+    @Override
+    public Element hit(float x, float y, boolean touchable) {
+        if (touchable && this.touchable != Touchable.enabled) return null;
+        Element e = hitDefault(x, y, touchable);
+        if (e instanceof ForkComponent) return e;
+        return super.hit(x, y, touchable);
     }
 
     public static class ForkInfo extends BlockInfo {

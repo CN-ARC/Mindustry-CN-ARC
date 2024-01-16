@@ -25,13 +25,14 @@ public class ScratchStyles {
         Lines.line(x + halfH, y + h, x + w - halfH, y + h);
     }
 
-    public static void drawCond(float x, float y, float w, float h, Color c) {
+    public static void drawCond(float x, float y, float w, float h, Color c, boolean selected) {
         Draw.color(c);
         float halfH = h / 2;
         Fill.tri(x + halfH, y, x, y + halfH, x + halfH, y + h);
         Fill.tri(x + w - halfH, y, x + w, y + halfH, x + w - halfH, y + h);
         Fill.rect(x + w / 2, y + halfH, w - 2 * halfH, h);
-        Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
+        Draw.color(selected ? Color.orange : Tmp.c1.set(c).lerp(Color.black, 0.3f));
+        Lines.stroke(selected ? 2 : 1);
         Lines.beginLine();
         Lines.linePoint(x + halfH, y);
         Lines.linePoint(x, y + halfH);

@@ -32,8 +32,8 @@ public class ScratchInput {
         e.addListener(new HandCursorListener());
     }
 
-    public static void checkHit(float posX, float posY) {
-        Element hit = ui.group.hit(posX, posY, true);
+    public static void checkHit(float x, float y) {
+        Element hit = ui.group.hit(x, y, true);
         if (dragging instanceof ScratchBlock block && block.type == ScratchType.block && hit instanceof ScratchTable t && t.acceptLink(block)) {
             ScratchBlock b = (ScratchBlock) (hit instanceof ScratchBlock ? hit : hit.parent);
             if (b.linkTo != dragging && b.linkFrom != dragging) {
@@ -50,7 +50,7 @@ public class ScratchInput {
                 return;
             }
         }
-        if (fake.linkTo != null || fake.linkFrom != null) fake.removeAndKeepLink();
+        if (fake.linked()) fake.removeAndKeepLink();
         if (hit instanceof ScratchTable sel) {
             ScratchController.selected = sel;
         } else if (hit != null && hit != ui.group && hit.parent instanceof ScratchTable parent) {
@@ -107,7 +107,7 @@ public class ScratchInput {
                         oldChild.setPosition(target.x + 10, target.y - 10);
                     }
                 }
-                if (fake.linkTo != null || fake.linkFrom != null) {
+                if (fake.linked()) {
                     target.insertLinkTop(fake);
                     fake.removeAndKeepLink();
                 }
@@ -156,18 +156,6 @@ public class ScratchInput {
             target.setPosition(pos.x, pos.y);
         }
 
-        public void ensureParent() {
-            if (target.getType() == ScratchType.block) {
-                ScratchBlock b = target.linkFrom;
-                if (b != null && b.parent == target.parent) return;
-                while (b != null) {
-                    b.parent.removeChild(b);
-                    target.parent.addChild(b);
-                    b = b.linkFrom;
-                }
-            }
-        }
-
         @Override
         public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
             if (cur != target && cur != null || Core.scene.getKeyboardFocus() instanceof TextField f && f.parent instanceof InputElement el && el.parent == target)
@@ -203,7 +191,7 @@ public class ScratchInput {
             target.touchable = Touchable.disabled;
             checkHit(pos.x + 10, pos.y + target.getHeight() / 2);
             target.touchable = Touchable.enabled;
-            ensureParent();
+            target.ensureParent();
         }
 
         @Override
@@ -222,7 +210,7 @@ public class ScratchInput {
             if (((ClickListener) ui.blocksPane.getListeners().find(e -> e instanceof ClickListener)).isOver(ui.blocksPane, v1.x, v1.y))
                 target.remove();
             layer = SLayer.group;
-            ensureParent();
+            target.ensureParent();
         }
     }
 

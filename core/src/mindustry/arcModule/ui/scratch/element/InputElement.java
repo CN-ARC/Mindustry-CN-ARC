@@ -21,26 +21,31 @@ public class InputElement extends ScratchElement {
     protected static GlyphLayout prefSizeLayout = new GlyphLayout();
     private static final float minWidth = 30;
     public TextField field;
-    private final boolean num;
+    private final InputType type;
     Cell<TextField> cell;
 
-    public InputElement(boolean num, String def) {
+    public InputElement(InputType type, String def) {
         super();
-        field = new TextField(def, getStyle()) {
-            @Override
-            public Element hit(float x, float y, boolean touchable) {
-                return ScratchController.dragging == null ? super.hit(x, y, touchable) : null;
+        this.type = type;
+        switch (type) {
+            case string, number -> {
+                field = new TextField(def, getStyle()) {
+                    @Override
+                    public Element hit(float x, float y, boolean touchable) {
+                        return ScratchController.dragging == null ? super.hit(x, y, touchable) : null;
+                    }
+                };
+                if (type == InputType.number) field.setFilter(TextField.TextFieldFilter.digitsOnly);
+                field.setAlignment(Align.center);
+                elemColor = Color.white;
+                cell = add(field).left().pad(0, 10f, 0, 10f).width(minWidth);
+                field.changed(this::calcWidth);
+                field.setProgrammaticChangeEvents(true);
+                calcWidth();
             }
-        };
-        this.num = num;
-        if (num) field.setFilter(TextField.TextFieldFilter.digitsOnly);
-        field.setAlignment(Align.center);
-        elemColor = Color.white;
-        cell = add(field).left().pad(0, 10f, 0, 10f).width(minWidth);
-        field.changed(this::calcWidth);
-        field.setProgrammaticChangeEvents(true);
+            case bool -> elemColor = ((ScratchTable) parent).elemColor.cpy().mulA(0.5f);
+        }
         addListener(new ClickListener());
-        calcWidth();
     }
 
     private void calcWidth() {
@@ -51,6 +56,7 @@ public class InputElement extends ScratchElement {
 
     @Override
     public void setChild(ScratchTable child) {
+        if (type == InputType.bool) return;
         this.child = child;
         if (child == null) {
             cell.setElement(field).left().pad(0, 10f, 0, 10f).width(20f);
@@ -62,13 +68,24 @@ public class InputElement extends ScratchElement {
     }
 
     @Override
+    public void cell(Cell<ScratchTable> c) {
+        c.pad(0, 10, 0, 10);
+    }
+
+    @Override
     public ScratchType getType() {
         return ScratchType.input;
     }
 
     @Override
     public void drawChildren() {
-        if (child == null) ScratchStyles.drawInput(x, y, width, height, elemColor, ScratchController.selected == this);
+        if (child == null) {
+            if (type == InputType.bool) {
+                ScratchStyles.drawCond(x, y, width, height, elemColor, ScratchController.selected == this);
+            } else {
+                ScratchStyles.drawInput(x, y, width, height, elemColor, ScratchController.selected == this);
+            }
+        }
         super.drawChildren();
         Draw.reset();
     }
@@ -81,7 +98,8 @@ public class InputElement extends ScratchElement {
     @Override
     public Object getValue() {
         if (child != null) return child.getValue();
-        if (!num) return field.getText();
+        if (type == InputType.string) return field.getText();
+        if (type == InputType.bool) return false;
         try {
             return Double.parseDouble(field.getText());
         } catch (Exception e) {
@@ -114,8 +132,12 @@ public class InputElement extends ScratchElement {
 
     @Override
     public ScratchElement copy() {
-        InputElement e = new InputElement(num, field.getText());
+        InputElement e = new InputElement(type, field.getText());
         if (child instanceof ScratchBlock sb) sb.copy().asChild(e);
         return e;
+    }
+
+    public enum InputType {
+        string, number, bool
     }
 }

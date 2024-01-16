@@ -41,6 +41,7 @@ public class ScratchBlock extends ScratchTable {
             }
         }
         if (dragEnabled) ScratchInput.addDraggingInput(this);
+        add().minHeight(40);
     }
 
     public void label(String str) {
@@ -54,15 +55,15 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public void input() {
-        input(false);
+        input(InputElement.InputType.string);
     }
 
-    public void input(boolean num) {
-        input(num, "");
+    public void input(InputElement.InputType type) {
+        input(type, "");
     }
 
-    public void input(boolean num, String def) {
-        InputElement e = new InputElement(num, def);
+    public void input(InputElement.InputType type, String def) {
+        InputElement e = new InputElement(type, def);
         Cell<ScratchTable> c;
         e.cell(c = add(e));
         if (children.size == 1) {
@@ -168,6 +169,55 @@ public class ScratchBlock extends ScratchTable {
         }
     }
 
+    public boolean linked() {
+        return linkTo != null || linkFrom != null;
+    }
+
+    public void drawBackground() {
+        switch (type) {
+            case input -> ScratchStyles.drawInput(x, y, width, height, elemColor, false);
+            case condition, conditionInner -> ScratchStyles.drawCond(x, y, width, height, elemColor, false);
+            case block -> ScratchStyles.drawBlock(x, y, width, height, elemColor, false);
+        }
+    }
+
+    public void drawDebug() {
+        super.drawDebug();
+        if (ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block && type == ScratchType.block) {
+            Lines.stroke(1f);
+            Draw.color(Color.gold.cpy().mulA(0.5f));
+            Lines.rect(x, y - padValue * 2, width, padValue);
+            if (linkTo == null || linkTo instanceof FakeBlock) {
+                Draw.color(Color.blue.cpy().mulA(0.5f));
+                Lines.rect(x, y + padValue, width, height + padValue * 2);
+            }
+        }
+    }
+
+    public void linkUpdate(ScratchBlock target) {
+        target.setPosition(x, y - target.getHeight() + 7);
+    }
+
+    public Element hitDefault(float x, float y, boolean touchable) {
+        return super.hit(x, y, touchable);
+    }
+
+    public void ensureParent() {
+        if (getType() == ScratchType.block) {
+            ScratchBlock b = linkFrom;
+            if (b != null && b.parent == parent) return;
+            while (b != null) {
+                b.setParent(this);
+                b = b.linkFrom;
+            }
+        }
+    }
+
+    public void setParent(ScratchBlock target) {
+        parent.removeChild(this);
+        target.parent.addChild(this);
+    }
+
     @Override
     public boolean acceptLink(ScratchBlock block) {
         return type == ScratchType.block;
@@ -193,8 +243,8 @@ public class ScratchBlock extends ScratchTable {
 
     @Override
     public Element hit(float x, float y, boolean touchable) {
+        if (touchable && this.touchable != Touchable.enabled) return null;
         if (!(ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block) || ScratchController.dragging == linkTo || ScratchController.dragging == linkFrom) return super.hit(x, y, touchable);
-        if(touchable && this.touchable != Touchable.enabled) return null;
         if (x >= 0 && x < width) {
             if (y >= -padValue * 2 && y < 0) {
                 dir = Align.bottom;
@@ -206,31 +256,6 @@ public class ScratchBlock extends ScratchTable {
             }
         }
         return super.hit(x, y, touchable);
-    }
-
-    public void drawBackground() {
-        switch (type) {
-            case input -> ScratchStyles.drawInput(x, y, width, height, elemColor, false);
-            case condition, conditionInner -> ScratchStyles.drawCond(x, y, width, height, elemColor);
-            case block -> ScratchStyles.drawBlock(x, y, width, height, elemColor, false);
-        }
-    }
-
-    public void drawDebug() {
-        super.drawDebug();
-        if (ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block && type == ScratchType.block) {
-            Lines.stroke(1f);
-            Draw.color(Color.gold.cpy().mulA(0.5f));
-            Lines.rect(x, y - padValue * 2, width, padValue);
-            if (linkTo == null || linkTo instanceof FakeBlock) {
-                Draw.color(Color.blue.cpy().mulA(0.5f));
-                Lines.rect(x, y + padValue, width, height + padValue * 2);
-            }
-        }
-    }
-
-    public void linkUpdate(ScratchBlock target) {
-        target.setPosition(x, y - target.getHeight() + 7);
     }
 
     @Override
