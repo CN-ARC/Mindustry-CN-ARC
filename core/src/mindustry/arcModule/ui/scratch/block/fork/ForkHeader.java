@@ -5,12 +5,10 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
+import arc.scene.ui.layout.Cell;
 import arc.util.Align;
 import arc.util.Tmp;
-import mindustry.arcModule.ui.scratch.BlockInfo;
-import mindustry.arcModule.ui.scratch.ScratchController;
-import mindustry.arcModule.ui.scratch.ScratchStyles;
-import mindustry.arcModule.ui.scratch.ScratchType;
+import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.block.ForkBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
@@ -59,6 +57,12 @@ public class ForkHeader extends ForkComponent {
     }
 
     @Override
+    public void cell(Cell<ScratchTable> c) {
+        super.cell(c);
+        c.marginTop(0).marginBottom(0);
+    }
+
+    @Override
     public Element hit(float x, float y, boolean touchable) {
         if (ScratchController.dragging == null || touchable && this.touchable != Touchable.enabled) return null;
         if (!(ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block) || ScratchController.dragging == linkTo) return hitDefault(x, y, touchable);
@@ -72,5 +76,11 @@ public class ForkHeader extends ForkComponent {
     @Override
     public void linkUpdate(ScratchBlock target) {
         target.setPosition(parent.x + x, parent.y + y - target.getHeight() + 7);
+    }
+
+    @Override
+    public void setParent(ScratchBlock target) {
+        super.setParent(target);
+        if (linkFrom != null) linkFrom.setParent(this);
     }
 }

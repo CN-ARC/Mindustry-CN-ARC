@@ -3,7 +3,6 @@ package mindustry.arcModule.ui.window;
 import arc.Core;
 import arc.func.Cons;
 import arc.graphics.Color;
-import arc.graphics.Texture;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
@@ -496,7 +495,7 @@ public class Window {
         private String calcString(String input, float width) {
             if (width == lastLabelWidth) return cachedTitle;
             lastLabelWidth = width;
-            if (input.length() == 0) return "";
+            if (input.isEmpty()) return "";
             layoutLabel.setText("....");
             float p = layoutLabel.getPrefWidth();
             for (int i = 1 , l = input.length(); i < l; i++) {

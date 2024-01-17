@@ -176,7 +176,7 @@ public class ScratchBlock extends ScratchTable {
     public void drawBackground() {
         switch (type) {
             case input -> ScratchStyles.drawInput(x, y, width, height, elemColor, false);
-            case condition, conditionInner -> ScratchStyles.drawCond(x, y, width, height, elemColor, false);
+            case condition -> ScratchStyles.drawCond(x, y, width, height, elemColor, false);
             case block -> ScratchStyles.drawBlock(x, y, width, height, elemColor, false);
         }
     }

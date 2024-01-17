@@ -8,7 +8,7 @@ public class ScratchTest {
     public static void test() {
         ScratchController.init();
         ScratchController.ui.createWindow();
-        init(0b101);
+        init(0b111);
     }
 
     public static void init(int id) {

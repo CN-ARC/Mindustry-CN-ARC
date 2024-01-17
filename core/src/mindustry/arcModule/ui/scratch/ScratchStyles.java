@@ -25,6 +25,16 @@ public class ScratchStyles {
         Lines.line(x + halfH, y + h, x + w - halfH, y + h);
     }
 
+    public static void drawInputSelected(float x, float y, float w, float h) {
+        float halfH = h / 2;
+        Draw.color(Color.orange);
+        Lines.stroke(3);
+        Lines.circle(x + halfH, y + halfH, halfH);
+        Lines.circle(x + w - halfH, y + halfH, halfH);
+        Lines.line(x + halfH, y + 1, x + w - halfH, y + 1);
+        Lines.line(x + halfH, y + h, x + w - halfH, y + h);
+    }
+
     public static void drawCond(float x, float y, float w, float h, Color c, boolean selected) {
         Draw.color(c);
         float halfH = h / 2;
@@ -40,7 +50,22 @@ public class ScratchStyles {
         Lines.linePoint(x + w - halfH, y + h);
         Lines.linePoint(x + w, y + halfH);
         Lines.linePoint(x + w - halfH, y);
+        Lines.endLine(true);
+    }
+
+    public static void drawCondSelected(float x, float y, float w, float h) {
+        Draw.color(Color.orange);
+        float halfH = h / 2;
+        Lines.stroke(2);
+        Lines.beginLine();
+        Lines.linePoint(x + halfH, y);
+        Lines.linePoint(x, y + halfH);
+        Lines.linePoint(x + halfH, y + h);
+        Lines.linePoint(x + w - halfH, y + h);
+        Lines.linePoint(x + w, y + halfH);
+        Lines.linePoint(x + w - halfH, y);
         Lines.endLine();
+        Lines.line(x + halfH + 1, y - 1, x + w - halfH - 1, y - 1);
     }
 
     public static void drawBlock(float x, float y, float w, float h, Color c, boolean noBorder) {
