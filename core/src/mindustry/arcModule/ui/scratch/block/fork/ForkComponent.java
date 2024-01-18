@@ -12,11 +12,13 @@ import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public abstract class ForkComponent extends ScratchBlock {
     public static final BlockInfo emptyInfo = new BlockInfo();
+    public final int id;
 
-    public ForkComponent(ScratchType type, Color color, BlockInfo info) {
-        super(type, color, info, false);
+    ForkComponent(ScratchType type, Color color, BlockInfo info, int id) {
+        super(type, color, info, false, false);
         touchable = Touchable.disabled;
         margin(10, 0, 10, 10);
+        this.id = id;
     }
 
     public void copyTo(ForkComponent fork, boolean drag) {

@@ -16,7 +16,7 @@ import mindustry.ui.Styles;
 public class InputElement extends ScratchElement {
     protected static TextField.TextFieldStyle style;
     protected static GlyphLayout prefSizeLayout = new GlyphLayout();
-    private static final float minWidth = 30;
+    private static final float minWidth = 20;
     public TextField field;
     private final InputType type;
     Cell<?> cell;
@@ -55,9 +55,9 @@ public class InputElement extends ScratchElement {
         this.child = child;
         if (child == null) {
             if (field == null) {
-                cell.left().pad(10).width(20f);
+                cell.left().pad(0, 10, 0, 10).width(20f);
             } else {
-                cell.setElement(field).left().pad(0, 10f, 0, 10f).width(20f).minHeight(23);
+                cell.setElement(field).left().pad(0, 10, 0, 10).width(20).minHeight(23);
                 field.change();
             }
         } else {
@@ -85,7 +85,7 @@ public class InputElement extends ScratchElement {
             } else {
                 ScratchStyles.drawInput(x, y, width, height, elemColor, ScratchController.selected == this);
             }
-        } else if (ScratchController.selected == this) {
+        } else if (ScratchController.selected == this && accept(ScratchController.dragging)) {
             if (child.getType() == ScratchType.condition) {
                 ScratchStyles.drawCondSelected(x, y, width, height);
             } else {

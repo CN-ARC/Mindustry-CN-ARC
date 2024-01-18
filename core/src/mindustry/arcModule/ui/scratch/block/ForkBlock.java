@@ -5,43 +5,41 @@ import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.scene.Element;
-import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
 import arc.struct.Seq;
-import arc.util.Align;
 import mindustry.arcModule.ui.scratch.BlockInfo;
-import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.block.fork.*;
 
 public class ForkBlock extends ScratchBlock {
+    int id = 0;
     public ForkBlock(ScratchType type, Color color, ForkInfo info) {
         this(type, color, info, false);
     }
 
     public ForkBlock(ScratchType type, Color color, ForkInfo info, boolean drag) {
-        super(type, color, info, drag);
+        super(type, color, info, drag, false);
         marginLeft(15);
     }
 
     public void header(BlockInfo info) {
-        ForkHeader e = new ForkHeader(info, elemColor);
+        ForkHeader e = new ForkHeader(info, elemColor, id++);
         e.cell(add(e));
     }
 
     public void inner() {
-        ForkInner e = new ForkInner(ScratchType.none, elemColor, new BlockInfo());
+        ForkInner e = new ForkInner(ScratchType.none, elemColor, new BlockInfo(), id++);
         e.cell(add(e));
     }
 
     public void middle() {
-        ForkMiddle e = new ForkMiddle(elemColor);
+        ForkMiddle e = new ForkMiddle(elemColor, id++);
         e.cell(add(e));
     }
 
     public void footer() {
-        ForkFooter e = new ForkFooter(ScratchType.none, elemColor, new BlockInfo());
+        ForkFooter e = new ForkFooter(ScratchType.none, elemColor, new BlockInfo(), id++);
         e.cell(add(e));
     }
 
@@ -73,14 +71,6 @@ public class ForkBlock extends ScratchBlock {
     @Override
     public void drawChildren() {
         super.drawChildren();
-    }
-
-    @Override
-    public Element hit(float x, float y, boolean touchable) {
-        if (touchable && this.touchable != Touchable.enabled) return null;
-        Element e = hitDefault(x, y, touchable);
-        if (e instanceof ForkComponent) return e;
-        return super.hit(x, y, touchable);
     }
 
     public static class ForkInfo extends BlockInfo {

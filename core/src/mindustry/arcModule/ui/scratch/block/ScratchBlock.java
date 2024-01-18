@@ -28,6 +28,10 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public ScratchBlock(ScratchType type, Color color, BlockInfo info, boolean dragEnabled) {
+        this(type, color, info, dragEnabled, true);
+    }
+
+    public ScratchBlock(ScratchType type, Color color, BlockInfo info, boolean dragEnabled, boolean fill) {
         this.type = type;
         elemColor = color;
         this.info = info;
@@ -41,7 +45,7 @@ public class ScratchBlock extends ScratchTable {
             }
         }
         if (dragEnabled) ScratchInput.addDraggingInput(this);
-        add().minHeight(40);
+        if (fill) add().minHeight(40);
     }
 
     public void label(String str) {
@@ -75,7 +79,7 @@ public class ScratchBlock extends ScratchTable {
         return copy(true);
     }
 
-    public ScratchBlock copy(boolean drag) {
+    public ScratchBlock copy(boolean drag) {//TODO Move copy tree function from menu#copy
         ScratchBlock sb = new ScratchBlock(type, elemColor, info, drag);
         copyChildrenValue(sb, drag);
         return sb;

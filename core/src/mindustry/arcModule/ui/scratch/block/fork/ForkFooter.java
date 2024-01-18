@@ -6,8 +6,8 @@ import mindustry.arcModule.ui.scratch.ScratchType;
 
 public class ForkFooter extends ForkComponent {
 
-    public ForkFooter(ScratchType type, Color color, BlockInfo info) {
-        super(type, color, info);
+    public ForkFooter(ScratchType type, Color color, BlockInfo info, int id) {
+        super(type, color, info, id);
     }
 
     @Override

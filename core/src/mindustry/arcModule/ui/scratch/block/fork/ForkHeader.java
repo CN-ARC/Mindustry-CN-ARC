@@ -3,18 +3,16 @@ package mindustry.arcModule.ui.scratch.block.fork;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
-import arc.scene.Element;
 import arc.scene.event.Touchable;
-import arc.scene.ui.layout.Cell;
-import arc.util.Align;
 import arc.util.Tmp;
-import mindustry.arcModule.ui.scratch.*;
+import mindustry.arcModule.ui.scratch.BlockInfo;
+import mindustry.arcModule.ui.scratch.ScratchStyles;
+import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.block.ForkBlock;
-import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
-public class ForkHeader extends ForkComponent {
-    public ForkHeader(BlockInfo info, Color c) {
-        super(ScratchType.none, c, info);
+public class ForkHeader extends ForkHasChild {
+    public ForkHeader(BlockInfo info, Color c, int id) {
+        super(ScratchType.none, c, info, id);
         touchable = Touchable.enabled;
     }
 
@@ -24,11 +22,6 @@ public class ForkHeader extends ForkComponent {
         Lines.line(x + 30, y + h - 7, x + 35, y + h);
         Lines.line(x + 35, y + h, x + w, y + h);
         Lines.line(x + w, y + h, x + w, y + 7);
-    }
-
-    @Override
-    public boolean acceptLink(ScratchBlock block) {
-        return true;
     }
 
     @Override
@@ -49,38 +42,5 @@ public class ForkHeader extends ForkComponent {
     public void drawChildren() {
         super.drawChildren();
         drawDebug();
-    }
-
-    @Override
-    public void copyTo(ForkComponent fork, boolean drag) {
-        copyChildrenValue(fork, drag);
-    }
-
-    @Override
-    public void cell(Cell<ScratchTable> c) {
-        super.cell(c);
-        c.marginTop(0).marginBottom(0);
-    }
-
-    @Override
-    public Element hit(float x, float y, boolean touchable) {
-        if (ScratchController.dragging == null || touchable && this.touchable != Touchable.enabled) return null;
-        if (!(ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block) || ScratchController.dragging == linkTo) return hitDefault(x, y, touchable);
-        if (x >= 0 && x < width && y >= -padValue * 2 && y < 0) {
-            dir = Align.bottom;
-            return this;
-        }
-        return hitDefault(x, y, touchable);
-    }
-
-    @Override
-    public void linkUpdate(ScratchBlock target) {
-        target.setPosition(parent.x + x, parent.y + y - target.getHeight() + 7);
-    }
-
-    @Override
-    public void setParent(ScratchBlock target) {
-        super.setParent(target);
-        if (linkFrom != null) linkFrom.setParent(this);
     }
 }
