@@ -1,6 +1,7 @@
 package mindustry.arcModule.ui.scratch.block.fork;
 
 import arc.graphics.Color;
+import arc.graphics.g2d.Lines;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
@@ -9,14 +10,21 @@ import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
-import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.block.ForkBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 abstract public class ForkHasChild extends ForkComponent {
+    public static final float defHeight = 20;
+    public Cell<?> cell;
+    private float drawHeight = defHeight;
 
-    ForkHasChild(ScratchType type, Color color, BlockInfo info, int id) {
-        super(type, color, info, id);
+    ForkHasChild(Color c, BlockInfo info) {
+        super(c, info);
+        touchable = Touchable.enabled;
+    }
+
+    protected void drawLeftBorder() {
+        Lines.line(x, y, x, y - drawHeight);
     }
 
     @Override
@@ -37,6 +45,27 @@ abstract public class ForkHasChild extends ForkComponent {
     }
 
     @Override
+    public void linkFrom(ScratchBlock source) {
+        super.linkFrom(source);
+        drawHeight = source == null ? defHeight : source.getTotalHeight();
+        cell.minHeight(drawHeight);
+        invalidateHierarchy();
+    }
+
+    @Override
+    public void act(float delta) {
+        if (linkFrom != null) {
+            float f = linkFrom.getTotalHeight();
+            if (f != drawHeight) {
+                drawHeight = f;
+                cell.minHeight(drawHeight);
+                invalidateHierarchy();
+            }
+        }
+        super.act(delta);
+    }
+
+    @Override
     public Element hit(float x, float y, boolean touchable) {
         if (touchable && this.touchable != Touchable.enabled) return null;
         if (x >= 0 && x < width && y >= -padValue * 2 && y < 0) {
@@ -45,10 +74,10 @@ abstract public class ForkHasChild extends ForkComponent {
         }
         Element hit = hitDefault(x, y, touchable);
         if (hit == this) {
-            this.touchable = Touchable.disabled;
+            this.parent.touchable = Touchable.disabled;
             localToAscendantCoordinates(ScratchController.ui.group, Tmp.v1.set(x, y));
             Element hit2 = ScratchController.ui.group.hit(Tmp.v1.x, Tmp.v1.y, touchable);
-            this.touchable = Touchable.enabled;
+            this.parent.touchable = Touchable.enabled;
             return hit2;
         }
         return hit;

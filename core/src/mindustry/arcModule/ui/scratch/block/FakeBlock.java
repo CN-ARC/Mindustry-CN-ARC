@@ -2,14 +2,13 @@ package mindustry.arcModule.ui.scratch.block;
 
 import arc.graphics.Color;
 import arc.scene.Element;
-import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchStyles;
 import mindustry.arcModule.ui.scratch.ScratchType;
 
 public class FakeBlock extends ScratchBlock {
     private ScratchBlock real;
     public FakeBlock() {
-        super(ScratchType.fake, Color.black.cpy().mulA(0.3f), new BlockInfo());
+        super(ScratchType.fake, Color.black.cpy().mulA(0.3f), emptyInfo);
     }
 
     public void setReal(ScratchBlock real) {

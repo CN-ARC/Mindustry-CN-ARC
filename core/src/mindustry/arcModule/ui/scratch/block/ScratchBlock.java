@@ -15,6 +15,7 @@ import mindustry.arcModule.ui.scratch.element.LabelElement;
 import mindustry.arcModule.ui.scratch.element.ScratchElement;
 
 public class ScratchBlock extends ScratchTable {
+    public static final BlockInfo emptyInfo = new BlockInfo();
     public static boolean removing = false;
     public ScratchType type;
     public final BlockInfo info;
@@ -67,7 +68,7 @@ public class ScratchBlock extends ScratchTable {
         return copy(true);
     }
 
-    public ScratchBlock copy(boolean drag) {//TODO Move copy tree function from menu#copy
+    public ScratchBlock copy(boolean drag) {
         ScratchBlock sb = new ScratchBlock(type, elemColor, info, drag);
         copyChildrenValue(sb, drag);
         return sb;
@@ -225,6 +226,16 @@ public class ScratchBlock extends ScratchTable {
     public void setParent(ScratchBlock target) {
         parent.removeChild(this);
         target.parent.addChild(this);
+    }
+
+    public float getTotalHeight() {
+        ScratchBlock e = this;
+        float height = 0;
+        while (e != null) {
+            height += e.getHeight();
+            e = e.linkFrom;
+        }
+        return height;
     }
 
     @Override

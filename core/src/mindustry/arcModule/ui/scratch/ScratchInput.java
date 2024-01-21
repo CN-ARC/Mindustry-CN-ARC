@@ -16,8 +16,7 @@ import mindustry.arcModule.ui.scratch.element.ScratchElement;
 
 import static arc.Core.input;
 import static arc.Core.scene;
-import static mindustry.arcModule.ui.scratch.ScratchController.dragging;
-import static mindustry.arcModule.ui.scratch.ScratchController.ui;
+import static mindustry.arcModule.ui.scratch.ScratchController.*;
 
 public class ScratchInput {
     public static final float dragStartDistance = 20f, dragMinDistance = 3f;
@@ -25,7 +24,7 @@ public class ScratchInput {
     public static final Vec2 v2 = new Vec2();
     public static ScratchBlock cur = null;
     public static FakeBlock fake = new FakeBlock();
-    public static boolean dragged = false, menu = false, removing = false;
+    public static boolean dragged = false, menu = false, removing = false, checking = false;
 
     public static void addDraggingInput(ScratchBlock e) {
         e.addListener(new ScratchDragListener(e));
@@ -33,7 +32,9 @@ public class ScratchInput {
     }
 
     public static void checkHit(float x, float y) {
+        checking = true;
         Element hit = ui.group.hit(x, y, true);
+        checking = false;
         if (dragging instanceof ScratchBlock block && block.type == ScratchType.block && hit instanceof ScratchTable t && t.acceptLink(block)) {
             ScratchBlock b = (ScratchBlock) (hit instanceof ScratchBlock ? hit : hit.parent);
             if (b.linkTo != dragging && b.linkFrom != dragging) {
@@ -52,11 +53,14 @@ public class ScratchInput {
         }
         if (fake.linked()) fake.removeAndKeepLink();
         if (hit instanceof ScratchTable sel) {
-            ScratchController.selected = sel;
+            selected = sel;
         } else if (hit != null && hit != ui.group && hit.parent instanceof ScratchTable parent) {
-            ScratchController.selected = parent;
+            selected = parent;
         } else {
-            ScratchController.selected = null;
+            selected = null;
+        }
+        if (selected != null && !selected.accept(dragging)) {
+            selected = null;
         }
     }
 
@@ -98,7 +102,7 @@ public class ScratchInput {
 
         public void checkPlace() {
             if (dragging == target) {
-                ScratchTable sel = ScratchController.selected;
+                ScratchTable sel = selected;
                 if (sel != null && sel.accept(target)) {
                     ScratchTable oldChild = sel.child;
                     target.asChild(sel);
@@ -111,7 +115,7 @@ public class ScratchInput {
                     target.insertLinkTop(fake);
                     fake.removeAndKeepLink();
                 }
-                dragging = ScratchController.selected = null;
+                dragging = selected = null;
             }
         }
 

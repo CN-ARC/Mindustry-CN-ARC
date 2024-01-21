@@ -4,9 +4,11 @@ import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
 import arc.scene.Element;
 import arc.scene.ui.layout.Cell;
 import arc.struct.Seq;
+import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
@@ -14,39 +16,32 @@ import mindustry.arcModule.ui.scratch.block.fork.*;
 
 @SuppressWarnings("unused")
 public class ForkBlock extends ScratchBlock {
-    int id = 0;
-    public ForkBlock(ScratchType type, Color color, ForkInfo info) {
-        this(type, color, info, false);
+    public ForkBlock(Color color, ForkInfo info) {
+        this(color, info, false);
     }
 
-    public ForkBlock(ScratchType type, Color color, ForkInfo info, boolean drag) {
-        super(type, color, info, drag, false);
+    public ForkBlock(Color color, ForkInfo info, boolean drag) {
+        super(ScratchType.block, color, info, drag, false);
         marginLeft(15);
+        ForkFooter e = new ForkFooter();
+        e.cell(add(e));
     }
 
     public void header(BlockInfo info) {
-        ForkHeader e = new ForkHeader(info, elemColor, id++);
+        ForkHeader e = new ForkHeader(elemColor, info);
         e.cell(add(e));
+        e.cell = add().minHeight(ForkHasChild.defHeight);
+        row();
     }
 
     public void inner() {
-        ForkInner e = new ForkInner(ScratchType.none, elemColor, new BlockInfo(), id++);
-        e.cell(add(e));
-    }
-
-    public void middle() {
-        ForkMiddle e = new ForkMiddle(elemColor, id++);
-        e.cell(add(e));
-    }
-
-    public void footer() {
-        ForkFooter e = new ForkFooter(ScratchType.none, elemColor, new BlockInfo(), id++);
+        ForkInner e = new ForkInner(elemColor, emptyInfo);
         e.cell(add(e));
     }
 
     @Override
     public ForkBlock copy(boolean drag) {
-        ForkBlock sb = new ForkBlock(type, elemColor, (ForkInfo) info, true);
+        ForkBlock sb = new ForkBlock(elemColor, (ForkInfo) info, true);
         for (int i = 0; i < elements.size; i++) {
             Element child = elements.get(i);
             if (child instanceof ForkComponent f) {
@@ -67,6 +62,8 @@ public class ForkBlock extends ScratchBlock {
     public void drawBackground() {
         Draw.color(elemColor);
         Fill.crect(x, y, 15, height - 7);
+        Draw.color(Tmp.c1.set(elemColor).lerp(Color.black, 0.3f));
+        Lines.line(x, y, x, y + height);
     }
 
     @Override
@@ -83,11 +80,7 @@ public class ForkBlock extends ScratchBlock {
 
     public static class ForkInfo extends BlockInfo {
         Cons<ForkBlock> builder;
-        ValSupp supp = s -> null;
-
-        public ForkInfo(Cons<ForkBlock> builder) {
-            this.builder = builder;
-        }
+        ValSupp supp;
 
         public ForkInfo(Cons<ForkBlock> builder, BlockInfo.ValSupp supp) {
             this.builder = builder;

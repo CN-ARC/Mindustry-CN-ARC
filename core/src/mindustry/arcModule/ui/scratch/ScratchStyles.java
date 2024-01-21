@@ -7,8 +7,9 @@ import arc.graphics.g2d.Lines;
 import arc.util.Tmp;
 
 public class ScratchStyles {
+    public static final Color selectedColor = Color.gold;
     public static void drawInput(float x, float y, float w, float h, Color c, boolean selected) {
-        Color c1 = selected ? Color.orange : Tmp.c1.set(c).lerp(Color.black, 0.3f).cpy();
+        Color c1 = selected ? selectedColor : Tmp.c1.set(c).lerp(Color.black, 0.3f).cpy();
         Lines.stroke(selected ? 2 : 1);
         float halfH = h / 2;
         Draw.color(c);
@@ -27,7 +28,7 @@ public class ScratchStyles {
 
     public static void drawInputSelected(float x, float y, float w, float h) {
         float halfH = h / 2;
-        Draw.color(Color.orange);
+        Draw.color(selectedColor);
         Lines.stroke(3);
         Lines.circle(x + halfH, y + halfH, halfH);
         Lines.circle(x + w - halfH, y + halfH, halfH);
@@ -41,7 +42,7 @@ public class ScratchStyles {
         Fill.tri(x + halfH, y, x, y + halfH, x + halfH, y + h);
         Fill.tri(x + w - halfH, y, x + w, y + halfH, x + w - halfH, y + h);
         Fill.rect(x + w / 2, y + halfH, w - 2 * halfH, h);
-        Draw.color(selected ? Color.orange : Tmp.c1.set(c).lerp(Color.black, 0.3f));
+        Draw.color(selected ? selectedColor : Tmp.c1.set(c).lerp(Color.black, 0.3f));
         Lines.stroke(selected ? 2 : 1);
         Lines.beginLine();
         Lines.linePoint(x + halfH, y);
@@ -54,7 +55,7 @@ public class ScratchStyles {
     }
 
     public static void drawCondSelected(float x, float y, float w, float h) {
-        Draw.color(Color.orange);
+        Draw.color(selectedColor);
         float halfH = h / 2;
         Lines.stroke(2);
         Lines.beginLine();
@@ -102,6 +103,7 @@ public class ScratchStyles {
     }
 
     public static void drawBlockBorderTop(float x, float y, float w, float h) {
+        Lines.linePoint(x, y + h);
         Lines.linePoint(x + 10, y + h);
         Lines.linePoint(x + 15, y + h - 7);
         Lines.linePoint(x + 30, y + h - 7);

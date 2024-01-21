@@ -42,7 +42,7 @@ public class ScratchController {
         for (int i = 0; i < objects.length; i++) {
             Object obj = objects[i];
             if (isNumber(obj)) {
-                doubles[i] = (double) obj;
+                doubles[i] = toDouble(obj);
                 continue;
             }
             if (obj instanceof String s) {
@@ -59,7 +59,12 @@ public class ScratchController {
     }
 
     public static boolean isNumber(Object o) {
-        return o instanceof Double || o instanceof Integer || o instanceof Boolean || o instanceof Float || o instanceof Long || o instanceof Short;
+        return o instanceof Number || o instanceof Boolean;
+    }
+
+    public static double toDouble(Object o) {
+        if (o instanceof Boolean b) return b ? 1 : 0;
+        return (double) o;
     }
 
     public static class DoubleResult {
