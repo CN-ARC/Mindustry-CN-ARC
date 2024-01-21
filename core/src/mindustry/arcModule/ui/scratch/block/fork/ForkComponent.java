@@ -25,11 +25,11 @@ public abstract class ForkComponent extends ScratchBlock {
     }
 
     public static void drawBorderBottom(float x, float y, float w) {
-        Lines.line(x + w, y + 7, x + 35, y + 7);
-        Lines.line(x + 35, y + 7, x + 30, y);
-        Lines.line(x + 30, y, x + 15, y);
-        Lines.line(x + 15, y, x + 10, y + 7);
-        Lines.line(x + 10, y + 7, x, y + 7);
+        Lines.line(x + w, y, x + 35, y);
+        Lines.line(x + 35, y, x + 30, y - 7);
+        Lines.line(x + 30, y - 7, x + 15, y - 7);
+        Lines.line(x + 15, y - 7, x + 10, y);
+        Lines.line(x + 10, y, x, y);
     }
 
     @Override

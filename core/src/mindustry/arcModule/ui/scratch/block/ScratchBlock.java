@@ -5,7 +5,6 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
-import arc.scene.ui.layout.Cell;
 import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Nullable;
@@ -36,16 +35,9 @@ public class ScratchBlock extends ScratchTable {
         elemColor = color;
         this.info = info;
         info.build(this);
-        if (children.size != 0) {
-            if (children.get(0) instanceof InputElement e) {
-                getCell(e).padLeft(addPadding + 10);
-            }
-            if (children.get(children.size - 1) instanceof InputElement e) {
-                getCell(e).padRight(addPadding + 10);
-            }
-        }
         if (dragEnabled) ScratchInput.addDraggingInput(this);
-        if (fill) add().minHeight(40);
+        if (fill) add().minHeight(type == ScratchType.block ? 40 : 28);
+        if (type == ScratchType.condition) margin(0, addPadding, 0, addPadding);
     }
 
     public void label(String str) {
@@ -59,20 +51,16 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public void input() {
-        input(InputElement.InputType.string);
+        input(false);
     }
 
-    public void input(InputElement.InputType type) {
-        input(type, "");
+    public void input(boolean num) {
+        input(num, "");
     }
 
-    public void input(InputElement.InputType type, String def) {
-        InputElement e = new InputElement(type, def);
-        Cell<ScratchTable> c;
-        e.cell(c = add(e));
-        if (children.size == 1) {
-            c.padLeft(addPadding + 10);
-        }
+    public void input(boolean num, String def) {
+        InputElement e = new InputElement(num, def);
+        e.cell(add(e));
     }
 
     public ScratchBlock copy() {
@@ -83,6 +71,23 @@ public class ScratchBlock extends ScratchTable {
         ScratchBlock sb = new ScratchBlock(type, elemColor, info, drag);
         copyChildrenValue(sb, drag);
         return sb;
+    }
+
+    public ScratchBlock copyTree(boolean add) {
+        ScratchBlock top = getTopBlock().copy();
+        if (add) ScratchController.ui.group.addChild(top);
+        if (getType() == ScratchType.block) {
+            ScratchBlock from = linkFrom;
+            ScratchBlock to = top;
+            while (from != null) {
+                ScratchBlock copy = from.copy();
+                copy.linkTo(to);
+                if (add) ScratchController.ui.group.addChild(copy);
+                to = copy;
+                from = from.linkFrom;
+            }
+        }
+        return top;
     }
 
     public void copyChildrenValue(ScratchBlock target, boolean drag) {
@@ -199,7 +204,7 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public void linkUpdate(ScratchBlock target) {
-        target.setPosition(x, y - target.getHeight() + 7);
+        target.setPosition(x, y - target.getHeight());
     }
 
     public Element hitDefault(float x, float y, boolean touchable) {

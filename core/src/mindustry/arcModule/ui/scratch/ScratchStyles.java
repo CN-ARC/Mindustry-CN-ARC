@@ -78,12 +78,12 @@ public class ScratchStyles {
         Fill.polyBegin();
         Fill.polyPoint(x, y + h - 7);
         Fill.polyPoint(x + w, y + h - 7);
-        Fill.polyPoint(x + w, y + 7);
-        Fill.polyPoint(x + 35, y + 7);
-        Fill.polyPoint(x + 30, y);
-        Fill.polyPoint(x + 15, y);
-        Fill.polyPoint(x + 10, y + 7);
-        Fill.polyPoint(x, y + 7);
+        Fill.polyPoint(x + w, y);
+        Fill.polyPoint(x + 35, y);
+        Fill.polyPoint(x + 30, y - 7);
+        Fill.polyPoint(x + 15, y - 7);
+        Fill.polyPoint(x + 10, y);
+        Fill.polyPoint(x, y);
         Fill.polyEnd();
     }
 
@@ -107,14 +107,14 @@ public class ScratchStyles {
         Lines.linePoint(x + 30, y + h - 7);
         Lines.linePoint(x + 35, y + h);
         Lines.linePoint(x + w, y + h);
-        Lines.linePoint(x + w, y + 7);
+        Lines.linePoint(x + w, y);
     }
 
     public static void drawBlockBorderBottom(float x, float y) {
-        Lines.linePoint(x + 35, y + 7);
-        Lines.linePoint(x + 30, y);
-        Lines.linePoint(x + 15, y);
-        Lines.linePoint(x + 10, y + 7);
-        Lines.linePoint(x, y + 7);
+        Lines.linePoint(x + 35, y);
+        Lines.linePoint(x + 30, y - 7);
+        Lines.linePoint(x + 15, y - 7);
+        Lines.linePoint(x + 10, y);
+        Lines.linePoint(x, y);
     }
 }

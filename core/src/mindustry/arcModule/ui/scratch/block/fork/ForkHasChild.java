@@ -5,9 +5,12 @@ import arc.scene.Element;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
+import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.BlockInfo;
+import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
+import mindustry.arcModule.ui.scratch.block.ForkBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 abstract public class ForkHasChild extends ForkComponent {
@@ -24,7 +27,7 @@ abstract public class ForkHasChild extends ForkComponent {
     @Override
     public void copyTo(ForkComponent fork, boolean drag) {
         copyChildrenValue(fork, drag);
-        fork.setChild(linkFrom.copy());
+        if (linkFrom != null) fork.setChild(linkFrom.copy());
     }
 
     @Override
@@ -41,17 +44,28 @@ abstract public class ForkHasChild extends ForkComponent {
             return this;
         }
         Element hit = hitDefault(x, y, touchable);
-        return hit == this ? null : hit;
+        if (hit == this) {
+            this.touchable = Touchable.disabled;
+            localToAscendantCoordinates(ScratchController.ui.group, Tmp.v1.set(x, y));
+            Element hit2 = ScratchController.ui.group.hit(Tmp.v1.x, Tmp.v1.y, touchable);
+            this.touchable = Touchable.enabled;
+            return hit2;
+        }
+        return hit;
     }
 
     @Override
     public void linkUpdate(ScratchBlock target) {
-        target.setPosition(parent.x + x, parent.y + y - target.getHeight() + 7);
+        target.setPosition(parent.x + x, parent.y + y - target.getHeight());
     }
 
     @Override
-    public void setParent(ScratchBlock target) {
-        super.setParent(target);
-        if (linkFrom != null) linkFrom.setParent(this);
+    public void ensureParent() {
+        ScratchBlock b = linkFrom;
+        if (b != null && b.parent == parent.parent) return;
+        while (b != null) {
+            b.setParent((ForkBlock) parent);
+            b = b.linkFrom;
+        }
     }
 }

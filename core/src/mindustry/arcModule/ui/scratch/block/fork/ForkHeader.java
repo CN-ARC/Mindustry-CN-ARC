@@ -11,6 +11,7 @@ import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.block.ForkBlock;
 
 public class ForkHeader extends ForkHasChild {
+    public boolean d1 = true, d2 = true, d4 = true, d5 = true;
     public ForkHeader(BlockInfo info, Color c, int id) {
         super(ScratchType.none, c, info, id);
         touchable = Touchable.enabled;
@@ -27,15 +28,14 @@ public class ForkHeader extends ForkHasChild {
     @Override
     public void drawBackground() {
         Color col = ((ForkBlock) parent).elemColor;
-        ScratchStyles.drawBlockHeader(x - 15, y, width + 15, height, col);
+        if (d1) ScratchStyles.drawBlockHeader(x - 15, y, width + 15, height, col);
         Draw.color(col);
-        ScratchStyles.drawBlockInner(x, y, width, height);
+        if (d2) ScratchStyles.drawBlockInner(x, y, width, height);
         Lines.beginLine();
-        ScratchStyles.drawBlockBorderBottom(x, y);
         Lines.endLine();
         Draw.color(Tmp.c1.set(col).lerp(Color.black, 0.3f));
-        drawBorderDirect(x - 15, y, width + 15, height);
-        drawBorderBottom(x, y, width);
+        if (d4) drawBorderDirect(x - 15, y, width + 15, height);
+        if (d5) drawBorderBottom(x, y, width);
     }
 
     @Override

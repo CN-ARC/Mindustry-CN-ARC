@@ -12,6 +12,7 @@ import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.block.fork.*;
 
+@SuppressWarnings("unused")
 public class ForkBlock extends ScratchBlock {
     int id = 0;
     public ForkBlock(ScratchType type, Color color, ForkInfo info) {
@@ -71,6 +72,13 @@ public class ForkBlock extends ScratchBlock {
     @Override
     public void drawChildren() {
         super.drawChildren();
+    }
+
+    @Override
+    public void ensureParent() {
+        elements.each(e -> {
+            if (e instanceof ForkHasChild f) f.ensureParent();
+        });
     }
 
     public static class ForkInfo extends BlockInfo {

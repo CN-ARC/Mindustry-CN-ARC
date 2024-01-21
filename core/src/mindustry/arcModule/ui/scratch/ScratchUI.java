@@ -11,7 +11,6 @@ import arc.scene.Element;
 import arc.scene.Group;
 import arc.scene.actions.Actions;
 import arc.scene.event.ClickListener;
-import arc.scene.event.InputEvent;
 import arc.scene.event.Touchable;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.style.TiledDrawable;
@@ -22,9 +21,9 @@ import arc.scene.ui.layout.Table;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.util.Align;
 import arc.util.Tmp;
+import mindustry.arcModule.ui.UIUtils;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.arcModule.ui.widgets.BoundedGroup;
-import mindustry.arcModule.ui.window.Window;
 import mindustry.gen.Tex;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
@@ -110,33 +109,13 @@ public class ScratchUI extends Table {
             t.setBackground(Styles.black3);
             t.defaults().size(100, 30);
             if (e instanceof ScratchBlock sb && inStage) {
-                t.button("copy", Styles.nonet, () -> {
-                    ScratchBlock b = sb.copy();
-                    group.addChild(b);
-                    b.setPosition(sb.x + 15, sb.y - 15);
-                    if (sb.getType() == ScratchType.block) {
-                        ScratchBlock from = sb.linkFrom;
-                        ScratchBlock to = b;
-                        while (from != null) {
-                            ScratchBlock copy = from.copy();
-                            copy.linkTo(to);
-                            group.addChild(copy);
-                            to = copy;
-                            from = from.linkFrom;
-                        }
-                    }
-                });
+                t.button("copy", Styles.nonet, () -> sb.copyTree(true).setPosition(sb.x + 15, sb.y - 15));
                 t.row();
                 t.button("delete", Styles.nonet, sb::remove);
             }
             overlay.stageToLocalCoordinates(v1.set(input.mouseX(), input.mouseY()));
             t.setPosition(v1.x, v1.y - t.getPrefHeight());
-            t.getChildren().forEach(c -> c.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    t.remove();
-                }
-            }));
+            t.getChildren().forEach(c -> UIUtils.clicked(c, t::remove));
             t.addListener(new ClickListener());
             t.update(() -> {
                 if (!((ClickListener) t.getListeners().find(ee -> ee instanceof ClickListener)).isOver()) if ((Core.input.keyTap(KeyCode.mouseLeft) || Core.input.keyTap(KeyCode.mouseRight))) t.remove();
