@@ -6,6 +6,7 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
 import arc.scene.Element;
+import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
 import arc.struct.Seq;
 import arc.util.Tmp;
@@ -48,7 +49,6 @@ public class ForkBlock extends ScratchBlock {
                 f.copyTo((ForkComponent) sb.elements.get(i), drag);
             }
         }
-        layout();
         return sb;
     }
 
@@ -76,6 +76,15 @@ public class ForkBlock extends ScratchBlock {
         elements.each(e -> {
             if (e instanceof ForkHasChild f) f.ensureParent();
         });
+    }
+
+    @Override
+    public Element hit(float x, float y, boolean touchable) {
+        Element hit = super.hit(x, y, touchable);
+        this.touchable = Touchable.childrenOnly;
+        Element hit2 = hitDefault(x, y, touchable);
+        this.touchable = Touchable.enabled;
+        return hit2;
     }
 
     public static class ForkInfo extends BlockInfo {

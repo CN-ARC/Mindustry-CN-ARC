@@ -12,6 +12,13 @@ public class CondElement extends ScratchElement {
     public CondElement() {
     }
 
+    public static boolean toBool(Object o) {
+        if (o == null) return false;
+        if (o instanceof Boolean b) return b;
+        if (o instanceof Number n) return n.doubleValue() != 0;
+        return true;
+    }
+
     @Override
     public boolean accept(ScratchTable e) {
         return e.getType() == ScratchType.condition;
@@ -29,8 +36,8 @@ public class CondElement extends ScratchElement {
     }
 
     @Override
-    public Object getValue() {
-        return child != null ? child.getValue() : null;
+    public Boolean getValue() {
+        return child != null && toBool(child.getValue());
     }
 
     @Override

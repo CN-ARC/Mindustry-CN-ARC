@@ -6,9 +6,7 @@ import arc.scene.Element;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
-import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.BlockInfo;
-import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.block.ForkBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
@@ -35,7 +33,7 @@ abstract public class ForkHasChild extends ForkComponent {
     @Override
     public void copyTo(ForkComponent fork, boolean drag) {
         copyChildrenValue(fork, drag);
-        if (linkFrom != null) fork.setChild(linkFrom.copy());
+        if (linkFrom != null) linkFrom.copy().linkTo(fork);
     }
 
     @Override
@@ -72,15 +70,7 @@ abstract public class ForkHasChild extends ForkComponent {
             dir = Align.bottom;
             return this;
         }
-        Element hit = hitDefault(x, y, touchable);
-        if (hit == this) {
-            this.parent.touchable = Touchable.disabled;
-            localToAscendantCoordinates(ScratchController.ui.group, Tmp.v1.set(x, y));
-            Element hit2 = ScratchController.ui.group.hit(Tmp.v1.x, Tmp.v1.y, touchable);
-            this.parent.touchable = Touchable.enabled;
-            return hit2;
-        }
-        return hit;
+        return hitDefault(x, y, touchable);
     }
 
     @Override

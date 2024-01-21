@@ -34,9 +34,4 @@ public class ForkFooter extends ForkComponent {
         c.minHeight(15);
         margin(0);
     }
-
-    @Override
-    public ForkComponent copy(boolean drag) {
-        return null;
-    }
 }
