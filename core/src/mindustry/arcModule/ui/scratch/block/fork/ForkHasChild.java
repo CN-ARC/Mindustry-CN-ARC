@@ -7,8 +7,8 @@ import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
 import mindustry.arcModule.ui.scratch.BlockInfo;
+import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
-import mindustry.arcModule.ui.scratch.block.ForkBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 abstract public class ForkHasChild extends ForkComponent {
@@ -25,6 +25,15 @@ abstract public class ForkHasChild extends ForkComponent {
         Lines.line(x, y, x, y - drawHeight);
     }
 
+    public void setLinkedParent(ScratchBlock target) {
+        ScratchBlock b = linkFrom;
+        if (b != null && b.parent == target.parent) return;
+        while (b != null) {
+            b.setParent(target);
+            b = b.linkFrom;
+        }
+    }
+
     @Override
     public boolean acceptLink(ScratchBlock block) {
         return true;
@@ -33,7 +42,11 @@ abstract public class ForkHasChild extends ForkComponent {
     @Override
     public void copyTo(ForkComponent fork, boolean drag) {
         copyChildrenValue(fork, drag);
-        if (linkFrom != null) linkFrom.copy().linkTo(fork);
+        if (linkFrom != null) {
+            ScratchBlock copied = linkFrom.copy();
+            ScratchController.ui.group.addChild(copied);
+            copied.linkTo(fork);
+        }
     }
 
     @Override
@@ -76,15 +89,5 @@ abstract public class ForkHasChild extends ForkComponent {
     @Override
     public void linkUpdate(ScratchBlock target) {
         target.setPosition(parent.x + x, parent.y + y - target.getHeight());
-    }
-
-    @Override
-    public void ensureParent() {
-        ScratchBlock b = linkFrom;
-        if (b != null && b.parent == parent.parent) return;
-        while (b != null) {
-            b.setParent((ForkBlock) parent);
-            b = b.linkFrom;
-        }
     }
 }

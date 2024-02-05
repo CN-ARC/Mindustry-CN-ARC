@@ -56,6 +56,7 @@ public class ScratchUI extends Table {
             p.drawLine(75 - i, i, 75 + i, i, w);
         }
         bg2 = new TextureRegionDrawable(new TextureRegion(new Texture(p)));
+        p.dispose();
     }
 
     public ScratchUI() {

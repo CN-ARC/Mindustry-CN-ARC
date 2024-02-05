@@ -9,7 +9,10 @@ public class BlockInfo {
     Cons<ScratchBlock> builder = s -> {};
     ValSupp supp = s -> null;
     public BlockInfo() {
+    }
 
+    public BlockInfo(Cons<ScratchBlock> builder) {
+        this.builder = builder;
     }
 
     public BlockInfo(Cons<ScratchBlock> builder, ValSupp supp) {

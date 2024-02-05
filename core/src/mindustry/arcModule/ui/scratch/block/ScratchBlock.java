@@ -232,7 +232,7 @@ public class ScratchBlock extends ScratchTable {
         ScratchBlock e = this;
         float height = 0;
         while (e != null) {
-            height += e.getHeight();
+            height += e.getPrefHeight();
             e = e.linkFrom;
         }
         return height;

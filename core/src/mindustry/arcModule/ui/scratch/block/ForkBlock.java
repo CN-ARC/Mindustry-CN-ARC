@@ -40,15 +40,16 @@ public class ForkBlock extends ScratchBlock {
         e.cell(add(e));
     }
 
+    public void updateFork(ScratchBlock target) {
+        if (elements.get(0).parent != target.parent) elements.each(e -> {
+            if (e instanceof ForkHasChild f) f.setLinkedParent(target);
+        });
+    }
+
     @Override
     public ForkBlock copy(boolean drag) {
         ForkBlock sb = new ForkBlock(elemColor, (ForkInfo) info, true);
-        for (int i = 0; i < elements.size; i++) {
-            Element child = elements.get(i);
-            if (child instanceof ForkComponent f) {
-                f.copyTo((ForkComponent) sb.elements.get(i), drag);
-            }
-        }
+        for (int i = 0; i < elements.size; i++) ((ForkComponent) elements.get(i)).copyTo((ForkComponent) sb.elements.get(i), drag);
         return sb;
     }
 
@@ -73,18 +74,28 @@ public class ForkBlock extends ScratchBlock {
 
     @Override
     public void ensureParent() {
-        elements.each(e -> {
-            if (e instanceof ForkHasChild f) f.ensureParent();
-        });
+        updateFork(this);
+        super.ensureParent();
+    }
+
+    @Override
+    public void setParent(ScratchBlock target) {
+        updateFork(target);
+        super.setParent(target);
     }
 
     @Override
     public Element hit(float x, float y, boolean touchable) {
-        Element hit = super.hit(x, y, touchable);
         this.touchable = Touchable.childrenOnly;
         Element hit2 = hitDefault(x, y, touchable);
         this.touchable = Touchable.enabled;
-        return hit2;
+        return hit2 == null ? super.hit(x, y, touchable) : hit2;
+    }
+
+    @Override
+    public void removeLinked() {
+        elements.each(e -> ((ForkComponent) e).removeLinked());
+        super.removeLinked();
     }
 
     public static class ForkInfo extends BlockInfo {

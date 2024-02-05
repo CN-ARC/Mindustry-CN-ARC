@@ -13,12 +13,12 @@ public class TestBlocks {
         ScratchController.registerBlock("test5", new ForkBlock(new Color(Color.packRgba(255, 171, 25, 255)), new ForkBlock.ForkInfo(block -> block.header(new BlockInfo(b -> {
             b.label("如果");
             b.cond();
-        }, e -> {
+        })), e -> {
             if (((CondElement) ((ForkComponent) e.get(0)).elements.get(1)).getValue()) {
                 ScratchBlock run = ((ForkComponent) e.get(0)).linkFrom;
                 if (run != null) run.getValue();
             }
             return null;
-        })), e -> null)));
+        })));
     }
 }
