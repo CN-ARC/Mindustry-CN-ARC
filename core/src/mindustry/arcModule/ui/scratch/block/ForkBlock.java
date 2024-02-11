@@ -5,18 +5,20 @@ import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
+import arc.math.geom.Vec2;
 import arc.scene.Element;
-import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
 import arc.struct.Seq;
 import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.BlockInfo;
+import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.block.fork.*;
 
 @SuppressWarnings("unused")
 public class ForkBlock extends ScratchBlock {
+    private static final Vec2 v1 = new Vec2();
     public ForkBlock(Color color, ForkInfo info) {
         this(color, info, false);
     }
@@ -44,6 +46,14 @@ public class ForkBlock extends ScratchBlock {
         if (elements.get(0).parent != target.parent) elements.each(e -> {
             if (e instanceof ForkHasChild f) f.setLinkedParent(target);
         });
+    }
+
+    public Element touched(float x, float y) {
+        for (var i : children) {
+            i.parentToLocalCoordinates(v1.set(x, y));
+            if (((ForkComponent) i).touched(v1.x, v1.y)) return i;
+        }
+        return null;
     }
 
     @Override
@@ -86,16 +96,15 @@ public class ForkBlock extends ScratchBlock {
 
     @Override
     public Element hit(float x, float y, boolean touchable) {
-        this.touchable = Touchable.childrenOnly;
-        Element hit2 = hitDefault(x, y, touchable);
-        this.touchable = Touchable.enabled;
-        return hit2 == null ? super.hit(x, y, touchable) : hit2;
+        if (ScratchController.dragging != null) return super.hit(x, y, touchable);
+        if (x > 0 && x < 15 && y > 0 && y < height) return this;
+        return touched(x, y);
     }
 
     @Override
-    public void removeLinked() {
+    public boolean remove() {
         elements.each(e -> ((ForkComponent) e).removeLinked());
-        super.removeLinked();
+        return super.remove();
     }
 
     public static class ForkInfo extends BlockInfo {

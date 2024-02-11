@@ -43,7 +43,7 @@ abstract public class ForkHasChild extends ForkComponent {
     public void copyTo(ForkComponent fork, boolean drag) {
         copyChildrenValue(fork, drag);
         if (linkFrom != null) {
-            ScratchBlock copied = linkFrom.copy();
+            ScratchBlock copied = linkFrom.copyTree(true);
             ScratchController.ui.group.addChild(copied);
             copied.linkTo(fork);
         }

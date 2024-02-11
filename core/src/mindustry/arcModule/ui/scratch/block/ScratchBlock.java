@@ -9,6 +9,7 @@ import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Nullable;
 import mindustry.arcModule.ui.scratch.*;
+import mindustry.arcModule.ui.scratch.block.fork.ForkComponent;
 import mindustry.arcModule.ui.scratch.element.CondElement;
 import mindustry.arcModule.ui.scratch.element.InputElement;
 import mindustry.arcModule.ui.scratch.element.LabelElement;
@@ -75,7 +76,7 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public ScratchBlock copyTree(boolean add) {
-        ScratchBlock top = getTopBlock().copy();
+        ScratchBlock top = copy();
         if (add) ScratchController.ui.group.addChild(top);
         if (getType() == ScratchType.block) {
             ScratchBlock from = linkFrom;
@@ -164,7 +165,7 @@ public class ScratchBlock extends ScratchTable {
     public ScratchBlock getTopBlock() {
         ScratchBlock b = this;
         if (getType() == ScratchType.block) {
-            while (b.linkTo != null) b = b.linkTo;
+            while (b.linkTo != null && !(b.linkTo instanceof ForkComponent)) b = b.linkTo;
         } else {
             while (b.parent instanceof ScratchElement se) b = (ScratchBlock) se.parent;
         }

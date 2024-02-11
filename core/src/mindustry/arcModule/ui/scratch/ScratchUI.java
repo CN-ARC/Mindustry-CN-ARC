@@ -110,7 +110,7 @@ public class ScratchUI extends Table {
             t.setBackground(Styles.black3);
             t.defaults().size(100, 30);
             if (e instanceof ScratchBlock sb && inStage) {
-                t.button("copy", Styles.nonet, () -> sb.copyTree(true).setPosition(sb.x + 15, sb.y - 15));
+                t.button("copy", Styles.nonet, () -> sb.getTopBlock().copyTree(true).setPosition(sb.x + 15, sb.y - 15));
                 t.row();
                 t.button("delete", Styles.nonet, sb::remove);
             }
