@@ -99,6 +99,7 @@ public class ScratchStyles {
         Lines.beginLine();
         drawBlockBorderTop(x, y, w, h);
         drawBlockBorderBottom(x, y);
+        Lines.linePoint(x, y + h);
         Lines.endLine();
     }
 

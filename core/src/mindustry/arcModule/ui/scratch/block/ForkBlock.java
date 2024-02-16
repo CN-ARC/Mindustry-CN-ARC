@@ -51,7 +51,7 @@ public class ForkBlock extends ScratchBlock {
     public Element touched(float x, float y) {
         for (var i : children) {
             i.parentToLocalCoordinates(v1.set(x, y));
-            if (((ForkComponent) i).touched(v1.x, v1.y)) return i;
+            if (((ForkComponent) i).touched(v1.x, v1.y)) return i.hit(v1.x, v1.y, true);
         }
         return null;
     }
@@ -108,20 +108,22 @@ public class ForkBlock extends ScratchBlock {
     }
 
     public static class ForkInfo extends BlockInfo {
-        Cons<ForkBlock> builder;
-        ValSupp supp;
+        protected Cons<ForkBlock> builder;
 
         public ForkInfo(Cons<ForkBlock> builder, BlockInfo.ValSupp supp) {
             this.builder = builder;
             this.supp = supp;
         }
 
-        public void build(ForkBlock block) {
-            builder.get(block);
+        public ForkInfo(Cons<ForkBlock> builder, Cons<ScratchBlock.Run> runBuilder, Cons<Seq<Element>> run) {
+            this.builder = builder;
+            this.runBuilder = runBuilder;
+            this.run = run;
         }
 
-        public Object getValue(Seq<Element> elements) {
-            return supp.get(elements);
+
+        public void build(ForkBlock block) {
+            builder.get(block);
         }
 
         @Override

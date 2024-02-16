@@ -1,5 +1,8 @@
 package mindustry.arcModule.ui.scratch.block;
 
+import arc.func.Boolf;
+import arc.func.Boolp;
+import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
@@ -23,6 +26,7 @@ public class ScratchBlock extends ScratchTable {
     public ScratchBlock linkTo, linkFrom;
     public byte dir = 0;
     public Seq<Element> elements = new Seq<>();
+    public Run running;
 
     public ScratchBlock(ScratchType type, Color color, BlockInfo info) {
         this(type, color, info, false);
@@ -239,6 +243,20 @@ public class ScratchBlock extends ScratchTable {
         return height;
     }
 
+    public void scheduleRun() {
+        scheduleRun(false);
+    }
+
+    public void scheduleRun(boolean insert) {
+        if (running != null) return;
+        running = info.build(new Run(this));
+        if (insert) {
+            ScratchController.setRunning(running);
+        } else {
+            ScratchController.run(running);
+        }
+    }
+
     @Override
     public boolean acceptLink(ScratchBlock block) {
         return type == ScratchType.block;
@@ -247,11 +265,7 @@ public class ScratchBlock extends ScratchTable {
     @Override
     public Object getValue() {
         if (type == ScratchType.block) {
-            ScratchBlock b = this;
-            while (b != null) {
-                b.info.getValue(b.elements);
-                b = b.linkFrom;
-            }
+            scheduleRun();
             return null;
         }
         return info.getValue(elements);
@@ -315,5 +329,16 @@ public class ScratchBlock extends ScratchTable {
     public void addChild(Element actor) {
         super.addChild(actor);
         elements.add(actor);
+    }
+
+    public static class Run {
+        public Cons<Seq<Element>> cycle;
+        public Boolf<Seq<Element>> valid = e -> false;
+        public final ScratchBlock block;
+        public Run parent = null, child = null;
+
+        public Run(ScratchBlock block) {
+            this.block = block;
+        }
     }
 }

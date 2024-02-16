@@ -163,7 +163,7 @@ public class BeControl{
                     steamUrl = gitDownloadURL + directSteamURL;
                     mobileUrl = gitDownloadURL + directMobileURL;
                 }).width(250f).get();
-                tt.button(Icon.refreshSmall,()->buildTable());
+                tt.button(Icon.refreshSmall, this::buildTable);
             });
             t.row();
             t.table(tt->{

@@ -44,12 +44,6 @@ public abstract class ForkComponent extends ScratchBlock {
     }
 
     @Override
-    public void draw() {
-        super.draw();
-        drawDebug();
-    }
-
-    @Override
     public ScratchType getType() {
         return ScratchType.none;
     }

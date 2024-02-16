@@ -6,8 +6,10 @@ import arc.struct.Seq;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public class BlockInfo {
-    Cons<ScratchBlock> builder = s -> {};
-    ValSupp supp = s -> null;
+    protected Cons<ScratchBlock> builder = s -> {};
+    protected ValSupp supp = s -> null;
+    protected Cons<Seq<Element>> run = e -> {};
+    protected Cons<ScratchBlock.Run> runBuilder = r -> {};
     public BlockInfo() {
     }
 
@@ -20,8 +22,20 @@ public class BlockInfo {
         this.supp = supp;
     }
 
+    public BlockInfo(Cons<ScratchBlock> builder, Cons<Seq<Element>> run) {
+        this.builder = builder;
+        this.run = run;
+    }
+
     public void build(ScratchBlock block) {
         builder.get(block);
+    }
+
+    public ScratchBlock.Run build(ScratchBlock.Run r) {
+        r.valid = e -> false;
+        r.cycle = run;
+        runBuilder.get(r);
+        return r;
     }
 
     public Object getValue(Seq<Element> elements) {
