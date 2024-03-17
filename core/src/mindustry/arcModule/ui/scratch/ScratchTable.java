@@ -83,11 +83,6 @@ public abstract class ScratchTable extends Table {
     }
 
     @Override
-    public void drawChildren() {
-        super.drawChildren();
-    }
-
-    @Override
     public void toFront() {
         super.toFront();
         if (parent != null) parent.toFront();

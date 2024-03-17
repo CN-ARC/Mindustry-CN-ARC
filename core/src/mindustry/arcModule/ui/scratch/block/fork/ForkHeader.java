@@ -13,12 +13,9 @@ public class ForkHeader extends ForkHasChild {
         super(c, info);
     }
 
-    public static void drawBorderDirect(float x, float y, float w, float h) {
-        Lines.line(x + 10, y + h, x + 15, y + h - 7);
-        Lines.line(x + 15, y + h - 7, x + 30, y + h - 7);
-        Lines.line(x + 30, y + h - 7, x + 35, y + h);
-        Lines.line(x + 35, y + h, x + w, y + h);
-        Lines.line(x + w, y + h, x + w, y);
+    public ForkHeader(Color c, BlockInfo info, ForkPop pop) {
+        super(c, info);
+        this.pop = pop;
     }
 
     @Override
@@ -27,18 +24,11 @@ public class ForkHeader extends ForkHasChild {
         ScratchStyles.drawBlockHeader(x - 15, y, width + 15, height, col);
         Draw.color(col);
         ScratchStyles.drawBlockInner(x, y, width, height);
-        Lines.beginLine();
-        Lines.endLine();
         Draw.color(Tmp.c1.set(col).lerp(Color.black, 0.3f));
+        Lines.stroke(1);
         drawBorderDirect(x - 15, y, width + 15, height);
         drawBorderBottom(x, y, width);
         drawLeftBorder();
         Lines.line(x - 15, y + height, x - 5, y + height);
-    }
-
-    @Override
-    public void drawChildren() {
-        super.drawChildren();
-        //drawDebug();
     }
 }

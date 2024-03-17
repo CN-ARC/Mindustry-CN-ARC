@@ -4,6 +4,9 @@ import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.Pixmap;
 import arc.graphics.Texture;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
 import arc.graphics.g2d.TextureRegion;
 import arc.input.KeyCode;
 import arc.math.geom.Vec2;
@@ -31,9 +34,17 @@ import mindustry.ui.Styles;
 import static arc.Core.input;
 
 public class ScratchUI extends Table {
-    public Table table = new Table(), blocks = new Table();
+    public Table table = new Table(), blocks = new Table(), types = new Table();
     public WidgetGroup group = new ScratchGroup(), overlay = new BoundedGroup();
-    public ScrollPane pane = new ScrollPane(table, Styles.horizontalPane), blocksPane = new ScrollPane(blocks);
+    public ScrollPane pane = new ScrollPane(table, Styles.horizontalPane), blocksPane = new ScrollPane(blocks, Styles.smallPane), typesPane = new ScrollPane(types) {
+        @Override
+        public void draw() {
+            super.draw();
+            Draw.color(Tmp.c1.set(Color.black).a(0.2f));
+            Lines.stroke(1);
+            Lines.line(x + width, y, x + width, y + height);
+        }
+    };
     public Stack stack = new Stack();
     private static final TiledDrawable bg;
     private static final TextureRegionDrawable bg2;
@@ -63,10 +74,12 @@ public class ScratchUI extends Table {
         setFillParent(true);
         stack.add(new Table(t -> {
             t.setFillParent(true);
-            t.table().growY().width(64f).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.red));
+            t.add(typesPane).growY().width(64f);
+            types.top().defaults().size(64, 48);
+            types.setBackground(Tex.whiteui);
             t.add(blocksPane).growY().width(256f);
             blocksPane.addListener(new ClickListener());
-            blocks.setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Tmp.c1.set(Color.white).mulA(0.3f)));
+            blocks.setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Tmp.c1.set(Color.white).a(0.97f)));
             t.add(pane);
             t.table().growY().width(128f).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.sky));
         }));
@@ -131,7 +144,7 @@ public class ScratchUI extends Table {
         w.add();*/
     }
 
-    public void addBlocks(ScratchBlock b) {
+    public void addBlock(ScratchBlock b) {
         blocks.add(b).align(Align.left).row();
     }
 
@@ -143,6 +156,30 @@ public class ScratchUI extends Table {
 
     public void addElement(ScratchTable e) {
         group.addChild(e);
+    }
+
+    public void addCategory(String name, Color c) {
+        types.table(t -> {
+            t.add(new Element() {
+                @Override
+                public void draw() {
+                    Draw.color(c);
+                    float cx = x + width / 2, cy = y + height / 2;
+                    Fill.circle(cx, cy, 11);
+                    Draw.color(Tmp.c1.set(Color.black).a(0.3f));
+                    Lines.stroke(1.5f);
+                    Lines.circle(cx, cy, 11);
+                }
+            }).grow().row();
+            t.add(name).growX().with(l -> {
+                l.setStyle(ls);
+                l.setFontScale(0.8f);
+            }).get().setAlignment(Align.center);
+        }).row();
+        blocks.add(name).ellipsis(true).with(l -> {
+            l.setStyle(ls);
+            l.setFontScale(0.8f);
+        }).growX().row();
     }
 
     private static class ScratchGroup extends BoundedGroup {

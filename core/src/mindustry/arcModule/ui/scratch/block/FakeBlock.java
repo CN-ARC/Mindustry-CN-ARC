@@ -44,8 +44,4 @@ public class FakeBlock extends ScratchBlock {
     public void draw() {
         ScratchStyles.drawBlock(x, y, width, height, elemColor, true);
     }
-
-    @Override
-    public void scheduleRun(boolean insert) {
-    }
 }

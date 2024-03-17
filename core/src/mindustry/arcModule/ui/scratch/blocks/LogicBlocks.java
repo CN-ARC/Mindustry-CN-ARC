@@ -13,7 +13,8 @@ import java.util.Objects;
 
 public class LogicBlocks {
     public static void init() {
-
+        Color c = new Color(Color.packRgba(89, 192, 89, 255));
+        ScratchController.ui.addCategory("运算", c);
         for (LogicOp logicOp : LogicOp.all) {
             final LogicOp op = logicOp;
             ScratchController.registerBlock("op" + op.name(), new ScratchBlock(op == LogicOp.equal ||
@@ -23,7 +24,7 @@ public class LogicBlocks {
                     op == LogicOp.lessThanEq ||
                     op == LogicOp.greaterThan ||
                     op == LogicOp.greaterThanEq ||
-                    op == LogicOp.strictEqual ? ScratchType.condition : ScratchType.input, new Color(Color.packRgba(89, 192, 89, 255)), new BlockInfo(block -> {
+                    op == LogicOp.strictEqual ? ScratchType.condition : ScratchType.input, c, new BlockInfo(block -> {
                 if (op.function2 == null) {
                     block.label(op.symbol);
                     block.input();

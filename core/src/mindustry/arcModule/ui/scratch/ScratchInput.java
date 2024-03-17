@@ -37,21 +37,24 @@ public class ScratchInput {
         checking = false;
         if (dragging instanceof ScratchBlock block && block.type == ScratchType.block && hit instanceof ScratchTable t && t.acceptLink(block)) {
             ScratchBlock b = (ScratchBlock) (hit instanceof ScratchBlock ? hit : hit.parent);
+            ui.group.addChild(fake);
             if (b.linkTo != dragging && b.linkFrom != dragging) {
                 fake.setReal(block);
                 if (b.dir == Align.top) {
-                    fake.unlinkAll();
+                    fake.unlinkKeep();
                     fake.insertLinkTop(b);
                 } else {
-                    fake.unlinkAll();
+                    fake.unlinkKeep();
                     fake.insertLinkBottom(b);
                 }
-                ui.group.addChild(fake);
                 fake.toBack();
                 return;
             }
         }
-        if (fake.linked()) fake.removeAndKeepLink();
+        if (fake.linked()) {
+            fake.unlinkKeep();
+            fake.remove();
+        }
         if (hit instanceof ScratchTable sel) {
             selected = sel;
         } else if (hit != null && hit != ui.group && hit.parent instanceof ScratchTable parent) {
@@ -113,7 +116,8 @@ public class ScratchInput {
                 }
                 if (fake.linked()) {
                     target.insertLinkTop(fake);
-                    fake.removeAndKeepLink();
+                    fake.unlinkKeep();
+                    fake.remove();
                 }
                 dragging = selected = null;
             }
@@ -125,17 +129,23 @@ public class ScratchInput {
                 if (menu) {
                     ui.showMenu(b, true);
                 } else {
-                    try {
-                        Object o = b.getValue();
-                        if (b.getType() != ScratchType.block) {
-                            Log.info(o);
-                            ui.showResult(b, String.valueOf(o));
-                        }
-                    } catch (Exception ex) {
-                        Log.err(ex);
-                        ui.showResult(b, ex.getMessage());
-                    }
+                    run(b);
                 }
+            }
+        }
+
+        public static void run(ScratchBlock b) {
+            try {
+                if (b.getType() == ScratchType.block) {
+                    b.scheduleRun();
+                } else {
+                    Object o = b.getValue();
+                    Log.info(o);
+                    ui.showResult(b, String.valueOf(o));
+                }
+            } catch (Exception ex) {
+                Log.err(ex);
+                ui.showResult(b, ex.getMessage());
             }
         }
 
@@ -210,9 +220,12 @@ public class ScratchInput {
             target.selected = false;
             ui.pane.setFlickScroll(true);
             checkClick();
-            ui.overlay.stageToLocalCoordinates(v1.set(input.mouseX(), input.mouseY()));
-            if (((ClickListener) ui.blocksPane.getListeners().find(e -> e instanceof ClickListener)).isOver(ui.blocksPane, v1.x, v1.y))
+            ui.overlay.stageToLocalCoordinates(Tmp.v1.set(input.mouseX(), input.mouseY()));
+            float tx = Tmp.v1.x, ty = Tmp.v1.y;
+            if (0 < tx && ui.overlay.y < ty && ui.blocksPane.getWidth() + ui.typesPane.getWidth() > tx && ui.overlay.getHeight() > ty) {
                 target.remove();
+                return;
+            }
             layer = SLayer.group;
             target.ensureParent();
         }
@@ -250,18 +263,7 @@ public class ScratchInput {
 
         @Override
         public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button) {
-            if (!dragged) {
-                try {
-                    Object o = target.getValue();
-                    if (target.getType() != ScratchType.block) {
-                        Log.info(o);
-                        ui.showResult(target, String.valueOf(o));
-                    }
-                } catch (Exception ex) {
-                    Log.err(ex);
-                    ui.showResult(target, ex.getMessage());
-                }
-            }
+            if (!dragged) ScratchDragListener.run(target);
             ui.blocksPane.setFlickScroll(true);
             ui.pane.setFlickScroll(true);
             dragged = false;

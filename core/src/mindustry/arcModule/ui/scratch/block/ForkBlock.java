@@ -37,9 +37,41 @@ public class ForkBlock extends ScratchBlock {
         row();
     }
 
-    public void inner() {
-        ForkInner e = new ForkInner(elemColor, emptyInfo);
+    public void header(BlockInfo info, ForkHasChild.ForkPop pop) {
+        ForkHeader e = new ForkHeader(elemColor, info, pop);
         e.cell(add(e));
+        e.cell = add().minHeight(ForkHasChild.defHeight);
+        row();
+    }
+
+    public void header(Cons<ScratchBlock> lambda) {
+        header(new BlockInfo(lambda));
+    }
+
+    public void header(Cons<ScratchBlock> lambda, ForkHasChild.ForkPop pop) {
+        header(new BlockInfo(lambda), pop);
+    }
+
+    public void inner(BlockInfo info) {
+        ForkInner e = new ForkInner(elemColor, info);
+        e.cell(add(e));
+        e.cell = add().minHeight(ForkHasChild.defHeight);
+        row();
+    }
+
+    public void inner(BlockInfo info, ForkHasChild.ForkPop pop) {
+        ForkInner e = new ForkInner(elemColor, info, pop);
+        e.cell(add(e));
+        e.cell = add().minHeight(ForkHasChild.defHeight);
+        row();
+    }
+
+    public void inner(Cons<ScratchBlock> lambda) {
+        inner(new BlockInfo(lambda));
+    }
+
+    public void inner(Cons<ScratchBlock> lambda, ForkHasChild.ForkPop pop) {
+        inner(new BlockInfo(lambda), pop);
     }
 
     public void updateFork(ScratchBlock target) {
@@ -78,11 +110,6 @@ public class ForkBlock extends ScratchBlock {
     }
 
     @Override
-    public void drawChildren() {
-        super.drawChildren();
-    }
-
-    @Override
     public void ensureParent() {
         updateFork(this);
         super.ensureParent();
@@ -115,9 +142,8 @@ public class ForkBlock extends ScratchBlock {
             this.supp = supp;
         }
 
-        public ForkInfo(Cons<ForkBlock> builder, Cons<ScratchBlock.Run> runBuilder, Cons<Seq<Element>> run) {
+        public ForkInfo(Cons<ForkBlock> builder, Cons<Seq<Element>> run) {
             this.builder = builder;
-            this.runBuilder = runBuilder;
             this.run = run;
         }
 

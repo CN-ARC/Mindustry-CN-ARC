@@ -9,7 +9,6 @@ public class BlockInfo {
     protected Cons<ScratchBlock> builder = s -> {};
     protected ValSupp supp = s -> null;
     protected Cons<Seq<Element>> run = e -> {};
-    protected Cons<ScratchBlock.Run> runBuilder = r -> {};
     public BlockInfo() {
     }
 
@@ -31,15 +30,12 @@ public class BlockInfo {
         builder.get(block);
     }
 
-    public ScratchBlock.Run build(ScratchBlock.Run r) {
-        r.valid = e -> false;
-        r.cycle = run;
-        runBuilder.get(r);
-        return r;
-    }
-
     public Object getValue(Seq<Element> elements) {
         return supp.get(elements);
+    }
+
+    public void run(ScratchBlock block) {
+        run.get(block.elements);
     }
 
     public interface ValSupp {

@@ -5,20 +5,31 @@ import arc.graphics.g2d.Lines;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
+import arc.struct.Seq;
 import arc.util.Align;
 import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
+import mindustry.arcModule.ui.scratch.block.ForkBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 abstract public class ForkHasChild extends ForkComponent {
     public static final float defHeight = 20;
     public Cell<?> cell;
+    public ForkPop pop = e -> ((ForkBlock) parent).linkFrom;
     private float drawHeight = defHeight;
 
     ForkHasChild(Color c, BlockInfo info) {
         super(c, info);
         touchable = Touchable.enabled;
+    }
+
+    public static void drawBorderDirect(float x, float y, float w, float h) {
+        Lines.line(x + 10, y + h, x + 15, y + h - 7);
+        Lines.line(x + 15, y + h - 7, x + 30, y + h - 7);
+        Lines.line(x + 30, y + h - 7, x + 35, y + h);
+        Lines.line(x + 35, y + h, x + w, y + h);
+        Lines.line(x + w, y + h, x + w, y);
     }
 
     protected void drawLeftBorder() {
@@ -32,6 +43,10 @@ abstract public class ForkHasChild extends ForkComponent {
             b.setParent(target);
             b = b.linkFrom;
         }
+    }
+
+    public ScratchBlock pop() {
+        return pop.pop(((ForkBlock) parent).elements);
     }
 
     @Override
@@ -89,5 +104,9 @@ abstract public class ForkHasChild extends ForkComponent {
     @Override
     public void linkUpdate(ScratchBlock target) {
         target.setPosition(parent.x + x, parent.y + y - target.getHeight());
+    }
+
+    public interface ForkPop {
+        ScratchBlock pop(Seq<Element> e);
     }
 }

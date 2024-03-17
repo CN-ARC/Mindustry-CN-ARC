@@ -1,10 +1,8 @@
 package mindustry.arcModule.ui.scratch.block;
 
-import arc.func.Boolf;
-import arc.func.Boolp;
-import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
@@ -137,7 +135,7 @@ public class ScratchBlock extends ScratchTable {
         if (target != null) target.linkTo(l);
     }
 
-    public void removeAndKeepLink() {
+    public void unlinkKeep() {
         boolean linked = linkFrom != null && linkTo != null;
         if (linked) {
             linkFrom.linkTo(linkTo);
@@ -147,7 +145,6 @@ public class ScratchBlock extends ScratchTable {
             linkFrom.y = y;
         }
         unlinkAll();
-        remove();
     }
 
     public void unlink() {
@@ -207,6 +204,10 @@ public class ScratchBlock extends ScratchTable {
                 Lines.rect(x, y + padValue, width, height + padValue * 2);
             }
         }
+        if (ScratchController.dragging == this) {
+            Draw.color(Color.gold);
+            Fill.rect(x + 10, y + height / 2, 3, 3);
+        }
     }
 
     public void linkUpdate(ScratchBlock target) {
@@ -244,17 +245,24 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public void scheduleRun() {
-        scheduleRun(false);
+        if (running != null) return;
+        running = new Run(this);
+        ScratchController.run(running);
     }
 
-    public void scheduleRun(boolean insert) {
-        if (running != null) return;
-        running = info.build(new Run(this));
-        if (insert) {
-            ScratchController.setRunning(running);
-        } else {
-            ScratchController.run(running);
-        }
+    public void insertRun() {
+        ScratchController.insert(this);
+    }
+
+    public void runFinished() {
+        running = null;
+    }
+
+    public void prepareRun() {
+    }
+
+    public void run() {
+        info.run(this);
     }
 
     @Override
@@ -264,10 +272,6 @@ public class ScratchBlock extends ScratchTable {
 
     @Override
     public Object getValue() {
-        if (type == ScratchType.block) {
-            scheduleRun();
-            return null;
-        }
         return info.getValue(elements);
     }
 
@@ -285,11 +289,12 @@ public class ScratchBlock extends ScratchTable {
                 dir = Align.bottom;
                 return this;
             }
-            if ((linkTo == null || linkTo instanceof FakeBlock) && y >= height + padValue && y < height + padValue * 2 + (linkTo != null ? linkTo.getHeight() : 0)) {
+            if ((linkTo == null || linkTo instanceof FakeBlock) && y >= height && y < height + padValue * 2 + (linkTo != null ? linkTo.getHeight() : 0)) {
                 dir = Align.top;
                 return this;
             }
         }
+        dir = Align.bottom;
         return super.hit(x, y, touchable);
     }
 
@@ -332,13 +337,11 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public static class Run {
-        public Cons<Seq<Element>> cycle;
-        public Boolf<Seq<Element>> valid = e -> false;
         public final ScratchBlock block;
-        public Run parent = null, child = null;
+        public ScratchBlock pointer;
 
         public Run(ScratchBlock block) {
-            this.block = block;
+            this.block = pointer = block;
         }
     }
 }

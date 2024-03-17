@@ -21,8 +21,7 @@ public class ScratchStyles {
         Draw.color(c);
         Fill.rect(x + w / 2, y + halfH, w - 2 * halfH, h);
         Draw.color(c1);
-        float ty = selected ? y : y + 1;
-        Lines.line(x + halfH, ty, x + w - halfH, ty);
+        Lines.line(x + halfH, y, x + w - halfH, y);
         Lines.line(x + halfH, y + h, x + w - halfH, y + h);
     }
 
@@ -44,13 +43,7 @@ public class ScratchStyles {
         Fill.rect(x + w / 2, y + halfH, w - 2 * halfH, h);
         Draw.color(selected ? selectedColor : Tmp.c1.set(c).lerp(Color.black, 0.3f));
         Lines.stroke(selected ? 2 : 1);
-        Lines.beginLine();
-        Lines.linePoint(x + halfH, y);
-        Lines.linePoint(x, y + halfH);
-        Lines.linePoint(x + halfH, y + h);
-        Lines.linePoint(x + w - halfH, y + h);
-        Lines.linePoint(x + w, y + halfH);
-        Lines.linePoint(x + w - halfH, y);
+        condPoint(x, y, w, h, halfH);
         Lines.endLine(true);
     }
 
@@ -58,6 +51,12 @@ public class ScratchStyles {
         Draw.color(selectedColor);
         float halfH = h / 2;
         Lines.stroke(2);
+        condPoint(x, y, w, h, halfH);
+        Lines.endLine();
+        Lines.line(x + halfH + 1, y - 1, x + w - halfH - 1, y - 1);
+    }
+
+    private static void condPoint(float x, float y, float w, float h, float halfH) {
         Lines.beginLine();
         Lines.linePoint(x + halfH, y);
         Lines.linePoint(x, y + halfH);
@@ -65,8 +64,6 @@ public class ScratchStyles {
         Lines.linePoint(x + w - halfH, y + h);
         Lines.linePoint(x + w, y + halfH);
         Lines.linePoint(x + w - halfH, y);
-        Lines.endLine();
-        Lines.line(x + halfH + 1, y - 1, x + w - halfH - 1, y - 1);
     }
 
     public static void drawBlock(float x, float y, float w, float h, Color c, boolean noBorder) {
@@ -95,6 +92,7 @@ public class ScratchStyles {
     }
 
     public static void drawBlockBorder(float x, float y, float w, float h, Color c) {
+        Lines.stroke(1);
         Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
         Lines.beginLine();
         drawBlockBorderTop(x, y, w, h);
