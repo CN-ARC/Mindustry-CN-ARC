@@ -1,6 +1,7 @@
 package mindustry.arcModule.ui.scratch;
 
 import arc.Core;
+import arc.Events;
 import arc.graphics.Color;
 import arc.graphics.Pixmap;
 import arc.graphics.Texture;
@@ -21,22 +22,25 @@ import arc.scene.ui.Label;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
-import arc.scene.ui.layout.WidgetGroup;
+import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Tmp;
 import mindustry.arcModule.ui.UIUtils;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.arcModule.ui.widgets.BoundedGroup;
+import mindustry.game.EventType;
 import mindustry.gen.Tex;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
+
+import java.util.Objects;
 
 import static arc.Core.input;
 
 public class ScratchUI extends Table {
     public Table table = new Table(), blocks = new Table(), types = new Table();
-    public WidgetGroup group = new ScratchGroup(), overlay = new BoundedGroup();
-    public ScrollPane pane = new ScrollPane(table, Styles.horizontalPane), blocksPane = new ScrollPane(blocks, Styles.smallPane), typesPane = new ScrollPane(types) {
+    public BoundedGroup group = new ScratchGroup(), overlay = new BoundedGroup();
+    public ScrollPane pane = new ScrollPane(group, Styles.horizontalPane), blocksPane = new ScrollPane(blocks, Styles.smallPane), typesPane = new ScrollPane(types) {
         @Override
         public void draw() {
             super.draw();
@@ -46,10 +50,13 @@ public class ScratchUI extends Table {
         }
     };
     public Stack stack = new Stack();
+    public Seq<Label> categories = new Seq<>();
+    public String nowCategory = null;
     private static final TiledDrawable bg;
     private static final TextureRegionDrawable bg2;
     private static final Vec2 v1 = new Vec2(), v2 = new Vec2();
     private static Label.LabelStyle ls;
+    private static final Color hoverColor = new Color(Color.packRgba(76, 151, 255, 255));
 
     static {
         Pixmap pix = new Pixmap(27, 27);
@@ -74,25 +81,25 @@ public class ScratchUI extends Table {
         setFillParent(true);
         stack.add(new Table(t -> {
             t.setFillParent(true);
-            t.add(typesPane).growY().width(64f);
+            t.add(typesPane).growY().width(64);
             types.top().defaults().size(64, 48);
             types.setBackground(Tex.whiteui);
-            t.add(blocksPane).growY().width(256f);
+            t.add(blocksPane).growY().width(256);
             blocksPane.addListener(new ClickListener());
             blocks.setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Tmp.c1.set(Color.white).a(0.97f)));
             t.add(pane);
-            t.table().growY().width(128f).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.sky));
+            t.table().growY().width(128).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.sky));
         }));
         overlay.touchable = Touchable.childrenOnly;
         stack.add(overlay);
-        table.setBackground(bg);
-        table.add(group);
+        group.background = bg;
         add(stack).grow();
         ls = new Label.LabelStyle(Styles.defaultLabel) {{
             font = Fonts.outline;
             fontColor = Color.gray;
         }};
         blocks.defaults().pad(10);
+        Events.run(EventType.Trigger.update, this::findCategory);
     }
 
     public static Vec2 oldPosToNewPos(Group top, Element e, Element target) {
@@ -114,7 +121,7 @@ public class ScratchUI extends Table {
         t.setPosition(v.x, v.y);
         t.addAction(Actions.moveBy(0, -15, 0.2f));
         t.update(() -> {
-            if (Core.input.keyTap(KeyCode.mouseLeft) || Core.input.keyTap(KeyCode.mouseRight)) t.remove();
+            if (input.keyTap(KeyCode.mouseLeft) || input.keyTap(KeyCode.mouseRight)) t.remove();
         });
     }
 
@@ -132,7 +139,7 @@ public class ScratchUI extends Table {
             t.getChildren().forEach(c -> UIUtils.clicked(c, t::remove));
             t.addListener(new ClickListener());
             t.update(() -> {
-                if (!((ClickListener) t.getListeners().find(ee -> ee instanceof ClickListener)).isOver()) if ((Core.input.keyTap(KeyCode.mouseLeft) || Core.input.keyTap(KeyCode.mouseRight))) t.remove();
+                if (!((ClickListener) t.getListeners().find(ee -> ee instanceof ClickListener)).isOver()) if ((input.keyTap(KeyCode.mouseLeft) || input.keyTap(KeyCode.mouseRight))) t.remove();
             });
         }));
     }
@@ -152,13 +159,15 @@ public class ScratchUI extends Table {
         blocks.clear();
         group.clear();
         overlay.clear();
+        types.clear();
+        categories.clear();
     }
 
     public void addElement(ScratchTable e) {
         group.addChild(e);
     }
 
-    public void addCategory(String name, Color c) {
+    public void addCategory(String cname, Color c) {
         types.table(t -> {
             t.add(new Element() {
                 @Override
@@ -171,15 +180,31 @@ public class ScratchUI extends Table {
                     Lines.circle(cx, cy, 11);
                 }
             }).grow().row();
-            t.add(name).growX().with(l -> {
-                l.setStyle(ls);
-                l.setFontScale(0.8f);
-            }).get().setAlignment(Align.center);
-        }).row();
-        blocks.add(name).ellipsis(true).with(l -> {
-            l.setStyle(ls);
+            Label title = blocks.add(cname).ellipsis(true).growX().get();
+            title.setStyle(ls);
+            categories.add(title);
+            Label l = t.add(cname).growX().get();
+            ClickListener cl = new ClickListener();
+            t.addListener(cl);
+            l.update(() -> l.getStyle().fontColor = cl.isOver() ? hoverColor : Color.gray);
+            l.setStyle(new Label.LabelStyle(ls));
             l.setFontScale(0.8f);
-        }).growX().row();
+            l.setAlignment(Align.center);
+            t.clicked(() -> blocksPane.setScrollY(blocks.getHeight() - title.getY(Align.top) - 10));
+            t.touchable = Touchable.enabled;
+        }).update(t -> t.setBackground(Objects.equals(nowCategory, cname) ? Styles.black3 : null)).row();
+        blocks.row();
+    }
+
+    public void findCategory() {
+        Label prev = null;
+        for (Label l : categories) {
+            if (l.y + l.parent.y < types.getHeight() - typesPane.getScrollY() - l.getHeight() - 20) {
+                nowCategory = String.valueOf(prev == null ? categories.get(0).getText() : prev.getText());
+                return;
+            }
+            prev = l;
+        }
     }
 
     private static class ScratchGroup extends BoundedGroup {
