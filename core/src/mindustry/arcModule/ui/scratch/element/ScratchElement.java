@@ -9,6 +9,7 @@ import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public abstract class ScratchElement extends ScratchTable {
+
     abstract public ScratchElement copy();
 
     public Object getElementValue() {

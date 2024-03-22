@@ -27,7 +27,7 @@ public class ForkHeader extends ForkHasChild {
         Draw.color(Tmp.c1.set(col).lerp(Color.black, 0.3f));
         Lines.stroke(1);
         drawBorderDirect(x - 15, y, width + 15, height);
-        drawBorderBottom(x, y, width);
+        ScratchStyles.drawBorderBottom(x, y, width);
         drawLeftBorder();
         Lines.line(x - 15, y + height, x - 5, y + height);
     }

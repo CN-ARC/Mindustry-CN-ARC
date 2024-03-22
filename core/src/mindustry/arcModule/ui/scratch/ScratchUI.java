@@ -38,7 +38,7 @@ import java.util.Objects;
 import static arc.Core.input;
 
 public class ScratchUI extends Table {
-    public Table table = new Table(), blocks = new Table(), types = new Table();
+    public Table blocks = new Table(), types = new Table();
     public BoundedGroup group = new ScratchGroup(), overlay = new BoundedGroup();
     public ScrollPane pane = new ScrollPane(group, Styles.horizontalPane), blocksPane = new ScrollPane(blocks, Styles.smallPane), typesPane = new ScrollPane(types) {
         @Override

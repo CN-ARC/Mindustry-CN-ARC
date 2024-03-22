@@ -19,7 +19,7 @@ import static arc.Core.scene;
 import static mindustry.arcModule.ui.scratch.ScratchController.*;
 
 public class ScratchInput {
-    public static final float dragStartDistance = 20f, dragMinDistance = 3f;
+    public static final float dragStartDistance = 20, dragMinDistance = 3;
     public static final Vec2 v1 = new Vec2();
     public static final Vec2 v2 = new Vec2();
     public static ScratchBlock cur = null;

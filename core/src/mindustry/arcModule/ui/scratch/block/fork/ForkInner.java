@@ -27,7 +27,7 @@ public class ForkInner extends ForkHasChild {
         Draw.color(Tmp.c1.set(col).lerp(Color.black, 0.3f));
         Lines.stroke(1);
         drawBorderDirect(x, y, width, height);
-        drawBorderBottom(x, y, width);
+        ScratchStyles.drawBorderBottom(x, y, width);
         drawLeftBorder();
         Lines.line(x, y + height, x + 10, y + height);
     }

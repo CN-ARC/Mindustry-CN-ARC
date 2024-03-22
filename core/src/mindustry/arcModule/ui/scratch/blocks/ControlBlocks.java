@@ -1,9 +1,11 @@
 package mindustry.arcModule.ui.scratch.blocks;
 
 import arc.graphics.Color;
+import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.block.ForkBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
+import mindustry.arcModule.ui.scratch.block.TriggerBlock;
 import mindustry.arcModule.ui.scratch.block.fork.ForkComponent;
 import mindustry.arcModule.ui.scratch.element.CondElement;
 
@@ -11,6 +13,7 @@ public class ControlBlocks {
     public static void init() {
         Color c = new Color(Color.packRgba(255, 171, 25, 255));
         ScratchController.ui.addCategory("控制", c);
+        ScratchController.registerBlock("when", new TriggerBlock(c, new BlockInfo(b -> b.label("当开始运行时"))));
         ScratchController.registerBlock("if", new ForkBlock(c, new ForkBlock.ForkInfo(block -> block.header(b -> {
             b.label("如果");
             b.cond();

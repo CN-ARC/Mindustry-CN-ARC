@@ -13,8 +13,8 @@ import arc.util.Align;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public abstract class ScratchTable extends Table {
-    public static float defHeight = 30f, addPadding = 3f, defWidth = 50f;
-    protected static final float padValue = 25f;
+    public static final float defWidth = 50, defHeight = 30, addPadding = 3;
+    protected static final float padValue = 25;
     protected final ObjectMap<Enum<ScratchEvents>, Seq<Cons<ScratchTable>>> events = new ObjectMap<>();
     public boolean selected = false, hittable = true;
     public ScratchTable child = null;

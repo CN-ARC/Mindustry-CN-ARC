@@ -24,10 +24,14 @@ public class ForkBlock extends ScratchBlock {
     }
 
     public ForkBlock(Color color, ForkInfo info, boolean drag) {
-        super(ScratchType.block, color, info, drag, false);
+        super(ScratchType.block, color, info, drag);
         marginLeft(15);
         ForkFooter e = new ForkFooter();
         e.cell(add(e));
+    }
+
+    @Override
+    public void init() {
     }
 
     public void header(BlockInfo info) {

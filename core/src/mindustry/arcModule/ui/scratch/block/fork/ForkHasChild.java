@@ -12,6 +12,7 @@ import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.block.ForkBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
+import mindustry.arcModule.ui.scratch.block.TriggerBlock;
 
 abstract public class ForkHasChild extends ForkComponent {
     public static final float defHeight = 20;
@@ -51,7 +52,7 @@ abstract public class ForkHasChild extends ForkComponent {
 
     @Override
     public boolean acceptLink(ScratchBlock block) {
-        return true;
+        return !(block instanceof TriggerBlock);
     }
 
     @Override

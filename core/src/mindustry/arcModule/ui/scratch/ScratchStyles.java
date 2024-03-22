@@ -21,7 +21,8 @@ public class ScratchStyles {
         Draw.color(c);
         Fill.rect(x + w / 2, y + halfH, w - 2 * halfH, h);
         Draw.color(c1);
-        Lines.line(x + halfH, y, x + w - halfH, y);
+        float ty = selected ? y : y + 1;
+        Lines.line(x + halfH, ty, x + w - halfH, ty);
         Lines.line(x + halfH, y + h, x + w - halfH, y + h);
     }
 
@@ -117,5 +118,13 @@ public class ScratchStyles {
         Lines.linePoint(x + 15, y - 7);
         Lines.linePoint(x + 10, y);
         Lines.linePoint(x, y);
+    }
+
+    public static void drawBorderBottom(float x, float y, float w) {
+        Lines.line(x + w, y, x + 35, y);
+        Lines.line(x + 35, y, x + 30, y - 7);
+        Lines.line(x + 30, y - 7, x + 15, y - 7);
+        Lines.line(x + 15, y - 7, x + 10, y);
+        Lines.line(x + 10, y, x, y);
     }
 }

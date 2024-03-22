@@ -25,23 +25,24 @@ public class ScratchBlock extends ScratchTable {
     public byte dir = 0;
     public Seq<Element> elements = new Seq<>();
     public Run running;
+    protected float minWidth = 0, minHeight = 0;
 
     public ScratchBlock(ScratchType type, Color color, BlockInfo info) {
         this(type, color, info, false);
     }
 
     public ScratchBlock(ScratchType type, Color color, BlockInfo info, boolean dragEnabled) {
-        this(type, color, info, dragEnabled, true);
-    }
-
-    public ScratchBlock(ScratchType type, Color color, BlockInfo info, boolean dragEnabled, boolean fill) {
         this.type = type;
         elemColor = color;
         this.info = info;
+        init();
         info.build(this);
         if (dragEnabled) ScratchInput.addDraggingInput(this);
-        if (fill) add().minHeight(type == ScratchType.block ? 40 : 28);
         if (type == ScratchType.condition) margin(0, addPadding, 0, addPadding);
+    }
+
+    public void init() {
+        minHeight = type == ScratchType.block ? 40 : 28;
     }
 
     public void label(String str) {
@@ -267,7 +268,7 @@ public class ScratchBlock extends ScratchTable {
 
     @Override
     public boolean acceptLink(ScratchBlock block) {
-        return type == ScratchType.block;
+        return type == ScratchType.block && !(block instanceof TriggerBlock);
     }
 
     @Override
@@ -334,6 +335,16 @@ public class ScratchBlock extends ScratchTable {
     public void addChild(Element actor) {
         super.addChild(actor);
         elements.add(actor);
+    }
+
+    @Override
+    public float getPrefWidth() {
+        return Math.max(super.getPrefWidth(), minWidth);
+    }
+
+    @Override
+    public float getPrefHeight() {
+        return Math.max(super.getPrefHeight(), minHeight);
     }
 
     public static class Run {
