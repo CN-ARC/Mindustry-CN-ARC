@@ -1,26 +1,31 @@
 package mindustry.arcModule.ui.scratch;
 
+import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
+import arc.graphics.g2d.TextureRegion;
 import arc.util.Tmp;
 
-public class ScratchStyles {
+public class ScratchDraw {
     public static final Color selectedColor = Color.gold;
+    private static TextureRegion circle = null;
+    private static final Color c1 = new Color();
+
     public static void drawInput(float x, float y, float w, float h, Color c, boolean selected) {
-        Color c1 = selected ? selectedColor : Tmp.c1.set(c).lerp(Color.black, 0.3f).cpy();
+        Color col = selected ? selectedColor : c1.set(c).lerp(Color.black, 0.3f);
         Lines.stroke(selected ? 2 : 1);
         float halfH = h / 2;
         Draw.color(c);
         Fill.circle(x + halfH, y + halfH, halfH);
         Fill.circle(x + w - halfH, y + halfH, halfH);
-        Draw.color(c1);
+        Draw.color(col);
         Lines.circle(x + halfH, y + halfH, halfH);
         Lines.circle(x + w - halfH, y + halfH, halfH);
         Draw.color(c);
         Fill.rect(x + w / 2, y + halfH, w - 2 * halfH, h);
-        Draw.color(c1);
+        Draw.color(col);
         float ty = selected ? y : y + 1;
         Lines.line(x + halfH, ty, x + w - halfH, ty);
         Lines.line(x + halfH, y + h, x + w - halfH, y + h);
@@ -126,5 +131,43 @@ public class ScratchStyles {
         Lines.line(x + 30, y - 7, x + 15, y - 7);
         Lines.line(x + 15, y - 7, x + 10, y);
         Lines.line(x + 10, y, x, y);
+    }
+
+    public static void drawTriggerBlock(float x, float y, float w, Color c, boolean noBorder) {
+        if (circle == null) circle = Core.atlas.find("circle");
+        int dark = 0;
+        if (!noBorder) {
+            dark = Tmp.c1.set(c).lerp(Color.black, 0.3f).rgba();
+            Draw.color(dark);
+            Draw.rect(circle, x + 31, y + 31, 64, 36);
+        }
+        Draw.color(c);
+        Draw.rect(circle, x + 31, y + 31, 62, 34);
+        ScratchDraw.drawBlockInner(x, y, w, 40);
+        if (!noBorder) {
+            Draw.color(dark);
+            Lines.stroke(1);
+            ScratchDraw.drawBorderBottom(x, y, w);
+            Lines.line(x, y, x, y + 33);
+            Lines.line(x + 64, y + 33, x + w, y + 33);
+            Lines.line(x + w, y + 33, x + w, y);
+        }
+    }
+
+    public static void drawPopup(float x, float y, float w, float h, Color c) {
+        Draw.color(c);
+        Fill.crect(x, y, w, h);
+        Fill.tri(x + w / 2 + 9, y + h, x + w / 2, y + h + 9, x + w / 2 - 9, y + h);
+        Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
+        Lines.stroke(1);
+        Lines.beginLine();
+        Lines.linePoint(x, y);
+        Lines.linePoint(x + w, y);
+        Lines.linePoint(x + w, y + h);
+        Lines.linePoint(x + w / 2 + 9, y + h);
+        Lines.linePoint(x + w / 2, y + h + 9);
+        Lines.linePoint(x + w / 2 - 9, y + h);
+        Lines.linePoint(x, y + h);
+        Lines.endLine(true);
     }
 }

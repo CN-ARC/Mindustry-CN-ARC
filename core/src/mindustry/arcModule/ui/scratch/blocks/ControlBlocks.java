@@ -9,6 +9,8 @@ import mindustry.arcModule.ui.scratch.block.TriggerBlock;
 import mindustry.arcModule.ui.scratch.block.fork.ForkComponent;
 import mindustry.arcModule.ui.scratch.element.CondElement;
 
+import static mindustry.arcModule.ui.scratch.ScratchController.runner;
+
 public class ControlBlocks {
     public static void init() {
         Color c = new Color(Color.packRgba(255, 171, 25, 255));
@@ -40,10 +42,15 @@ public class ControlBlocks {
         })));
         ScratchController.registerBlock("while", new ForkBlock(c, new ForkBlock.ForkInfo(block -> block.header(b -> b.label("重复执行"), e -> {
             ScratchBlock run = ((ForkComponent) e.get(0)).linkFrom;
-            return run == null ? ((ScratchBlock) e.get(0).parent).linkFrom : run;
+            return run == null ? ((ForkBlock) e.get(0).parent).linkFrom : run;
         }), e -> {
             ScratchBlock run = ((ForkComponent) e.get(0)).linkFrom;
-            if (run != null) run.insertRun();
+            if (run != null) {
+                run.insertRun();
+            } else {
+                ((ForkBlock) e.get(0).parent).insertRun();
+                runner.skip();
+            }
         })));
     }
 }

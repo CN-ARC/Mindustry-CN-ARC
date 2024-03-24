@@ -5,7 +5,7 @@ import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.BlockInfo;
-import mindustry.arcModule.ui.scratch.ScratchStyles;
+import mindustry.arcModule.ui.scratch.ScratchDraw;
 import mindustry.arcModule.ui.scratch.block.ForkBlock;
 
 public class ForkHeader extends ForkHasChild {
@@ -21,13 +21,13 @@ public class ForkHeader extends ForkHasChild {
     @Override
     public void drawBackground() {
         Color col = ((ForkBlock) parent).elemColor;
-        ScratchStyles.drawBlockHeader(x - 15, y, width + 15, height, col);
+        ScratchDraw.drawBlockHeader(x - 15, y, width + 15, height, col);
         Draw.color(col);
-        ScratchStyles.drawBlockInner(x, y, width, height);
+        ScratchDraw.drawBlockInner(x, y, width, height);
         Draw.color(Tmp.c1.set(col).lerp(Color.black, 0.3f));
         Lines.stroke(1);
         drawBorderDirect(x - 15, y, width + 15, height);
-        ScratchStyles.drawBorderBottom(x, y, width);
+        ScratchDraw.drawBorderBottom(x, y, width);
         drawLeftBorder();
         Lines.line(x - 15, y + height, x - 5, y + height);
     }

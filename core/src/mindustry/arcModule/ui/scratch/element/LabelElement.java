@@ -8,12 +8,9 @@ import mindustry.arcModule.ui.scratch.ScratchType;
 public class LabelElement extends ScratchElement {
     private final Label l;
 
-    {
-        hittable = false;
-    }
-
     public LabelElement(String str) {
         add(l = new Label(str));
+        hittable = false;
     }
 
     @Override

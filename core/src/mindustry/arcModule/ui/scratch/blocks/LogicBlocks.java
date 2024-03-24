@@ -1,21 +1,25 @@
 package mindustry.arcModule.ui.scratch.blocks;
 
 import arc.graphics.Color;
-import arc.util.Structs;
-import mindustry.arcModule.ui.scratch.BlockInfo;
+import arc.util.Log;
 import mindustry.arcModule.ui.scratch.ScratchController;
-import mindustry.arcModule.ui.scratch.ScratchType;
-import mindustry.arcModule.ui.scratch.block.ScratchBlock;
-import mindustry.arcModule.ui.scratch.element.InputElement;
-import mindustry.logic.LogicOp;
-
-import java.util.Objects;
+import mindustry.arcModule.ui.scratch.block.LogicBlock;
+import mindustry.gen.LogicIO;
+import mindustry.logic.LStatement;
 
 public class LogicBlocks {
     public static void init() {
         Color c = new Color(Color.packRgba(89, 192, 89, 255));
         ScratchController.ui.addCategory("运算", c);
-        for (LogicOp logicOp : LogicOp.all) {
+        LogicIO.allStatements.each(p -> {
+            LStatement l = p.get();
+            try {
+                ScratchController.registerBlock(l.name(), new LogicBlock(c, l));
+            } catch (Exception e) {
+                Log.err("Load " + l.name() + " failed", e);
+            }
+        });
+        /*for (LogicOp logicOp : LogicOp.all) {
             final LogicOp op = logicOp;
             ScratchController.registerBlock("op" + op.name(), new ScratchBlock(op == LogicOp.equal ||
                     op == LogicOp.notEqual ||
@@ -55,6 +59,6 @@ public class LogicBlocks {
                     }
                 }
             })));
-        }
+        }*/
     }
 }

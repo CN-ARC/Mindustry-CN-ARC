@@ -31,6 +31,11 @@ public class ScratchInput {
         e.addListener(new HandCursorListener());
     }
 
+    public static void addNewInput(ScratchBlock e) {
+        e.addListener(new ScratchNewInputListener(e));
+        e.addListener(new HandCursorListener());
+    }
+
     public static void checkHit(float x, float y) {
         checking = true;
         Element hit = ui.group.hit(x, y, true);
@@ -67,8 +72,9 @@ public class ScratchInput {
         }
     }
 
-    public static void addNewInput(ScratchBlock e) {
-        e.addListener(new ScratchNewInputListener(e));
+    public static boolean valid() {
+        Element e = scene.hit(input.mouseX(), input.mouseY(), true);
+        return (!(e instanceof ScratchBlock.HoldInput h) || h.holding()) && (e == null || !(e.parent instanceof ScratchBlock.HoldInput h2) || h2.holding());
     }
 
     enum SLayer {
@@ -124,7 +130,7 @@ public class ScratchInput {
         }
 
         public void checkClick() {
-            if (!dragged && layer == SLayer.group && (scene.getKeyboardFocus() == null || !(scene.getKeyboardFocus().parent instanceof InputElement e && ((ClickListener) e.getListeners().find(l -> l instanceof ClickListener)).isOver()))) {
+            if (!dragged && layer == SLayer.group && valid()) {
                 ScratchBlock b = target.getTopBlock();
                 if (menu) {
                     ui.showMenu(b, true);
@@ -241,6 +247,7 @@ public class ScratchInput {
 
         @Override
         public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
+            if (Core.scene.getKeyboardFocus() instanceof TextField f && f.parent instanceof InputElement el && el.parent == target) return false;
             ui.blocksPane.setFlickScroll(false);
             ui.pane.setFlickScroll(false);
             return true;
@@ -263,7 +270,7 @@ public class ScratchInput {
 
         @Override
         public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button) {
-            if (!dragged) ScratchDragListener.run(target);
+            if (!dragged && valid()) ScratchDragListener.run(target);
             ui.blocksPane.setFlickScroll(true);
             ui.pane.setFlickScroll(true);
             dragged = false;

@@ -10,6 +10,7 @@ import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.arcModule.ui.scratch.element.InputElement;
+import mindustry.arcModule.ui.scratch.element.ListElement;
 import mindustry.gen.Call;
 import mindustry.mod.Scripts;
 import rhino.NativeJavaObject;
@@ -19,24 +20,22 @@ public class ARCBlocks {
     public static void init() {
         Color c = new Color(Color.packRgba(76, 151, 255, 255));
         ScratchController.ui.addCategory("高级", c);
+        ScratchController.registerBlock("test", new ScratchBlock(ScratchType.input, c, new BlockInfo(b -> {
+            b.label("test");
+            b.list(new String[]{"test", "test2", "test3"});
+        }, (BlockInfo.ValSupp) e -> ((ListElement) e.get(1)).get())));
         ScratchController.registerBlock("info", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
             b.label("显示弹窗");
             b.input();
-        }, e -> {
-            Vars.ui.showInfo(String.valueOf(((InputElement) e.get(1)).getValue()));
-        })));
+        }, (Cons<Seq<Element>>) e -> Vars.ui.showInfo(String.valueOf(((InputElement) e.get(1)).getValue())))));
         ScratchController.registerBlock("addChatMessage", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
             b.label("聊天框信息");
             b.input();
-        }, e -> {
-            Vars.ui.chatfrag.addMessage(String.valueOf(((InputElement) e.get(1)).getValue()));
-        })));
+        }, (Cons<Seq<Element>>) e -> Vars.ui.chatfrag.addMessage(String.valueOf(((InputElement) e.get(1)).getValue())))));
         ScratchController.registerBlock("sendChatMessage", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
             b.label("发送聊天");
             b.input();
-        }, e -> {
-            Call.sendChatMessage(String.valueOf(((InputElement) e.get(1)).getValue()));
-        })));
+        }, (Cons<Seq<Element>>) e -> Call.sendChatMessage(String.valueOf(((InputElement) e.get(1)).getValue())))));
         ScratchController.registerBlock("js", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
             b.label("运行js");
             b.input();

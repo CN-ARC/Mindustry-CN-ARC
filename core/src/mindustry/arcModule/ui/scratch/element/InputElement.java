@@ -3,34 +3,41 @@ package mindustry.arcModule.ui.scratch.element;
 import arc.graphics.Color;
 import arc.graphics.g2d.GlyphLayout;
 import arc.scene.Element;
+import arc.scene.event.ChangeListener;
 import arc.scene.event.ClickListener;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
+import arc.util.pooling.Pools;
 import mindustry.arcModule.ui.scratch.ScratchController;
-import mindustry.arcModule.ui.scratch.ScratchStyles;
+import mindustry.arcModule.ui.scratch.ScratchDraw;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 
-public class InputElement extends ScratchElement {
+public class InputElement extends ScratchElement implements ScratchBlock.HoldInput {
     protected static TextField.TextFieldStyle style;
     protected static GlyphLayout prefSizeLayout = new GlyphLayout();
     private static final float minWidth = 40;
     public TextField field;
     private final boolean num;
-    Cell<TextField> cell;
+    private final Cell<TextField> cell;
+    private final ClickListener listener;
 
     public InputElement(boolean num, String def) {
-        super();
         field = new TextField(def, getStyle()) {
             @Override
             public Element hit(float x, float y, boolean touchable) {
                 return ScratchController.dragging == null ? super.hit(x, y, touchable) : null;
             }
         };
+        field.changed(() -> {
+            ChangeListener.ChangeEvent changeEvent = Pools.obtain(ChangeListener.ChangeEvent.class, ChangeListener.ChangeEvent::new);
+            fire(changeEvent);
+            Pools.free(changeEvent);
+        });
         this.num = num;
         if (num) field.setFilter(TextField.TextFieldFilter.digitsOnly);
         field.setAlignment(Align.center);
@@ -38,7 +45,7 @@ public class InputElement extends ScratchElement {
         cell = add(field).left().width(minWidth).minHeight(23);
         field.changed(this::calcWidth);
         field.setProgrammaticChangeEvents(true);
-        addListener(new ClickListener());
+        addListener(listener = new ClickListener());
         calcWidth();
     }
 
@@ -73,9 +80,9 @@ public class InputElement extends ScratchElement {
     @Override
     public void drawChildren() {
         if (child == null) {
-            ScratchStyles.drawInput(x, y, width, height, elemColor, ScratchController.selected == this);
+            ScratchDraw.drawInput(x, y, width, height, elemColor, ScratchController.selected == this);
         } else if (ScratchController.selected == this && accept(ScratchController.dragging)) {
-            ScratchStyles.drawInputSelected(x, y, width, height);
+            ScratchDraw.drawInputSelected(x, y, width, height);
         }
         super.drawChildren();
     }
@@ -94,6 +101,10 @@ public class InputElement extends ScratchElement {
         } catch (Exception e) {
             return Double.NaN;
         }
+    }
+
+    public String getText() {
+        return field == null ? "" : field.getText();
     }
 
     @Override
@@ -124,5 +135,10 @@ public class InputElement extends ScratchElement {
         InputElement e = new InputElement(num, field.getText());
         if (child instanceof ScratchBlock sb) sb.copy().asChild(e);
         return e;
+    }
+
+    @Override
+    public boolean holding() {
+        return !listener.isOver();
     }
 }

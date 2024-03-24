@@ -19,6 +19,15 @@ public abstract class ScratchElement extends ScratchTable {
     public void setElementValue(Object value) {
     }
 
+    public ScratchBlock getBlock() {
+        Element e = this;
+        while (e != null) {
+            if (e.parent instanceof ScratchBlock sb) return sb;
+            e = e.parent;
+        }
+        return null;
+    }
+
     @Override
     public Element hit(float x, float y, boolean touchable) {
         if (ScratchController.dragging != null) {

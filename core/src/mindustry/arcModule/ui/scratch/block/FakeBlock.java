@@ -2,11 +2,12 @@ package mindustry.arcModule.ui.scratch.block;
 
 import arc.graphics.Color;
 import arc.scene.Element;
-import mindustry.arcModule.ui.scratch.ScratchStyles;
+import mindustry.arcModule.ui.scratch.ScratchDraw;
 import mindustry.arcModule.ui.scratch.ScratchType;
 
 public class FakeBlock extends ScratchBlock {
     private ScratchBlock real;
+    private static final Color fallbackColor = new Color(Color.packRgba(175, 175, 175, 255));
     public FakeBlock() {
         super(ScratchType.fake, Color.black.cpy().mulA(0.3f), emptyInfo);
     }
@@ -42,6 +43,10 @@ public class FakeBlock extends ScratchBlock {
 
     @Override
     public void draw() {
-        ScratchStyles.drawBlock(x, y, width, height, elemColor, true);
+        if (real instanceof TriggerBlock) {
+            ScratchDraw.drawTriggerBlock(x, y, width, fallbackColor, true);
+        } else {
+            ScratchDraw.drawBlock(x, y, width, height, elemColor, true);
+        }
     }
 }

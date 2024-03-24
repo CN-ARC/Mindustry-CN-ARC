@@ -6,15 +6,13 @@ import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
+import arc.scene.ui.layout.Cell;
 import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Nullable;
 import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.block.fork.ForkComponent;
-import mindustry.arcModule.ui.scratch.element.CondElement;
-import mindustry.arcModule.ui.scratch.element.InputElement;
-import mindustry.arcModule.ui.scratch.element.LabelElement;
-import mindustry.arcModule.ui.scratch.element.ScratchElement;
+import mindustry.arcModule.ui.scratch.element.*;
 
 public class ScratchBlock extends ScratchTable {
     public static final BlockInfo emptyInfo = new BlockInfo();
@@ -45,9 +43,11 @@ public class ScratchBlock extends ScratchTable {
         minHeight = type == ScratchType.block ? 40 : 28;
     }
 
-    public void label(String str) {
+    public Cell<ScratchTable> label(String str) {
         LabelElement l = new LabelElement(str);
-        l.cell(add(l));
+        Cell<ScratchTable> c;
+        l.cell(c = add(l));
+        return c;
     }
 
     public void cond() {
@@ -65,6 +65,11 @@ public class ScratchBlock extends ScratchTable {
 
     public void input(boolean num, String def) {
         InputElement e = new InputElement(num, def);
+        e.cell(add(e));
+    }
+
+    public void list(String[] list) {
+        ListElement e = new ListElement(list);
         e.cell(add(e));
     }
 
@@ -188,9 +193,9 @@ public class ScratchBlock extends ScratchTable {
 
     public void drawBackground() {
         switch (type) {
-            case input -> ScratchStyles.drawInput(x, y, width, height, elemColor, false);
-            case condition -> ScratchStyles.drawCond(x, y, width, height, elemColor, false);
-            case block -> ScratchStyles.drawBlock(x, y, width, height, elemColor, false);
+            case input -> ScratchDraw.drawInput(x, y, width, height, elemColor, false);
+            case condition -> ScratchDraw.drawCond(x, y, width, height, elemColor, false);
+            case block -> ScratchDraw.drawBlock(x, y, width, height, elemColor, false);
         }
     }
 
@@ -268,7 +273,7 @@ public class ScratchBlock extends ScratchTable {
 
     @Override
     public boolean acceptLink(ScratchBlock block) {
-        return type == ScratchType.block && !(block instanceof TriggerBlock);
+        return type == ScratchType.block && (dir == Align.top || !(block instanceof TriggerBlock));
     }
 
     @Override
@@ -353,6 +358,12 @@ public class ScratchBlock extends ScratchTable {
 
         public Run(ScratchBlock block) {
             this.block = pointer = block;
+        }
+    }
+
+    public interface HoldInput {
+        default boolean holding() {
+            return false;
         }
     }
 }
