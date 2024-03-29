@@ -14,7 +14,7 @@ public class LogicBlocks {
         LogicIO.allStatements.each(p -> {
             LStatement l = p.get();
             try {
-                ScratchController.registerBlock(l.name(), new LogicBlock(c, l));
+                ScratchController.registerBlock(l.name(), new LogicBlock(l));
             } catch (Exception e) {
                 Log.err("Load " + l.name() + " failed", e);
             }

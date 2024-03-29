@@ -23,10 +23,16 @@ import mindustry.ui.Styles;
 import java.util.Objects;
 
 public class ListElement extends ScratchElement implements ScratchBlock.HoldInput {
-    private final String[] lists;
+    private static final String[] empty = {""};
+    private String[] lists;
     private int now;
     private Label l;
     private final ClickListener listener;
+
+    public ListElement() {
+        this(empty, 0);
+    }
+
     public ListElement(String[] lists) {
         this(lists, 0);
     }
@@ -44,6 +50,11 @@ public class ListElement extends ScratchElement implements ScratchBlock.HoldInpu
             }).size(16, 12);
         }));
         listener = clicked(ListElement.this::showList);
+    }
+
+    public void setList(String[] target) {
+        lists = target;
+        set(0);
     }
 
     public int index() {

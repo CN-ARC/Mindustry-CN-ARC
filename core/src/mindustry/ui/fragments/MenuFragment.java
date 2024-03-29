@@ -76,10 +76,10 @@ public class MenuFragment{
         Group group = new WidgetGroup();
         group.setFillParent(true);
         group.visible(() -> !ui.editor.isShown());
-        //parent.addChild(group);
+        parent.addChild(group);
 
         WidgetGroup textGroup = new WidgetGroup();
-        //parent.addChild(textGroup);
+        parent.addChild(textGroup);
 
         parent = group;
 

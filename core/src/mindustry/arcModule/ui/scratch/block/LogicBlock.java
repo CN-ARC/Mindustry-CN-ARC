@@ -3,10 +3,13 @@ package mindustry.arcModule.ui.scratch.block;
 import arc.Core;
 import arc.graphics.Color;
 import arc.scene.Element;
+import arc.scene.actions.Actions;
+import arc.scene.event.ClickListener;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
+import arc.struct.SnapshotSeq;
 import arc.util.Log;
 import arc.util.Time;
 import mindustry.Vars;
@@ -21,24 +24,30 @@ import mindustry.logic.LStatements;
 
 public class LogicBlock extends ScratchBlock implements LogicBuildable {
     public LStatement statement;
+    private final Table logicTable;
     private static LogicBlock tmp;
-    public LogicBlock(Color color, LStatement statement) {
-        this(color, statement, false);
+    public LogicBlock(LStatement statement) {
+        this(statement, false);
     }
 
-    public LogicBlock(Color color, LStatement statement, boolean dragEnabled) {
-        super(ScratchType.block, color, emptyInfo, dragEnabled);
-        Table t = new Table();
+    public LogicBlock(LStatement statement, boolean dragEnabled) {
+        super(ScratchType.block, statement.category().color, emptyInfo, dragEnabled);
+        logicTable = new Table();
         this.statement = statement;
-        statement.build(t);
-        t.setFillParent(true);
-        t.visible = false;
-        replaceLogicToScratch(t, this, statement.name());
+        statement.build(logicTable);
+        logicTable.setFillParent(true);
+        logicTable.visible = false;
+        replaceLogicToScratch(logicTable, this, statement.name());
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
     }
 
     @Override
     public LogicBlock copy(boolean drag) {
-        return new LogicBlock(elemColor, statement.copy(), drag);
+        return new LogicBlock(statement.copy(), drag);
     }
 
     @Override
@@ -63,43 +72,92 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
         Seq<Cell> es = src.getCells().copy();
         es.each(c -> {
             Element e = c.get();
-            if (e instanceof Button b) {
-                Seq<String> str = new Seq<>(String.class);
-                int size = Core.scene.getElements().size;
-                b.fireClick();
-                Seq<Element> ee = Core.scene.getElements();
-                if (ee.size == size + 2) {
-                    try {
-                        ((Table) ((ScrollPane) ((Table) ee.peek()).getChildren().peek()).getWidget()).getChildren().each(bb -> str.add(((TextButton) bb).getText().toString()));
-                        ee.peek().remove();
-                        ee.peek().remove();
-                    } catch (Exception err) {
-                        Vars.ui.showException(err);
+            if (e != null) {
+                if (e instanceof Button b) {
+                    int size = Core.scene.getElements().size;
+                    b.fireClick();
+                    Seq<Element> ee = Core.scene.getElements();
+                    if (ee.size == size + 2) {
+                        //Buttons?
+                        try {
+                            Seq<String> str = new Seq<>(String.class);
+                            SnapshotSeq<Element> children = ((Table) ((ScrollPane) ((Table) ee.peek()).getChildren().peek()).getWidget()).getChildren();
+                            ListElement s;
+                            if (children.contains(e2 -> !(e2 instanceof Button))) {
+                                //not buttons
+                                s = new ListElement() {
+                                    @Override
+                                    public void showList() {
+                                        b.fireClick();
+                                        ((ScrollPane) ((Table) ee.peek()).getChildren().peek()).getWidget().clicked(() -> replaceLogicToScratch(src, dst, name));
+                                    }
+                                };
+                                Label possible = ((Label) b.getChildren().find(el -> el instanceof Label));
+                                if (possible != null) {
+                                    String label = possible.getText().toString();
+                                    s.setList(new String[]{label});
+                                    s.set(label);
+                                }
+                                s.update(() -> b.setPosition(s.x, s.y));
+                            } else {
+                                s = new ListElement();
+                                //buttons
+                                children.each(bb -> str.add(((TextButton) bb).getText().toString()));
+                                s.setList(str.toArray());
+                                Label possible = ((Label) b.getChildren().find(el -> el instanceof Label));
+                                if (possible != null) s.set(possible.getText().toString());
+                            }
+                            ee.peek().remove();
+                            ee.peek().remove();
+                            s.cell(t[0].add(s));
+                            s.changed(() -> {
+                                b.fireClick();
+                                ((Table) ((ScrollPane) ((Table) ee.peek()).getChildren().peek()).getWidget()).getChildren().get(s.index()).fireClick();
+                                replaceLogicToScratch(src, dst, name);
+                            });
+                        } catch (Exception err) {
+                            Vars.ui.showException(err);
+                        }
+                    } else if (ee.size == size + 1 || ee.size == size) {
+                        //Dialog?
+                        Element d = ee.peek();
+                        if (d instanceof Dialog dialog && dialog.getActions().size != 0) {
+                            dialog.clearActions();
+                            dialog.hide(null);
+                            ListElement s = new ListElement() {
+                                @Override
+                                public void showList() {
+                                    b.fireClick();//TODO rebuild
+                                }
+                            };
+                            Label possible = ((Label) b.getChildren().find(el -> el instanceof Label));
+                            if (possible != null) {
+                                String label = possible.getText().toString();
+                                s.setList(new String[]{label});
+                                s.set(label);
+                            }
+                            s.cell(t[0].add(s));
+                        }
+                    } else {
+                        //match failed
+                        Log.warn("convert failed: size @ @, last @", size, ee.size, ee.peek());
                     }
-                    ListElement s = new ListElement(str.toArray());
-                    s.set(((Label) b.getChildren().find(el -> el instanceof Label)).getText().toString());
-                    s.changed(() -> {
-                        b.fireClick();
-                        ((Table) ((ScrollPane) ((Table) ee.peek()).getChildren().peek()).getWidget()).getChildren().get(s.index()).fireClick();
-                        replaceLogicToScratch(src, dst, name);
-                    });
+                } else if (e instanceof Table tt) {
+                    replaceLogicToScratch(tt, t[0].add(new Table()).get(), null);
+                } else if (e instanceof Label l) {
+                    LabelElement s = new LabelElement(l.getText().toString());
+                    Tooltip tt = (Tooltip) l.getListeners().find(ls -> ls instanceof Tooltip);
+                    if (tt != null) s.addListener(tt);
                     s.cell(t[0].add(s));
+                } else if (e instanceof TextField f) {
+                    InputElement s = new InputElement(false, f.getText());
+                    f.setProgrammaticChangeEvents(true);
+                    s.changed(() -> f.setText(s.getText()));
+                    s.cell(t[0].add(s));
+                } else {
+                    t[0].add(e);
+                    Log.warn("match failed @", e);
                 }
-            } else if (e instanceof Table tt) {
-                replaceLogicToScratch(tt, t[0].add(new Table()).get(), null);
-            } else if (e instanceof Label l) {
-                LabelElement s = new LabelElement(l.getText().toString());
-                Tooltip tt = (Tooltip) l.getListeners().find(ls -> ls instanceof Tooltip);
-                if (tt != null) s.addListener(tt);
-                s.cell(t[0].add(s));
-            } else if (e instanceof TextField f) {
-                InputElement s = new InputElement(false, f.getText());
-                f.setProgrammaticChangeEvents(true);
-                s.changed(() -> f.setText(s.getText()));
-                s.cell(t[0].add(s));
-            } else {
-                t[0].add(e);
-                Log.warn("match failed @", e);
             }
             if (c.isEndRow()) {
                 dst.row();
@@ -113,10 +171,10 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
         ls.each(l -> {
             LogicBlock b;
             try {
-                b = new LogicBlock(l.category().color, l);
+                b = new LogicBlock(l, true);
             } catch (Exception e) {
                 LStatements.InvalidStatement s = new LStatements.InvalidStatement();
-                b = new LogicBlock(s.category().color, s, true);
+                b = new LogicBlock(s, true);
                 Log.err(e);
             }
             ui.addElement(b);

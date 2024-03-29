@@ -12,10 +12,13 @@ import arc.scene.ui.Label;
 import arc.scene.ui.TextButton.TextButtonStyle;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Table;
+import arc.struct.Seq;
 import arc.util.Log;
 import arc.util.Nullable;
 import arc.util.Strings;
 import arc.util.Time;
+import mindustry.arcModule.ui.scratch.ScratchController;
+import mindustry.arcModule.ui.scratch.block.LogicBlock;
 import mindustry.core.GameState.State;
 import mindustry.ctype.Content;
 import mindustry.game.Team;
@@ -321,6 +324,11 @@ public class LogicDialog extends BaseDialog{
                     t.button("[orange]逻辑辅助器",Icon.settings,style,()-> {
                         Core.settings.put("logicSupport",!Core.settings.getBool("logicSupport"));
                         rebuildMain();
+                    }).marginLeft(12f);
+                    t.row();
+                    t.button("[orange]转scratch", Icon.edit, style, () -> {
+                        Seq<LStatement> st = canvas.statements.getChildren().<LCanvas.StatementElem>as().map(s -> s.st);
+                        LogicBlock.convert(ScratchController.ui, st);
                     }).marginLeft(12f);
                 });
             });

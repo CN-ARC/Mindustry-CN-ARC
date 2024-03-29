@@ -27,6 +27,7 @@ import arc.util.Align;
 import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.arcModule.ui.widgets.BoundedGroup;
+import mindustry.arcModule.ui.window.Window;
 import mindustry.game.EventType;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
@@ -108,7 +109,12 @@ public class ScratchUI extends Table {
             fontColor = Color.gray;
         }};
         blocks.defaults().pad(10);
-        Events.run(EventType.Trigger.update, this::findCategory);
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        findCategory();
     }
 
     public static Vec2 oldPosToNewPos(Group top, Element e, Element target) {
