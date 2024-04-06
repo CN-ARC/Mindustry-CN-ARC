@@ -1,23 +1,25 @@
 package mindustry.arcModule.ui.scratch.blocks;
 
 import arc.graphics.Color;
+import arc.struct.ObjectMap;
+import arc.struct.Seq;
 import arc.util.Log;
 import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.block.LogicBlock;
 import mindustry.gen.LogicIO;
+import mindustry.logic.LCategory;
 import mindustry.logic.LStatement;
 
 public class LogicBlocks {
     public static void init() {
-        Color c = new Color(Color.packRgba(89, 192, 89, 255));
-        ScratchController.ui.addCategory("运算", c);
+        ObjectMap<LCategory, Seq<LStatement>> map = new ObjectMap<>();
         LogicIO.allStatements.each(p -> {
             LStatement l = p.get();
-            try {
-                ScratchController.registerBlock(l.name(), new LogicBlock(l));
-            } catch (Exception e) {
-                Log.err("Load " + l.name() + " failed", e);
-            }
+            map.get(l.category(), Seq::new).add(l);
+        });
+        map.each((c, s) -> {
+            ScratchController.ui.addCategory(c.name, c.color.cpy().value(1).saturation(0.4f));
+            s.each(l -> ScratchController.registerBlock(l.name(), new LogicBlock(l)));
         });
         /*for (LogicOp logicOp : LogicOp.all) {
             final LogicOp op = logicOp;

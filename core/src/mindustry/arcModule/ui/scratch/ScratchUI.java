@@ -1,7 +1,6 @@
 package mindustry.arcModule.ui.scratch;
 
 import arc.Core;
-import arc.Events;
 import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.Pixmap;
@@ -26,9 +25,7 @@ import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
-import mindustry.arcModule.ui.widgets.BoundedGroup;
-import mindustry.arcModule.ui.window.Window;
-import mindustry.game.EventType;
+import mindustry.arcModule.ui.utils.BoundedGroup;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
 import mindustry.ui.Fonts;

@@ -1,4 +1,4 @@
-package mindustry.arcModule.ui.widgets;
+package mindustry.arcModule.ui.utils;
 
 import arc.scene.style.Drawable;
 import arc.scene.ui.layout.WidgetGroup;

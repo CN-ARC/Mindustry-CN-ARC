@@ -328,7 +328,7 @@ public class LogicDialog extends BaseDialog{
                     t.row();
                     t.button("[orange]转scratch", Icon.edit, style, () -> {
                         Seq<LStatement> st = canvas.statements.getChildren().<LCanvas.StatementElem>as().map(s -> s.st);
-                        LogicBlock.convert(ScratchController.ui, st);
+                        LogicBlock.LogicConvertor.convert(ScratchController.ui, st);
                     }).marginLeft(12f);
                 });
             });

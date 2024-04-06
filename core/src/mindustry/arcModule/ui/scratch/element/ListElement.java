@@ -10,6 +10,7 @@ import arc.scene.event.ClickListener;
 import arc.scene.event.Touchable;
 import arc.scene.ui.Label;
 import arc.scene.ui.ScrollPane;
+import arc.scene.ui.Tooltip;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
 import arc.util.Align;
@@ -25,6 +26,7 @@ import java.util.Objects;
 public class ListElement extends ScratchElement implements ScratchBlock.HoldInput {
     private static final String[] empty = {""};
     private String[] lists;
+    private Tooltip[] tips;
     private int now;
     private Label l;
     private final ClickListener listener;
@@ -36,6 +38,7 @@ public class ListElement extends ScratchElement implements ScratchBlock.HoldInpu
     public ListElement(String[] lists) {
         this(lists, 0);
     }
+
     public ListElement(String[] lists, int def) {
         this.lists = lists;
         now = def;
@@ -52,9 +55,13 @@ public class ListElement extends ScratchElement implements ScratchBlock.HoldInpu
         listener = clicked(ListElement.this::showList);
     }
 
-    public void setList(String[] target) {
+    public void setList(String... target) {
         lists = target;
         set(0);
+    }
+
+    public void setTooltip(Tooltip... target) {
+        tips = target;
     }
 
     public int index() {
@@ -122,6 +129,7 @@ public class ListElement extends ScratchElement implements ScratchBlock.HoldInpu
             for (int i = 0; i < lists.length; i++) {
                 String s = lists[i];
                 int id = i;
+                int now = i;
                 inner.add(new Label(s) {
                     final ClickListener c;
                     {
@@ -135,7 +143,9 @@ public class ListElement extends ScratchElement implements ScratchBlock.HoldInpu
                         if (c.isOver()) Styles.black5.draw(x - 10, y, width + 10, height);
                         super.draw();
                     }
-                }).size(240, 40).padLeft(10).labelAlign(Align.left).row();
+                }).size(240, 40).padLeft(10).labelAlign(Align.left).with(b -> {
+                    if (tips != null && tips[now] != null) b.addListener(tips[now]);
+                }).row();
             }
         }, getBlock().elemColor);
     }

@@ -10,6 +10,8 @@ import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Align;
+import arc.util.io.Reads;
+import arc.util.io.Writes;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public abstract class ScratchTable extends Table {
@@ -80,6 +82,24 @@ public abstract class ScratchTable extends Table {
         } else {
             Lines.rect(x, y, width, height);
         }
+    }
+
+    public void read(Reads r) {
+        readPos(r);
+    }
+
+    public void write(Writes w) {
+        writePos(w);
+    }
+
+    public void readPos(Reads r) {
+        x = r.f();
+        y = r.f();
+    }
+
+    public void writePos(Writes w) {
+        w.f(x);
+        w.f(y);
     }
 
     @Override
