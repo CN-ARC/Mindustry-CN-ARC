@@ -4,14 +4,15 @@ import arc.Core;
 import arc.input.KeyCode;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
-import arc.scene.event.*;
-import arc.scene.ui.TextField;
+import arc.scene.event.HandCursorListener;
+import arc.scene.event.InputEvent;
+import arc.scene.event.InputListener;
+import arc.scene.event.Touchable;
 import arc.util.Align;
 import arc.util.Log;
 import arc.util.Tmp;
 import mindustry.arcModule.ui.scratch.block.FakeBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
-import mindustry.arcModule.ui.scratch.element.InputElement;
 import mindustry.arcModule.ui.scratch.element.ScratchElement;
 
 import static arc.Core.input;
@@ -95,7 +96,7 @@ public class ScratchInput {
                 target.localToAscendantCoordinates(ui.group, Tmp.v1.set(target.x, target.y));
                 float ox = Tmp.v1.x, oy = Tmp.v1.y;
                 sel.setChild(null);
-                ui.addElement(target);
+                ui.addBlock(target);
                 target.setPosition(ox, oy);
                 target.x += v.x - lastX;
                 target.y += v.y - lastY;
@@ -116,7 +117,7 @@ public class ScratchInput {
                     ScratchTable oldChild = sel.child;
                     target.asChild(sel);
                     if (oldChild != null) {
-                        ui.addElement(oldChild);
+                        ui.addBlock(oldChild);
                         oldChild.setPosition(target.x + 10, target.y - 10);
                     }
                 }
@@ -178,7 +179,7 @@ public class ScratchInput {
 
         @Override
         public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
-            if (cur != target && cur != null || Core.scene.getKeyboardFocus() instanceof TextField f && f.parent instanceof InputElement el && el.parent == target)
+            if (cur != target && cur != null || Core.scene.getKeyboardFocus() instanceof ScratchBlock.HoldInput f && f.holding())
                 return false;
             dragged = false;
             target.selected = true;
@@ -247,7 +248,7 @@ public class ScratchInput {
 
         @Override
         public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
-            if (Core.scene.getKeyboardFocus() instanceof TextField f && f.parent instanceof InputElement el && el.parent == target) return false;
+            if (Core.scene.getKeyboardFocus() instanceof ScratchBlock.HoldInput f && f.holding()) return false;
             ui.blocksPane.setFlickScroll(false);
             ui.pane.setFlickScroll(false);
             return true;

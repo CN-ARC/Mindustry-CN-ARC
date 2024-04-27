@@ -2,6 +2,7 @@ package mindustry.arcModule.ui.scratch.element;
 
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.Cell;
+import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
 
@@ -11,6 +12,10 @@ public class LabelElement extends ScratchElement {
     public LabelElement(String str) {
         add(l = new Label(str));
         hittable = false;
+    }
+
+    public LabelElement(String str, boolean bundle) {
+        this(bundle ? ScratchController.getText("elem." + str + ".name") : str);
     }
 
     @Override

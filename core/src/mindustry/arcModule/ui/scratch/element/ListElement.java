@@ -52,7 +52,9 @@ public class ListElement extends ScratchElement implements ScratchBlock.HoldInpu
                 }
             }).size(16, 12);
         }));
-        listener = clicked(ListElement.this::showList);
+        listener = clicked(() -> {
+            if (ScratchController.dragging == null) showList();
+        });
     }
 
     public void setList(String... target) {

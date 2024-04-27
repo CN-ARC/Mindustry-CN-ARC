@@ -24,6 +24,8 @@ import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Tmp;
+import arc.util.io.Reads;
+import arc.util.io.Writes;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.arcModule.ui.utils.BoundedGroup;
 import mindustry.gen.Icon;
@@ -31,9 +33,11 @@ import mindustry.gen.Tex;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 
+import java.io.*;
 import java.util.Objects;
 
 import static arc.Core.input;
+import static mindustry.arcModule.ui.scratch.ScratchController.getText;
 
 public class ScratchUI extends Table {
     public Table blocks = new Table(), types = new Table();
@@ -55,6 +59,7 @@ public class ScratchUI extends Table {
     private static final Vec2 v1 = new Vec2(), v2 = new Vec2();
     private static Label.LabelStyle ls;
     private static final Color hoverColor = new Color(Color.packRgba(76, 151, 255, 255));
+    private static byte[] tmpData;
 
     static {
         Pixmap pix = new Pixmap(27, 27);
@@ -98,6 +103,29 @@ public class ScratchUI extends Table {
         overlay2.touchable = Touchable.childrenOnly;
         stack.add(overlay);
         stack.add(overlay2);
+        stack.add(new Table(t -> {
+            t.button(getText("save"), () -> {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                write(new Writes(new DataOutputStream(baos)));
+                tmpData = baos.toByteArray();
+                try {
+                    baos.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            t.button(getText("load"), () -> {
+                ByteArrayInputStream bais = new ByteArrayInputStream(tmpData);
+                read(new Reads(new DataInputStream(bais)));
+                try {
+                    bais.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).disabled(b -> tmpData == null);
+            t.button(getText("clear"), this::clearBlocks);
+            t.button("reload", ScratchController::reload);
+        }));
         group.background = bg;
         group.setTransform(true);
         add(stack).grow();
@@ -106,6 +134,25 @@ public class ScratchUI extends Table {
             fontColor = Color.gray;
         }};
         blocks.defaults().pad(10);
+    }
+
+    public void read(Reads r) {
+        int size = r.i();
+        for (int i = 0; i < size; i++) {
+            ScratchBlock sb = ScratchController.get(r.s()).copy();
+            sb.read(r);
+            addBlock(sb);
+        }
+    }
+
+    public void write(Writes w) {
+        Seq<ScratchBlock> blocks = group.getChildren().select(e -> e instanceof ScratchBlock).map(e -> (ScratchBlock) e);
+        w.i(blocks.size);
+        for (ScratchBlock sb : blocks) {
+            if (sb.info.id == -1) throw new IllegalStateException("ID is unset! block: " + sb.getClass().getSimpleName());
+            w.s(sb.info.id);
+            sb.write(w);
+        }
     }
 
     @Override
@@ -197,11 +244,15 @@ public class ScratchUI extends Table {
         w.add();*/
     }
 
-    public void addBlock(ScratchBlock b) {
+    public void registerBlock(ScratchBlock b) {
         blocks.add(b).align(Align.left).row();
     }
 
     public void clearBlocks() {
+        group.clear();
+    }
+
+    public void clearData() {
         blocks.clear();
         group.clear();
         overlay.clear();
@@ -209,7 +260,7 @@ public class ScratchUI extends Table {
         categories.clear();
     }
 
-    public void addElement(ScratchTable e) {
+    public void addBlock(ScratchTable e) {
         group.addChild(e);
     }
 

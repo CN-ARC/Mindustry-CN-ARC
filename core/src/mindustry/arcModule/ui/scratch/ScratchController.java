@@ -1,26 +1,79 @@
 package mindustry.arcModule.ui.scratch;
 
+import arc.files.Fi;
+import arc.graphics.Color;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
+import arc.util.I18NBundle;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
+
+import java.util.Locale;
 
 public class ScratchController {
     public static ScratchUI ui;
     public static ScratchRunner runner;
     public static ScratchTable dragging, selected;
-    public static ObjectMap<String, Integer> map = new ObjectMap<>();
-    public static Seq<ScratchBlock> list = new Seq<>();
+    public static ObjectMap<String, Integer> map;
+    public static Seq<ScratchBlock> list;
+    public static ScratchContext nowContext;
+
+    private static I18NBundle bundle;
 
     public static void init() {
-        ui = new ScratchUI();
-        runner = new ScratchRunner();
+        loadBundle();
+        setContext(ScratchContext.createContext());
+    }
+
+    public static void reload() {
+        ui.remove();
+        ScratchTest.test();
+    }
+
+    public static void loadBundle() {
+        Fi handle = new Fi("E:\\Mindustry\\lstbundles");
+        bundle = I18NBundle.createBundle(handle, Locale.ENGLISH);
+    }
+
+    public static String getText(String r) {
+        return bundle.get(r);
+    }
+
+    public static String getText(String r, String def) {
+        return bundle.get(r, def);
+    }
+
+    public static void setContext(ScratchContext context) {
+        if (nowContext == context) return;
+        if (nowContext != null) saveContext(nowContext);
+        nowContext = context;
+        if (context != null) loadContext(context);
+    }
+
+    public static void loadContext(ScratchContext context) {
+        ui = context.ui;
+        runner = context.runner;
+        dragging = context.dragging;
+        selected = context.selected;
+        map = context.map;
+        list = context.list;
+    }
+
+    public static void saveContext(ScratchContext context) {
+        context.ui = ui;
+        context.runner = runner;
+        context.dragging = dragging;
+        context.selected = selected;
+        context.map = map;
+        context.list = list;
     }
 
     public static void registerBlock(String name, ScratchBlock e) {
         if (!list.contains(e)) {
-            map.put(name, list.add(e).size - 1);
-            ui.addBlock(e);
+            int id = list.add(e).size - 1;
+            map.put(name, id);
+            ui.registerBlock(e);
             ScratchInput.addNewInput(e);
+            e.info.setID((short) id);
         }
     }
 
@@ -36,57 +89,18 @@ public class ScratchController {
         dragging = selected = null;
         map.clear();
         list.clear();
-        ui.clearBlocks();
+        ui.clearData();
     }
 
-    public static ScratchTable get(String name) {
+    public static ScratchBlock get(String name) {
         return list.get(map.get(name));
     }
 
-    public static ScratchTable get(int i) {
+    public static ScratchBlock get(int i) {
         return list.get(i);
     }
 
-    public static DoubleResult checkDouble(Object ...objects) {
-        double[] doubles = new double[objects.length];
-        boolean success = true;
-        for (int i = 0; i < objects.length; i++) {
-            Object obj = objects[i];
-            if (isNumber(obj)) {
-                doubles[i] = toDouble(obj);
-                continue;
-            }
-            if (obj instanceof String s) {
-                try {
-                    doubles[i] = Double.parseDouble(s);
-                    continue;
-                } catch (Exception ignored) {
-                }
-            }
-            success = false;
-            doubles[i] = Double.NaN;
-        }
-        return new DoubleResult(objects, doubles, success);
-    }
-
-    public static boolean isNumber(Object o) {
-        return o instanceof Number || o instanceof Boolean;
-    }
-
-    public static double toDouble(Object o) {
-        if (o instanceof Boolean b) return b ? 1 : 0;
-        return (double) o;
-    }
-
-    public static class DoubleResult {
-        public boolean success;
-        public double[] doubles;
-        public Object[] objects;
-
-        DoubleResult(Object[] objects, double[] doubles, boolean success) {
-            this.objects = objects;
-            this.doubles = doubles;
-            this.success = success;
-        }
+    public static void category(String name, Color color) {
+        ui.addCategory(getText("category." + name + ".name"), color);
     }
 }

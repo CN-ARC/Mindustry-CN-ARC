@@ -1,8 +1,17 @@
 package mindustry.arcModule.ui.scratch.block;
 
 import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
+import arc.input.KeyCode;
+import arc.math.Mathf;
+import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.Scene;
+import arc.scene.event.ClickListener;
+import arc.scene.event.InputEvent;
+import arc.scene.event.InputListener;
 import arc.scene.event.VisibilityEvent;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Cell;
@@ -11,10 +20,12 @@ import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.struct.SnapshotSeq;
-import arc.util.Log;
-import arc.util.Reflect;
-import arc.util.Time;
+import arc.util.*;
+import arc.util.io.Reads;
+import arc.util.io.Writes;
 import mindustry.Vars;
+import mindustry.arcModule.ui.scratch.BlockInfo;
+import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.ScratchUI;
 import mindustry.arcModule.ui.scratch.builder.LogicBuildable;
@@ -22,10 +33,14 @@ import mindustry.arcModule.ui.scratch.element.InputElement;
 import mindustry.arcModule.ui.scratch.element.LabelElement;
 import mindustry.arcModule.ui.scratch.element.ListElement;
 import mindustry.arcModule.ui.utils.DelayedInitListener;
-import mindustry.logic.LStatement;
-import mindustry.logic.LStatements;
+import mindustry.gen.LogicIO;
+import mindustry.gen.Tex;
+import mindustry.logic.*;
 
 import java.lang.reflect.Field;
+import java.util.StringTokenizer;
+
+import static mindustry.arcModule.ui.scratch.ScratchController.getText;
 
 public class LogicBlock extends ScratchBlock implements LogicBuildable {
     private static final Field sclField;
@@ -38,23 +53,39 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
         sclField.setAccessible(true);
     }
     public LStatement statement;
+    public ScratchBlock jump = null;
     private static LogicBlock tmp;
 
+
     public LogicBlock(LStatement statement) {
-        this(statement, false);
+        this(statement, new BlockInfo());
     }
 
     public LogicBlock(LStatement statement, boolean dragEnabled) {
-        super(ScratchType.block, statement.category().color.cpy().value(1).saturation(0.4f), emptyInfo, dragEnabled);
+        this(statement, new BlockInfo(), dragEnabled);
+    }
+
+    public LogicBlock(LStatement statement, BlockInfo info) {
+        this(statement, info, false);
+    }
+
+    public LogicBlock(LStatement statement, BlockInfo info, boolean dragEnabled) {
+        super(ScratchType.block, Color.white, info, dragEnabled);
+        marginLeft(9);
+        marginRight(9);
+        if (statement != null) build(statement);
+    }
+
+    public void build(LStatement statement) {
+        clearChildren();
+        elemColor = statement.category().color;
         Table logicTable = new Table();
         this.statement = statement;
         flat(() -> statement.build(logicTable));
         logicTable.setFillParent(true);
         logicTable.visible = false;
         addChild(logicTable);
-        marginLeft(9);
-        marginRight(9);
-        LogicConvertor.replaceLogicToScratch(logicTable, this, statement.name());
+        LogicConvertor.replaceLogicToScratch(logicTable, this, getText("block." + statement.getClass().getSimpleName().replace("Statement", "") + ".name", statement.name()));
     }
 
     private static void flat(Runnable r) {
@@ -70,7 +101,7 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
 
     @Override
     public LogicBlock copy(boolean drag) {
-        return new LogicBlock(statement.copy(), drag);
+        return new LogicBlock(statement.copy(), info, drag);
     }
 
     @Override
@@ -80,6 +111,28 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
 
     @Override
     public void buildLogic(StringBuilder builder) {
+    }
+
+    @Override
+    public void readElements(Reads r) {
+        build(LAssembler.read(r.str(), true).first());
+    }
+
+    @Override
+    public void writeElements(Writes w) {
+        StringBuilder sb = new StringBuilder();
+        LogicIO.write(statement, sb);
+        w.str(sb.toString());
+    }
+
+    protected static void drawCurve(float x1, float y1, float x2, float y2, boolean left) {
+        Lines.stroke(4f);
+        if (left) {
+            float dist = Math.abs(x1 - x2) / 2f;
+            Lines.curve(x1, y1, x1 + dist, y1, x2 - dist, y2, x2, y2, Math.max(4, (int) (Mathf.dst(x1, y1, x2, y2) / 4f)));
+        } else {
+            Lines.curve(x1, y1, x1 + 100, y1, x2 + 100, y2, x2, y2, Math.max(18, (int)(Mathf.dst(x1, y1, x2, y2) / 6)));
+        }
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -108,12 +161,69 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
             } else {
                 dst.clearChildren();
             }
-            final Table[] t = {new Table()};
-            dst.add(t[0]).left().row();
+            Table t = new Table();
+            dst.add(t).left().row();
             Seq<Cell> es = src.getCells().copy();
-            es.each(c -> {
+            for (Cell c : es) {
                 Element e = c.get();
-                if (e != null) {
+                if (e instanceof LCanvas.JumpButton) {
+                    //special: jump
+                    t.add(new ImageButton(Tex.logicNode, new ImageButton.ImageButtonStyle() {{
+                        imageUpColor = Color.white;
+                    }}) {
+                        private final ClickListener l = new ClickListener();
+                        private boolean touched;
+                        private float lastX, lastY;
+                        {
+                            addListener(l);
+                            addListener(new InputListener() {
+                                @Override
+                                public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
+                                    ScratchController.ui.pane.setFlickScroll(false);
+                                    Vec2 v = localToAscendantCoordinates(ScratchController.ui.group, Tmp.v1.set(x, y));
+                                    lastX = v.x;
+                                    lastY = v.y;
+                                    event.cancel();
+                                    return touched = true;
+                                }
+
+                                @Override
+                                public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button) {
+                                    touched = false;
+                                    ScratchController.ui.pane.setFlickScroll(true);
+                                }
+
+                                @Override
+                                public void touchDragged(InputEvent event, float x, float y, int pointer) {
+                                    Vec2 v = localToAscendantCoordinates(ScratchController.ui.group, Tmp.v1.set(x, y));
+                                    lastX = v.x;
+                                    lastY = v.y;
+                                }
+                            });
+                            update(() -> getStyle().imageUpColor = touched ? Color.gold : Color.white);
+                        }
+                        @Override
+                        public void draw() {
+                            boolean left = lastX < parent.getWidth() / 2;
+                            Element e = ScratchController.ui.group.hit(lastX, lastY, true);
+                            ScratchBlock sb = null;
+                            if (e != null) {
+                                Element p = e;
+                                while (!(p instanceof ScratchBlock)) {
+                                    p = p.parent;
+                                    if (p == null) break;
+                                }
+                                if (p != null && p.parent != ScratchController.ui.group) sb = (ScratchBlock) p;
+                            }
+
+                            super.draw();
+                            Draw.color(touched || l.isOver() ? Color.gold : Color.white);
+                            if (sb != null) {
+                                drawCurve(x + width - 8, y + height / 2, sb.x, sb.y, left);
+                            } else if (touched) drawCurve(x + width - 8, y + height / 2, lastX, lastY, left);
+                        }
+                    }).size(30).padLeft(-8);
+                } else if (e != null) {
                     if (e instanceof Button b) {
                         wrap(b::fireClick);
                         Seq<Element> ee = scene.getElements();
@@ -133,28 +243,36 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
                                     };
                                     Label possible = ((Label) b.getChildren().find(el -> el instanceof Label));
                                     if (possible != null) {
-                                        String label = possible.getText().toString();
+                                        String label = getText("list." + possible.getText().toString() + ".name");
                                         s.setList(label);
                                         s.set(label);
                                     }
                                     s.update(() -> b.setPosition(s.x, s.y));
                                 } else {
+                                    //buttons
                                     Seq<String> str = new Seq<>(String.class);
                                     Seq<Tooltip> tooltips = new Seq<>(Tooltip.class);
                                     s = new ListElement();
-                                    //buttons
                                     children.each(bb -> {
-                                        str.add(((TextButton) bb).getText().toString());
+                                        str.add(getText("list." + ((TextButton) bb).getText().toString() + ".name"));
                                         tooltips.add((Tooltip) bb.getListeners().find(l -> l instanceof Tooltip));
                                     });
                                     s.setList(str.toArray());
                                     s.setTooltip(tooltips.toArray());
                                     Label possible = ((Label) b.getChildren().find(el -> el instanceof Label));
-                                    if (possible != null) s.set(possible.getText().toString());
+                                    if (possible != null) s.set(getText("list." + possible.getText().toString().replace(" ", "") + ".name"));
+                                    s.changed(() -> {
+                                        Scene old = Core.scene;
+                                        Core.scene = scene;
+                                        b.fireClick();
+                                        Core.scene = old;
+                                        ((Table) ((ScrollPane) ((Table) scene.getElements().peek()).getChildren().peek()).getWidget()).getChildren().get(s.index()).fireClick();
+                                        replaceLogicToScratch(src, dst, blockName);
+                                    });
                                 }
                                 ee.peek().remove();
                                 ee.peek().remove();
-                                s.cell(t[0].add(s));
+                                s.cell(t.add(s));
                                 s.changed(() -> {
                                     wrap(b::fireClick);
                                     ((Table) ((ScrollPane) ((Table) ee.peek()).getChildren().peek()).getWidget()).getChildren().get(s.index()).fireClick();
@@ -191,35 +309,36 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
                                     s.setList(label);
                                     s.set(label);
                                 }
-                                s.cell(t[0].add(s));
+                                s.cell(t.add(s));
                             }
                         } else {
                             //match failed
-                            Log.warn("convert failed: @", ee.size);
+                            Log.warn("convert failed: @ @", ee.size, b);
                         }
                     } else if (e instanceof Table tt) {
-                        replaceLogicToScratch(tt, t[0].add(new Table()).get(), null);
+                        replaceLogicToScratch(tt, t.add(new Table()).get(), null);
                     } else if (e instanceof Label l) {
-                        LabelElement s = new LabelElement(l.getText().toString());
+                        LabelElement s = new LabelElement(replace(l.getText().toString()));
                         Tooltip tt = (Tooltip) l.getListeners().find(ls -> ls instanceof Tooltip);
                         if (tt != null) s.addListener(tt);
-                        s.cell(t[0].add(s));
+                        s.cell(t.add(s));
                     } else if (e instanceof TextField f) {
                         InputElement s = new InputElement(false, f.getText());
                         f.setProgrammaticChangeEvents(true);
                         s.changed(() -> f.setText(s.getText()));
-                        s.cell(t[0].add(s));
+                        s.cell(t.add(s));
                     } else {
-                        t[0].add(e);
+                        t.add(e);
                         Log.warn("match failed @", e);
                     }
                 }
                 if (c.isEndRow()) {
                     dst.row();
-                    t[0] = new Table();
-                    dst.add(t[0]).left().row();
+                    t = new Table();
+                    dst.add(t).left().row();
                 }
-            });
+            }
+            scene.clear();
         }
 
         private static void wrap(Runnable r) {
@@ -234,13 +353,13 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
             ls.each(l -> {
                 LogicBlock b;
                 try {
-                    b = new LogicBlock(l, true);
+                    b = new LogicBlock(l);
                 } catch (Exception e) {
                     LStatements.InvalidStatement s = new LStatements.InvalidStatement();
-                    b = new LogicBlock(s, true);
+                    b = new LogicBlock(s);
                     Log.err(e);
                 }
-                ui.addElement(b);
+                ui.addBlock(b);
                 if (tmp != null) {
                     b.linkTo(tmp);
                 } else {
@@ -250,5 +369,15 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
             });
             tmp = null;
         }
+    }
+
+    private static String replace(String src) {
+        StringTokenizer tokenizer = new StringTokenizer(src.trim(), " ");
+        StringBuilder builder = new StringBuilder();
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            builder.append(getText("elem." + token + ".name"));
+        }
+        return builder.toString();
     }
 }

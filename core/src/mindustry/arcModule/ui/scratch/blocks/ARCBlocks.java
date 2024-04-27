@@ -19,29 +19,29 @@ import rhino.Undefined;
 public class ARCBlocks {
     public static void init() {
         Color c = new Color(Color.packRgba(76, 151, 255, 255));
-        ScratchController.ui.addCategory("高级", c);
+        ScratchController.category("advanced", c);
         ScratchController.registerBlock("test", new ScratchBlock(ScratchType.input, c, new BlockInfo(b -> {
-            b.label("test");
+            b.labelElem("test");
             b.list(new String[]{"test", "test2", "test3"});
         }, (BlockInfo.ValSupp) e -> ((ListElement) e.get(1)).get())));
         ScratchController.registerBlock("info", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
-            b.label("显示弹窗");
+            b.labelElem("popup");
             b.input();
         }, (Cons<Seq<Element>>) e -> Vars.ui.showInfo(String.valueOf(((InputElement) e.get(1)).getValue())))));
         ScratchController.registerBlock("addChatMessage", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
-            b.label("聊天框信息");
+            b.labelElem("message");
             b.input();
         }, (Cons<Seq<Element>>) e -> Vars.ui.chatfrag.addMessage(String.valueOf(((InputElement) e.get(1)).getValue())))));
         ScratchController.registerBlock("sendChatMessage", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
-            b.label("发送聊天");
+            b.labelElem("chat");
             b.input();
         }, (Cons<Seq<Element>>) e -> Call.sendChatMessage(String.valueOf(((InputElement) e.get(1)).getValue())))));
         ScratchController.registerBlock("js", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
-            b.label("运行js");
+            b.labelElem("js");
             b.input();
         }, (Cons<Seq<Element>>) e -> Vars.mods.getScripts().runConsole(String.valueOf(((InputElement) e.get(1)).getValue())))));
         ScratchController.registerBlock("js2", new ScratchBlock(ScratchType.input, c, new BlockInfo(b -> {
-            b.label("运行js");
+            b.labelElem("js");
             b.input();
         }, e -> {
             Scripts s = Vars.mods.getScripts();
@@ -50,7 +50,7 @@ public class ARCBlocks {
             return o instanceof Undefined ? "undefined" : o;
         })));
         ScratchController.registerBlock("strcat", new ScratchBlock(ScratchType.input, c, new BlockInfo(b -> {
-            b.label("连接字符串");
+            b.labelElem("strcat");
             b.input();
             b.input();
         }, e -> ((InputElement) e.get(1)).getValue() + String.valueOf(((InputElement) e.get(2)).getValue()))));

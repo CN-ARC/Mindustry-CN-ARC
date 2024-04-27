@@ -9,6 +9,7 @@ public class BlockInfo {
     protected Cons<ScratchBlock> builder = s -> {};
     protected ValSupp supp = s -> null;
     protected Cons<Seq<Element>> run = e -> {};
+    public short id = -1;
     public BlockInfo() {
     }
 
@@ -36,6 +37,11 @@ public class BlockInfo {
 
     public void run(ScratchBlock block) {
         run.get(block.elements);
+    }
+
+    public void setID(short id) {
+        if (this.id != -1) throw new IllegalStateException("ID is already set! old ID: " + this.id + "(" + ScratchController.get(this.id).getClass().getSimpleName() + "), new ID: " + id + "(" + ScratchController.get(id).getClass().getSimpleName() + ")");
+        this.id = id;
     }
 
     public interface ValSupp {

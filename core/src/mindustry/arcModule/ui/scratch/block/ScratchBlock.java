@@ -10,6 +10,8 @@ import arc.scene.ui.layout.Cell;
 import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Nullable;
+import arc.util.io.Reads;
+import arc.util.io.Writes;
 import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.block.fork.ForkComponent;
 import mindustry.arcModule.ui.scratch.element.*;
@@ -45,6 +47,13 @@ public class ScratchBlock extends ScratchTable {
 
     public Cell<ScratchTable> label(String str) {
         LabelElement l = new LabelElement(str);
+        Cell<ScratchTable> c;
+        l.cell(c = add(l));
+        return c;
+    }
+
+    public Cell<ScratchTable> labelElem(String str) {
+        LabelElement l = new LabelElement(str, true);
         Cell<ScratchTable> c;
         l.cell(c = add(l));
         return c;
@@ -269,6 +278,24 @@ public class ScratchBlock extends ScratchTable {
 
     public void run() {
         info.run(this);
+    }
+
+    public void readElements(Reads r) {
+    }
+
+    public void writeElements(Writes w) {
+    }
+
+    @Override
+    public void read(Reads r) {
+        super.read(r);
+        readElements(r);
+    }
+
+    @Override
+    public void write(Writes w) {
+        super.write(w);
+        writeElements(w);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package mindustry.arcModule.ui.scratch.element;
 
+import arc.Core;
 import arc.graphics.Color;
 import arc.graphics.g2d.GlyphLayout;
 import arc.scene.Element;
@@ -27,12 +28,7 @@ public class InputElement extends ScratchElement implements ScratchBlock.HoldInp
     private final ClickListener listener;
 
     public InputElement(boolean num, String def) {
-        field = new TextField(def, getStyle()) {
-            @Override
-            public Element hit(float x, float y, boolean touchable) {
-                return ScratchController.dragging == null ? super.hit(x, y, touchable) : null;
-            }
-        };
+        field = new HoldTextField(def, getStyle());
         field.changed(() -> {
             ChangeListener.ChangeEvent changeEvent = Pools.obtain(ChangeListener.ChangeEvent.class, ChangeListener.ChangeEvent::new);
             fire(changeEvent);
@@ -45,8 +41,8 @@ public class InputElement extends ScratchElement implements ScratchBlock.HoldInp
         cell = add(field).left().width(minWidth).minHeight(23);
         field.changed(this::calcWidth);
         field.setProgrammaticChangeEvents(true);
-        addListener(listener = new ClickListener());
         calcWidth();
+        addListener(listener = new ClickListener());
     }
 
     private void calcWidth() {
@@ -139,6 +135,22 @@ public class InputElement extends ScratchElement implements ScratchBlock.HoldInp
 
     @Override
     public boolean holding() {
-        return !listener.isOver();
+        return Core.scene.getKeyboardFocus() == field && listener.isOver();
+    }
+
+    private class HoldTextField extends TextField implements ScratchBlock.HoldInput {
+        public HoldTextField(String text, TextFieldStyle style) {
+            super(text, style);
+        }
+
+        @Override
+        public Element hit(float x, float y, boolean touchable) {
+            return ScratchController.dragging == null ? super.hit(x, y, touchable) : null;
+        }
+
+        @Override
+        public boolean holding() {
+            return InputElement.this.holding();
+        }
     }
 }
