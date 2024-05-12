@@ -6,7 +6,6 @@ import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchDraw;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
-import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public class CondElement extends ScratchElement {
     public CondElement() {
@@ -53,7 +52,7 @@ public class CondElement extends ScratchElement {
     @Override
     public ScratchElement copy() {
         CondElement e = new CondElement();
-        if (child instanceof ScratchBlock sb) sb.copy().asChild(e);
+        if (child != null) child.copy().asChild(e);
         return e;
     }
 }

@@ -40,7 +40,7 @@ public class BlockInfo {
     }
 
     public void setID(short id) {
-        if (this.id != -1) throw new IllegalStateException("ID is already set! old ID: " + this.id + "(" + ScratchController.get(this.id).getClass().getSimpleName() + "), new ID: " + id + "(" + ScratchController.get(id).getClass().getSimpleName() + ")");
+        if (this.id != -1) throw new IllegalStateException("ID is already set! old ID: " + this.id + "(" + ScratchController.getBlock(this.id).getClass().getSimpleName() + "), new ID: " + id + "(" + ScratchController.getBlock(id).getClass().getSimpleName() + ")");
         this.id = id;
     }
 

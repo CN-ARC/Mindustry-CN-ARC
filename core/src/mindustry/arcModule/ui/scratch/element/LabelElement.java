@@ -2,6 +2,8 @@ package mindustry.arcModule.ui.scratch.element;
 
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.Cell;
+import arc.util.io.Reads;
+import arc.util.io.Writes;
 import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
@@ -15,7 +17,7 @@ public class LabelElement extends ScratchElement {
     }
 
     public LabelElement(String str, boolean bundle) {
-        this(bundle ? ScratchController.getText("elem." + str + ".name") : str);
+        this(bundle ? ScratchController.getLocalized("elem." + str + ".name") : str);
     }
 
     @Override
@@ -31,5 +33,13 @@ public class LabelElement extends ScratchElement {
     @Override
     public ScratchElement copy() {
         return new LabelElement(l.getText().toString());
+    }
+
+    @Override
+    public void read(Reads r) {
+    }
+
+    @Override
+    public void write(Writes w) {
     }
 }

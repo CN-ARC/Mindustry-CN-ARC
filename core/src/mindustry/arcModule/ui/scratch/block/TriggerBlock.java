@@ -5,9 +5,10 @@ import arc.scene.Element;
 import arc.scene.event.Touchable;
 import arc.util.Align;
 import mindustry.arcModule.ui.scratch.BlockInfo;
-import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchDraw;
 import mindustry.arcModule.ui.scratch.ScratchType;
+
+import static mindustry.arcModule.ui.scratch.ScratchController.dragging;
 
 public class TriggerBlock extends ScratchBlock {
 
@@ -29,7 +30,7 @@ public class TriggerBlock extends ScratchBlock {
     @Override
     public Element hit(float x, float y, boolean touchable) {
         if (touchable && this.touchable != Touchable.enabled) return null;
-        if (!(ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block) || ScratchController.dragging == linkTo || ScratchController.dragging == linkFrom) return super.hit(x, y, touchable);
+        if (!(dragging != null && dragging.type == ScratchType.block) || dragging == linkFrom) return super.hit(x, y, touchable);
         if (x >= 0 && x < width && y >= -padValue * 2 && y < 0) {
             dir = Align.bottom;
             return this;

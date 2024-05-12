@@ -7,7 +7,8 @@ import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 public class ScratchContext {
     public ScratchUI ui = new ScratchUI();
     public ScratchRunner runner = new ScratchRunner();
-    public ScratchTable dragging, selected;
+    public ScratchTable selected;
+    public ScratchBlock dragging;
     public ObjectMap<String, Integer> map = new ObjectMap<>();
     public Seq<ScratchBlock> list = new Seq<>();
 

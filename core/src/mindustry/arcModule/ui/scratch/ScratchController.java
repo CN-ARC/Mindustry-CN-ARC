@@ -12,7 +12,8 @@ import java.util.Locale;
 public class ScratchController {
     public static ScratchUI ui;
     public static ScratchRunner runner;
-    public static ScratchTable dragging, selected;
+    public static ScratchTable selected;
+    public static ScratchBlock dragging;
     public static ObjectMap<String, Integer> map;
     public static Seq<ScratchBlock> list;
     public static ScratchContext nowContext;
@@ -34,12 +35,17 @@ public class ScratchController {
         bundle = I18NBundle.createBundle(handle, Locale.ENGLISH);
     }
 
-    public static String getText(String r) {
+    public static String getLocalized(String r) {
         return bundle.get(r);
     }
 
-    public static String getText(String r, String def) {
+    public static String getLocalized(String r, String def) {
         return bundle.get(r, def);
+    }
+
+    public static String getLocalized(String prefix, String key, String suffix, String fallback) {
+        String s = bundle.getOrNull(prefix + "." + fallback + "." + key + "." + suffix);
+        return s == null || s.equals("@@") ? bundle.get(prefix + "." + key + "." + suffix) : s;
     }
 
     public static void setContext(ScratchContext context) {
@@ -86,21 +92,30 @@ public class ScratchController {
     }
 
     public static void reset() {
-        dragging = selected = null;
+        selected = null;
+        dragging = null;
         map.clear();
         list.clear();
         ui.clearData();
     }
 
-    public static ScratchBlock get(String name) {
+    public static ScratchBlock getBlock(String name) {
         return list.get(map.get(name));
     }
 
-    public static ScratchBlock get(int i) {
+    public static ScratchBlock getBlock(int i) {
         return list.get(i);
     }
 
+    public static ScratchBlock newBlock(String name) {
+        return getBlock(name).copy();
+    }
+
+    public static ScratchBlock newBlock(int i) {
+        return getBlock(i).copy();
+    }
+
     public static void category(String name, Color color) {
-        ui.addCategory(getText("category." + name + ".name"), color);
+        ui.addCategory(getLocalized("category." + name + ".name"), color);
     }
 }

@@ -14,6 +14,8 @@ import arc.scene.ui.Tooltip;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
 import arc.util.Align;
+import arc.util.io.Reads;
+import arc.util.io.Writes;
 import arc.util.pooling.Pools;
 import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
@@ -91,6 +93,34 @@ public class ListElement extends ScratchElement implements ScratchBlock.HoldInpu
         }
     }
 
+    public void showList() {
+        ScratchController.ui.showPopup(this, t -> {
+            Table inner = new Table();
+            t.add(new ScrollPane(inner, Styles.smallPane)).with(s -> s.setScrollingDisabledX(true)).width(250).maxHeight(200);
+            for (int i = 0; i < lists.length; i++) {
+                String s = lists[i];
+                int id = i;
+                int now = i;
+                inner.add(new Label(s) {
+                    final ClickListener c;
+                    {
+                        c = clicked(() -> {
+                            t.remove();
+                            set(id);
+                        });
+                    }
+                    @Override
+                    public void draw() {
+                        if (c.isOver()) Styles.black5.draw(x - 10, y, width + 10, height);
+                        super.draw();
+                    }
+                }).size(240, 40).padLeft(10).labelAlign(Align.left).with(b -> {
+                    if (tips != null && tips[now] != null) b.addListener(tips[now]);
+                }).row();
+            }
+        }, getBlock().elemColor);
+    }
+
     @Override
     public Object getElementValue() {
         return now;
@@ -124,32 +154,14 @@ public class ListElement extends ScratchElement implements ScratchBlock.HoldInpu
         return !listener.isOver();
     }
 
-    public void showList() {
-        ScratchController.ui.showPopup(this, t -> {
-            Table inner = new Table();
-            t.add(new ScrollPane(inner, Styles.smallPane)).with(s -> s.setScrollingDisabledX(true)).width(250).maxHeight(200);
-            for (int i = 0; i < lists.length; i++) {
-                String s = lists[i];
-                int id = i;
-                int now = i;
-                inner.add(new Label(s) {
-                    final ClickListener c;
-                    {
-                        c = clicked(() -> {
-                            t.remove();
-                            set(id);
-                        });
-                    }
-                    @Override
-                    public void draw() {
-                        if (c.isOver()) Styles.black5.draw(x - 10, y, width + 10, height);
-                        super.draw();
-                    }
-                }).size(240, 40).padLeft(10).labelAlign(Align.left).with(b -> {
-                    if (tips != null && tips[now] != null) b.addListener(tips[now]);
-                }).row();
-            }
-        }, getBlock().elemColor);
+    @Override
+    public void read(Reads r) {
+        set(r.s());
+    }
+
+    @Override
+    public void write(Writes w) {
+        w.s(now);
     }
 
     private class ListTable extends Table {

@@ -9,11 +9,10 @@ import arc.scene.event.ClickListener;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Cell;
 import arc.util.Align;
+import arc.util.io.Reads;
+import arc.util.io.Writes;
 import arc.util.pooling.Pools;
-import mindustry.arcModule.ui.scratch.ScratchController;
-import mindustry.arcModule.ui.scratch.ScratchDraw;
-import mindustry.arcModule.ui.scratch.ScratchTable;
-import mindustry.arcModule.ui.scratch.ScratchType;
+import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
@@ -52,7 +51,7 @@ public class InputElement extends ScratchElement implements ScratchBlock.HoldInp
     }
 
     @Override
-    public void setChild(ScratchTable child) {
+    public void setChild(ScratchBlock child) {
         this.child = child;
         if (child == null) {
             cell.setElement(field);
@@ -129,8 +128,20 @@ public class InputElement extends ScratchElement implements ScratchBlock.HoldInp
     @Override
     public ScratchElement copy() {
         InputElement e = new InputElement(num, field.getText());
-        if (child instanceof ScratchBlock sb) sb.copy().asChild(e);
+        if (child != null) child.copy().asChild(e);
         return e;
+    }
+
+    @Override
+    public void read(Reads r) {
+        super.read(r);
+        field.setText(r.str());
+    }
+
+    @Override
+    public void write(Writes w) {
+        super.write(w);
+        w.str(field.getText());
     }
 
     @Override

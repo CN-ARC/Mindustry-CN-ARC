@@ -1,6 +1,5 @@
 package mindustry.arcModule.ui.scratch;
 
-import arc.Core;
 import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.Pixmap;
@@ -28,6 +27,7 @@ import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.arcModule.ui.utils.BoundedGroup;
+import mindustry.arcModule.ui.window.Window;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
 import mindustry.ui.Fonts;
@@ -37,12 +37,12 @@ import java.io.*;
 import java.util.Objects;
 
 import static arc.Core.input;
-import static mindustry.arcModule.ui.scratch.ScratchController.getText;
+import static mindustry.arcModule.ui.scratch.ScratchController.getLocalized;
 
 public class ScratchUI extends Table {
     public Table blocks = new Table(), types = new Table();
     public BoundedGroup group = new ScratchGroup(), overlay = new BoundedGroup(), overlay2 = new BoundedGroup();
-    public ScrollPane pane = new ScrollPane(group, Styles.horizontalPane), blocksPane = new ScrollPane(blocks, Styles.smallPane), typesPane = new ScrollPane(types) {
+    public ScrollPane pane = new ScrollPane(group, Styles.horizontalPane), blocksPane = new ScrollPane(blocks, Styles.smallPane), typesPane = new ScrollPane(types, Styles.smallPane) {
         @Override
         public void draw() {
             super.draw();
@@ -104,26 +104,13 @@ public class ScratchUI extends Table {
         stack.add(overlay);
         stack.add(overlay2);
         stack.add(new Table(t -> {
-            t.button(getText("save"), () -> {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                write(new Writes(new DataOutputStream(baos)));
-                tmpData = baos.toByteArray();
-                try {
-                    baos.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+            t.button(getLocalized("save"), () -> {
+                ByteArrayOutputStream o = new ByteArrayOutputStream();
+                write(new Writes(new DataOutputStream(o)));
+                tmpData = o.toByteArray();
             });
-            t.button(getText("load"), () -> {
-                ByteArrayInputStream bais = new ByteArrayInputStream(tmpData);
-                read(new Reads(new DataInputStream(bais)));
-                try {
-                    bais.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }).disabled(b -> tmpData == null);
-            t.button(getText("clear"), this::clearBlocks);
+            t.button(getLocalized("load"), () -> read(new Reads(new DataInputStream(new ByteArrayInputStream(tmpData))))).disabled(b -> tmpData == null);
+            t.button(getLocalized("clear"), this::clearBlocks);
             t.button("reload", ScratchController::reload);
         }));
         group.background = bg;
@@ -139,7 +126,7 @@ public class ScratchUI extends Table {
     public void read(Reads r) {
         int size = r.i();
         for (int i = 0; i < size; i++) {
-            ScratchBlock sb = ScratchController.get(r.s()).copy();
+            ScratchBlock sb = ScratchController.newBlock(r.s());
             sb.read(r);
             addBlock(sb);
         }
@@ -238,10 +225,10 @@ public class ScratchUI extends Table {
     }
 
     public void createWindow() {
-        Core.scene.add(this);
-        /*Window w = new Window();
+        //Core.scene.add(this);
+        Window w = new Window();
         w.setBody(this);
-        w.add();*/
+        w.add();
     }
 
     public void registerBlock(ScratchBlock b) {

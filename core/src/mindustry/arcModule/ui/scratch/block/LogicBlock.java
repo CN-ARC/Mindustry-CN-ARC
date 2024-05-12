@@ -40,7 +40,7 @@ import mindustry.logic.*;
 import java.lang.reflect.Field;
 import java.util.StringTokenizer;
 
-import static mindustry.arcModule.ui.scratch.ScratchController.getText;
+import static mindustry.arcModule.ui.scratch.ScratchController.getLocalized;
 
 public class LogicBlock extends ScratchBlock implements LogicBuildable {
     private static final Field sclField;
@@ -85,7 +85,7 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
         logicTable.setFillParent(true);
         logicTable.visible = false;
         addChild(logicTable);
-        LogicConvertor.replaceLogicToScratch(logicTable, this, getText("block." + statement.getClass().getSimpleName().replace("Statement", "") + ".name", statement.name()));
+        LogicConvertor.replaceLogicToScratch(logicTable, this, statement.getClass().getSimpleName().replace("Statement", ""));
     }
 
     private static void flat(Runnable r) {
@@ -156,7 +156,7 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
                 });
                 dst.clearChildren();
                 keep.each(dst::addChild);
-                ((ScratchBlock) dst).label(blockName);
+                ((ScratchBlock) dst).label(getLocalized("block." + blockName + ".name"));
                 dst.row();
             } else {
                 dst.clearChildren();
@@ -243,7 +243,7 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
                                     };
                                     Label possible = ((Label) b.getChildren().find(el -> el instanceof Label));
                                     if (possible != null) {
-                                        String label = getText("list." + possible.getText().toString() + ".name");
+                                        String label = getLocalized("list", possible.getText().toString(), "name", blockName);
                                         s.setList(label);
                                         s.set(label);
                                     }
@@ -254,13 +254,13 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
                                     Seq<Tooltip> tooltips = new Seq<>(Tooltip.class);
                                     s = new ListElement();
                                     children.each(bb -> {
-                                        str.add(getText("list." + ((TextButton) bb).getText().toString() + ".name"));
+                                        str.add(getLocalized("list", ((TextButton) bb).getText().toString(), "name", blockName));
                                         tooltips.add((Tooltip) bb.getListeners().find(l -> l instanceof Tooltip));
                                     });
                                     s.setList(str.toArray());
                                     s.setTooltip(tooltips.toArray());
                                     Label possible = ((Label) b.getChildren().find(el -> el instanceof Label));
-                                    if (possible != null) s.set(getText("list." + possible.getText().toString().replace(" ", "") + ".name"));
+                                    if (possible != null) s.set(getLocalized("list." + possible.getText().toString().replace(" ", "") + ".name"));
                                     s.changed(() -> {
                                         Scene old = Core.scene;
                                         Core.scene = scene;
@@ -318,7 +318,7 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
                     } else if (e instanceof Table tt) {
                         replaceLogicToScratch(tt, t.add(new Table()).get(), null);
                     } else if (e instanceof Label l) {
-                        LabelElement s = new LabelElement(replace(l.getText().toString()));
+                        LabelElement s = new LabelElement(replace(l.getText().toString(), blockName));
                         Tooltip tt = (Tooltip) l.getListeners().find(ls -> ls instanceof Tooltip);
                         if (tt != null) s.addListener(tt);
                         s.cell(t.add(s));
@@ -349,21 +349,26 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
             Core.scene = old;
         }
 
+        public static LogicBlock from(LStatement l) {
+            LogicBlock block = (LogicBlock) ScratchController.newBlock(l.name());
+            block.build(l);
+            return block;
+        }
+
         public static void convert(ScratchUI ui, Seq<LStatement> ls) {
             ls.each(l -> {
                 LogicBlock b;
                 try {
-                    b = new LogicBlock(l);
+                    b = from(l);
                 } catch (Exception e) {
-                    LStatements.InvalidStatement s = new LStatements.InvalidStatement();
-                    b = new LogicBlock(s);
+                    b = from(new LStatements.InvalidStatement());
                     Log.err(e);
                 }
                 ui.addBlock(b);
                 if (tmp != null) {
                     b.linkTo(tmp);
                 } else {
-                    b.setPosition(0, 9000);
+                    b.setPosition(0, 9900);
                 }
                 tmp = b;
             });
@@ -371,12 +376,12 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
         }
     }
 
-    private static String replace(String src) {
+    private static String replace(String src, String block) {
         StringTokenizer tokenizer = new StringTokenizer(src.trim(), " ");
         StringBuilder builder = new StringBuilder();
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
-            builder.append(getText("elem." + token + ".name"));
+            builder.append(getLocalized("elem", token, "name", block));
         }
         return builder.toString();
     }

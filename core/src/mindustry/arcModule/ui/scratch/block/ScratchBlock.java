@@ -16,6 +16,8 @@ import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.block.fork.ForkComponent;
 import mindustry.arcModule.ui.scratch.element.*;
 
+import static mindustry.arcModule.ui.scratch.ScratchController.dragging;
+
 public class ScratchBlock extends ScratchTable {
     public static final BlockInfo emptyInfo = new BlockInfo();
     public static boolean removing = false;
@@ -115,7 +117,7 @@ public class ScratchBlock extends ScratchTable {
             Element element = target.elements.get(i);
             if (child instanceof ScratchElement st1 && element instanceof ScratchElement st2) {
                 st2.setElementValue(st1.getElementValue());
-                if (st1.child instanceof ScratchBlock sb2) st2.setChild(sb2.copy(drag));
+                if (st1.child != null) st2.setChild(st1.child.copy(drag));
             }
         }
     }
@@ -210,7 +212,7 @@ public class ScratchBlock extends ScratchTable {
 
     public void drawDebug() {
         super.drawDebug();
-        if (ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block && type == ScratchType.block) {
+        if (dragging.type == ScratchType.block && type == ScratchType.block) {
             Lines.stroke(1f);
             Draw.color(Color.gold.cpy().mulA(0.5f));
             Lines.rect(x, y - padValue * 2, width, padValue);
@@ -219,7 +221,7 @@ public class ScratchBlock extends ScratchTable {
                 Lines.rect(x, y + padValue, width, height + padValue * 2);
             }
         }
-        if (ScratchController.dragging == this) {
+        if (dragging == this) {
             Draw.color(Color.gold);
             Fill.rect(x + 10, y + height / 2, 3, 3);
         }
@@ -281,20 +283,28 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public void readElements(Reads r) {
+        elements.each(e -> {
+            if (e instanceof ScratchTable t) t.read(r);
+        });
     }
 
     public void writeElements(Writes w) {
+        elements.each(e -> {
+            if (e instanceof ScratchTable t) t.write(w);
+        });
     }
 
     @Override
     public void read(Reads r) {
         super.read(r);
+        readPos(r);
         readElements(r);
     }
 
     @Override
     public void write(Writes w) {
         super.write(w);
+        writePos(w);
         writeElements(w);
     }
 
@@ -316,7 +326,7 @@ public class ScratchBlock extends ScratchTable {
     @Override
     public Element hit(float x, float y, boolean touchable) {
         if (touchable && this.touchable != Touchable.enabled) return null;
-        if (!(ScratchController.dragging instanceof ScratchBlock b && b.type == ScratchType.block) || ScratchController.dragging == linkTo || ScratchController.dragging == linkFrom) return super.hit(x, y, touchable);
+        if (!(dragging != null && dragging.type == ScratchType.block) || dragging == linkTo || dragging == linkFrom) return super.hit(x, y, touchable);
         if (x >= 0 && x < width) {
             if (y >= -padValue * 2 && y < 0) {
                 dir = Align.bottom;

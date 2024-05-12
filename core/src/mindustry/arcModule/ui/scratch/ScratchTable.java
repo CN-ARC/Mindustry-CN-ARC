@@ -19,7 +19,7 @@ public abstract class ScratchTable extends Table {
     protected static final float padValue = 25;
     protected final ObjectMap<Enum<ScratchEvents>, Seq<Cons<ScratchTable>>> events = new ObjectMap<>();
     public boolean selected = false, hittable = true;
-    public ScratchTable child = null;
+    public ScratchBlock child = null;
     public Color elemColor = new Color(1, 1, 1, 1);
 
     {
@@ -44,10 +44,10 @@ public abstract class ScratchTable extends Table {
     }
 
     public void asChild(ScratchTable parent) {
-        parent.setChild(this);
+        parent.setChild((ScratchBlock) this);
     }
 
-    public void setChild(ScratchTable child) {
+    public void setChild(ScratchBlock child) {
         if (this.child != null) removeChild(this.child);
         this.child = child;
         if (child != null) add(child);
@@ -85,11 +85,20 @@ public abstract class ScratchTable extends Table {
     }
 
     public void read(Reads r) {
-        readPos(r);
+        boolean hasChild = r.bool();
+        if (hasChild) {
+            ScratchBlock b = ScratchController.newBlock(r.s());
+            b.read(r);
+            setChild(b);
+        }
     }
 
     public void write(Writes w) {
-        writePos(w);
+        w.bool(child != null);
+        if (child != null) {
+            w.s(child.info.id);
+            child.write(w);
+        }
     }
 
     public void readPos(Reads r) {

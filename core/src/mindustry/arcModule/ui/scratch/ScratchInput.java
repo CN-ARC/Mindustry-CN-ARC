@@ -41,11 +41,11 @@ public class ScratchInput {
         checking = true;
         Element hit = ui.group.hit(x, y, true);
         checking = false;
-        if (dragging instanceof ScratchBlock block && block.type == ScratchType.block && hit instanceof ScratchTable t && t.acceptLink(block)) {
+        if (dragging.type == ScratchType.block && hit instanceof ScratchTable t && t.acceptLink(dragging)) {
             ScratchBlock b = (ScratchBlock) (hit instanceof ScratchBlock ? hit : hit.parent);
             ui.group.addChild(fake);
             if (b.linkTo != dragging && b.linkFrom != dragging) {
-                fake.setReal(block);
+                fake.setReal(dragging);
                 if (b.dir == Align.top) {
                     fake.unlinkKeep();
                     fake.insertLinkTop(b);
@@ -114,7 +114,7 @@ public class ScratchInput {
             if (dragging == target) {
                 ScratchTable sel = selected;
                 if (sel != null && sel.accept(target)) {
-                    ScratchTable oldChild = sel.child;
+                    ScratchBlock oldChild = sel.child;
                     target.asChild(sel);
                     if (oldChild != null) {
                         ui.addBlock(oldChild);
@@ -126,7 +126,8 @@ public class ScratchInput {
                     fake.unlinkKeep();
                     fake.remove();
                 }
-                dragging = selected = null;
+                selected = null;
+                dragging = null;
             }
         }
 

@@ -26,7 +26,7 @@ public class ScratchDraw {
         Draw.color(c);
         Fill.rect(x + w / 2, y + halfH, w - 2 * halfH, h);
         Draw.color(col);
-        float ty = selected ? y : y + 1;
+        float ty = selected ? y : y + 0.5f;
         Lines.line(x + halfH, ty, x + w - halfH, ty);
         Lines.line(x + halfH, y + h, x + w - halfH, y + h);
     }
