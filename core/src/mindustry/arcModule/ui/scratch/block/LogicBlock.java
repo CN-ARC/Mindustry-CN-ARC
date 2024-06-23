@@ -260,7 +260,7 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
                                     s.setList(str.toArray());
                                     s.setTooltip(tooltips.toArray());
                                     Label possible = ((Label) b.getChildren().find(el -> el instanceof Label));
-                                    if (possible != null) s.set(getLocalized("list." + possible.getText().toString().replace(" ", "") + ".name"));
+                                    if (possible != null) s.set(getLocalized("list", possible.getText().toString().replace(" ", ""), "name", blockName));
                                     s.changed(() -> {
                                         Scene old = Core.scene;
                                         Core.scene = scene;

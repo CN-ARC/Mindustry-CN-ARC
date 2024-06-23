@@ -21,27 +21,27 @@ public class ARCBlocks {
         Color c = new Color(Color.packRgba(76, 151, 255, 255));
         ScratchController.category("advanced", c);
         ScratchController.registerBlock("test", new ScratchBlock(ScratchType.input, c, new BlockInfo(b -> {
-            b.labelElem("test");
+            b.labelBundle("test");
             b.list(new String[]{"test", "test2", "test3"});
         }, (BlockInfo.ValSupp) e -> ((ListElement) e.get(1)).get())));
         ScratchController.registerBlock("info", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
-            b.labelElem("popup");
+            b.labelBundle("popup");
             b.input();
         }, (Cons<Seq<Element>>) e -> Vars.ui.showInfo(String.valueOf(((InputElement) e.get(1)).getValue())))));
         ScratchController.registerBlock("addChatMessage", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
-            b.labelElem("message");
+            b.labelBundle("message");
             b.input();
         }, (Cons<Seq<Element>>) e -> Vars.ui.chatfrag.addMessage(String.valueOf(((InputElement) e.get(1)).getValue())))));
         ScratchController.registerBlock("sendChatMessage", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
-            b.labelElem("chat");
+            b.labelBundle("chat");
             b.input();
         }, (Cons<Seq<Element>>) e -> Call.sendChatMessage(String.valueOf(((InputElement) e.get(1)).getValue())))));
         ScratchController.registerBlock("js", new ScratchBlock(ScratchType.block, c, new BlockInfo(b -> {
-            b.labelElem("js");
+            b.labelBundle("js");
             b.input();
         }, (Cons<Seq<Element>>) e -> Vars.mods.getScripts().runConsole(String.valueOf(((InputElement) e.get(1)).getValue())))));
         ScratchController.registerBlock("js2", new ScratchBlock(ScratchType.input, c, new BlockInfo(b -> {
-            b.labelElem("js");
+            b.labelBundle("js");
             b.input();
         }, e -> {
             Scripts s = Vars.mods.getScripts();
@@ -50,7 +50,7 @@ public class ARCBlocks {
             return o instanceof Undefined ? "undefined" : o;
         })));
         ScratchController.registerBlock("strcat", new ScratchBlock(ScratchType.input, c, new BlockInfo(b -> {
-            b.labelElem("strcat");
+            b.labelBundle("strcat");
             b.input();
             b.input();
         }, e -> ((InputElement) e.get(1)).getValue() + String.valueOf(((InputElement) e.get(2)).getValue()))));

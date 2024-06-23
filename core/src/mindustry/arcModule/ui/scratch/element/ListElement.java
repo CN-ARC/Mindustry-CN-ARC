@@ -96,7 +96,7 @@ public class ListElement extends ScratchElement implements ScratchBlock.HoldInpu
     public void showList() {
         ScratchController.ui.showPopup(this, t -> {
             Table inner = new Table();
-            t.add(new ScrollPane(inner, Styles.smallPane)).with(s -> s.setScrollingDisabledX(true)).width(250).maxHeight(200);
+            t.add(new ScrollPane(inner, Styles.smallPane)).with(s -> s.setScrollingDisabledX(true)).width(250).maxHeight(300);
             for (int i = 0; i < lists.length; i++) {
                 String s = lists[i];
                 int id = i;

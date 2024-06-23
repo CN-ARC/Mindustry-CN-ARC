@@ -54,7 +54,7 @@ public class ScratchBlock extends ScratchTable {
         return c;
     }
 
-    public Cell<ScratchTable> labelElem(String str) {
+    public Cell<ScratchTable> labelBundle(String str) {
         LabelElement l = new LabelElement(str, true);
         Cell<ScratchTable> c;
         l.cell(c = add(l));

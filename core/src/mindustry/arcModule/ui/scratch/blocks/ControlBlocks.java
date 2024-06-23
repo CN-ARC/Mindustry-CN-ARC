@@ -17,7 +17,7 @@ public class ControlBlocks {
         ScratchController.category("control", c);
         ScratchController.registerBlock("when", new TriggerBlock(c, new BlockInfo(b -> b.label("当开始运行时"))));
         ScratchController.registerBlock("if", new ForkBlock(c, new ForkBlock.ForkInfo(block -> block.header(b -> {
-            b.labelElem("if");
+            b.labelBundle("if");
             b.cond();
         }), e -> {
             if (((CondElement) ((ForkComponent) e.get(0)).elements.get(1)).getValue()) {
@@ -27,10 +27,10 @@ public class ControlBlocks {
         })));
         ScratchController.registerBlock("ifelse", new ForkBlock(c, new ForkBlock.ForkInfo(block -> {
             block.header(b -> {
-                b.labelElem("if");
+                b.labelBundle("if");
                 b.cond();
             });
-            block.inner(b -> b.labelElem("else"));
+            block.inner(b -> b.labelBundle("else"));
         }, e -> {
             if (((CondElement) ((ForkComponent) e.get(0)).elements.get(1)).getValue()) {
                 ScratchBlock run = ((ForkComponent) e.get(0)).linkFrom;
@@ -40,7 +40,7 @@ public class ControlBlocks {
                 if (run != null) run.insertRun();
             }
         })));
-        ScratchController.registerBlock("while", new ForkBlock(c, new ForkBlock.ForkInfo(block -> block.header(b -> b.labelElem("while"), e -> {
+        ScratchController.registerBlock("while", new ForkBlock(c, new ForkBlock.ForkInfo(block -> block.header(b -> b.labelBundle("while"), e -> {
             ScratchBlock run = ((ForkComponent) e.get(0)).linkFrom;
             return run == null ? ((ForkBlock) e.get(0).parent).linkFrom : run;
         }), e -> {
