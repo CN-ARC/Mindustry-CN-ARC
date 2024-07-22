@@ -15,19 +15,24 @@ import arc.scene.Group;
 import arc.scene.actions.Actions;
 import arc.scene.event.ClickListener;
 import arc.scene.event.Touchable;
+import arc.scene.style.Drawable;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.style.TiledDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
+import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 import arc.util.Align;
+import arc.util.Scaling;
 import arc.util.Tmp;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
+import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.arcModule.ui.utils.BoundedGroup;
 import mindustry.arcModule.ui.window.Window;
+import mindustry.content.Blocks;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
 import mindustry.ui.Fonts;
@@ -38,19 +43,14 @@ import java.util.Objects;
 
 import static arc.Core.input;
 import static mindustry.arcModule.ui.scratch.ScratchController.getLocalized;
+import static mindustry.gen.Tex.clear;
+import static mindustry.gen.Tex.scrollKnobVerticalThin;
 
 public class ScratchUI extends Table {
     public Table blocks = new Table(), types = new Table();
-    public BoundedGroup group = new ScratchGroup(), overlay = new BoundedGroup(), overlay2 = new BoundedGroup();
-    public ScrollPane pane = new ScrollPane(group, Styles.horizontalPane), blocksPane = new ScrollPane(blocks, Styles.smallPane), typesPane = new ScrollPane(types, Styles.smallPane) {
-        @Override
-        public void draw() {
-            super.draw();
-            Draw.color(Tmp.c1.set(Color.black).a(0.2f));
-            Lines.stroke(1);
-            Lines.line(x + width, y, x + width, y + height);
-        }
-    };
+    public LinkedGroup group = new ScratchGroup(), overlay = new LinkedGroup(), overlay2 = new LinkedGroup();
+    public ScrollPane pane = new ScrollPane(group, Styles.horizontalPane), blocksPane = new ScrollPane(blocks, Styles.smallPane), typesPane = new OutlinePane(types, Styles.smallPane, Align.right);
+    public ScratchActorPanel panel = new ScratchActorPanel();
     public Stack stack = new Stack();
     public Seq<Label> categories = new Seq<>();
     public String nowCategory = null;
@@ -59,6 +59,8 @@ public class ScratchUI extends Table {
     private static final Vec2 v1 = new Vec2(), v2 = new Vec2();
     private static Label.LabelStyle ls;
     private static final Color hoverColor = new Color(Color.packRgba(76, 151, 255, 255));
+    private static final Color bgColor = new Color(Color.packRgba(230, 240, 255, 255));
+    private static final Color selectColor = new Color(Color.packRgba(133, 92, 214, 255));
     private static byte[] tmpData;
 
     static {
@@ -76,9 +78,14 @@ public class ScratchUI extends Table {
             t.add(typesPane).growY().width(64);
             types.top().defaults().size(64, 48);
             types.setBackground(Tex.whiteui);
-            t.add(blocksPane).growY().width(384);
+            blocksPane.setOverscroll(false, false);
+            blocksPane.setClip(false);
+            blocksPane.setTransform(true);
+            t.table(t2 -> {
+                t2.setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Tmp.c1.set(Color.white).mul(0.97f)));
+                t2.add(blocksPane).grow();
+            }).growY().width(384).get().setClip(true);
             blocksPane.addListener(new ClickListener());
-            blocks.setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Tmp.c1.set(Color.white).a(0.97f)));
             t.add(new Stack(pane, new Table(t2 -> {
                 t2.setFillParent(true);
                 t2.margin(30);
@@ -96,7 +103,12 @@ public class ScratchUI extends Table {
                     down = Styles.black8;
                 }}, this::zoomOut).size(48).row();
             })));
-            t.table().growY().width(128).get().setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Color.sky));
+            t.table(t2 -> {
+                t2.setBackground(RFuncs.tint(Color.gray.rgba()));
+                t2.add(new Table(t3 -> t3.setBackground(Styles.black3))).size(480, 360).pad(5).row();
+                t2.add(panel).grow().pad(5);
+                panel.addActor(new ScratchActorPanel.ScratchActor(Blocks.logicProcessor.uiIcon, "logic1"));
+            }).growY();
         }));
         overlay.touchable = Touchable.childrenOnly;
         overlay.setTransform(true);
@@ -291,7 +303,7 @@ public class ScratchUI extends Table {
         }
     }
 
-    private static class ScratchGroup extends BoundedGroup {
+    private static class ScratchGroup extends LinkedGroup {
         @Override
         public float getPrefWidth() {
             return 10000;
@@ -300,6 +312,118 @@ public class ScratchUI extends Table {
         @Override
         public float getPrefHeight() {
             return 10000;
+        }
+    }
+
+    public static class LinkedGroup extends WidgetGroup {
+        public Drawable background = null;
+
+        @Override
+        public void act(float delta) {
+            Element[] actors = children.begin();
+            for (int i = 0, n = children.size; i < n; i++) {
+                if (actors[i].visible) {
+                    if (actors[i] instanceof ScratchBlock sb) {
+                        if (sb.linkTo == null) sb.actChain(delta);
+                    } else {
+                        actors[i].act(delta);
+                    }
+                }
+            }
+            children.end();
+        }
+
+        @Override
+        public void draw() {
+            validate();
+            if (background != null) background.draw(x, y, width, height);
+            super.draw();
+        }
+
+        @Override
+        public void layout() {
+            children.each(e -> e.setBounds(e.x, e.y, e.getPrefWidth(), e.getPrefHeight()));
+        }
+    }
+
+    public static class ScratchActorPanel extends Table {
+        public ScratchActor now;
+        public ScratchActorPanel() {
+            margin(6);
+            setBackground(Tex.whiteui);
+            top().left();
+        }
+
+        public void addActor(ScratchActor a) {
+            add(a);
+            now = a;
+        }
+
+        public static class ScratchActor extends Table {
+            Image icon;
+            String name;
+            public Table label;
+            public ScratchActor(TextureRegion tex, String name) {
+                icon = new Image(tex);
+                this.name = name;
+                icon.setScaling(Scaling.fit);
+                add(icon).size(58, 30).pad(5).grow().row();
+                add(label = new Table(t -> t.add(name).fontScale(0.7f))).size(68, 24);
+            }
+
+            @Override
+            protected void drawBackground(float x, float y) {
+                Draw.color(Color.white);
+                Fill.crect(x, y, width, height);
+                if (ScratchController.ui.panel.now == ScratchActor.this) {
+                    Draw.color(selectColor);
+                    Fill.crect(x, y, width, 24);
+                    Lines.rect(x, y, width, height);
+                }
+            }
+
+            @Override
+            public float getPrefWidth() {
+                return 68;
+            }
+
+            @Override
+            public float getPrefHeight() {
+                return 64;
+            }
+        }
+    }
+
+    public static class OutlinePane extends ScrollPane {
+        int dir;
+        public OutlinePane(Element widget, int direction) {
+            super(widget);
+            dir = direction;
+        }
+
+        public OutlinePane(Element widget, ScrollPaneStyle style, int direction) {
+            super(widget, style);
+            dir = direction;
+        }
+
+        @Override
+        public void draw() {
+            super.draw();
+            if (dir < 2) return;
+            Draw.color(Tmp.c1.set(Color.black).a(0.2f));
+            Lines.stroke(1);
+            if ((dir & Align.right) != 0) {
+                Lines.line(x + width, y, x + width, y + height);
+            }
+            if ((dir & Align.bottom) != 0) {
+                Lines.line(x, y, x + width, y);
+            }
+            if ((dir & Align.left) != 0) {
+                Lines.line(x, y, x, y + height);
+            }
+            if ((dir & Align.top) != 0) {
+                Lines.line(x, y + height, x + width, y + height);
+            }
         }
     }
 }

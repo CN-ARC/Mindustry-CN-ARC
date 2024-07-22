@@ -26,7 +26,7 @@ public class ScratchBlock extends ScratchTable {
     public ScratchBlock linkTo, linkFrom;
     public byte dir = 0;
     public Seq<Element> elements = new Seq<>();
-    public Run running;
+    public ScratchRunner.Run running;
     protected float minWidth = 0, minHeight = 0;
 
     public ScratchBlock(ScratchType type, Color color, BlockInfo info) {
@@ -263,7 +263,7 @@ public class ScratchBlock extends ScratchTable {
 
     public void scheduleRun() {
         if (running != null) return;
-        running = new Run(this);
+        running = new ScratchRunner.Run(this);
         ScratchController.run(running);
     }
 
@@ -271,15 +271,19 @@ public class ScratchBlock extends ScratchTable {
         ScratchController.insert(this);
     }
 
-    public void runFinished() {
-        running = null;
-    }
-
     public void prepareRun() {
     }
 
     public void run() {
         info.run(this);
+    }
+
+    public void finishRun() {
+        running = null;
+    }
+
+    public boolean runFinished() {
+        return true;
     }
 
     public void readElements(Reads r) {
@@ -292,6 +296,11 @@ public class ScratchBlock extends ScratchTable {
         elements.each(e -> {
             if (e instanceof ScratchTable t) t.write(w);
         });
+    }
+
+    public void actChain(float delta) {
+        act(delta);
+        if (linkFrom != null) linkFrom.actChain(delta);
     }
 
     @Override
@@ -350,13 +359,7 @@ public class ScratchBlock extends ScratchTable {
 
     @Override
     public void act(float delta) {
-        if (linkTo == null) {
-            ScratchBlock b = this;
-            do {
-                b.toFront();
-                b = b.linkFrom;
-            } while (b != null);
-        } else {
+        if (linkTo != null) {
             linkTo.linkUpdate(this);
         }
         super.act(delta);
@@ -387,15 +390,6 @@ public class ScratchBlock extends ScratchTable {
     @Override
     public float getPrefHeight() {
         return Math.max(super.getPrefHeight(), minHeight);
-    }
-
-    public static class Run {
-        public final ScratchBlock block;
-        public ScratchBlock pointer;
-
-        public Run(ScratchBlock block) {
-            this.block = pointer = block;
-        }
     }
 
     public interface HoldInput {

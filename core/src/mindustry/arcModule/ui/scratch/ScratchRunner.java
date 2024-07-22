@@ -8,34 +8,40 @@ import mindustry.game.EventType;
 
 public class ScratchRunner {
     public int runCount = 0, runLimit = 1;
-    private final Seq<ScratchBlock.Run> runs = new Seq<>(), will = new Seq<>();
-    private ScratchBlock.Run run;
+    private final Seq<Run> runs = new Seq<>(), will = new Seq<>();
+    private Run run;
     private boolean inserted;
 
     public ScratchRunner() {
         Events.run(EventType.Trigger.update, this::update);
     }
 
-    public void add(ScratchBlock.Run r) {
+    public void add(Run r) {
         will.add(r);
     }
 
-    public void remove(ScratchBlock.Run r) {
+    public void remove(Run r) {
         will.remove(r);
     }
 
     public void update() {
-        runs.clear();
+        if (will.size == 0) return;
         runs.addAll(will);
         for (int i = 0, l = runs.size; i < l; i++) {
-            ScratchBlock.Run value = runs.get(i);
+            Run value = runs.get(i);
             runCount = 0;
             run = value;
+            label:
             while (runCount < runLimit && run.pointer != null) {
                 do {
                     inserted = false;
-                    run.pointer.prepareRun();
+                    if (run.running) run.pointer.prepareRun();
                     run.pointer.run();
+                    if (!run.pointer.runFinished()) {
+                        run.running = false;
+                        break label;
+                    }
+                    run.running = true;
                     runCount++;
                 } while (inserted && runCount < runLimit);
                 if (inserted) break;
@@ -44,13 +50,14 @@ public class ScratchRunner {
                         run.pointer = fork.pop();
                         if (run.pointer != null) continue;
                     }
-                    run.block.runFinished();
+                    run.block.finishRun();
                     will.remove(run);
                     break;
                 }
                 run.pointer = run.pointer.linkFrom;
             }
         }
+        runs.clear();
     }
 
     public void insert(ScratchBlock target) {
@@ -65,5 +72,15 @@ public class ScratchRunner {
     public void reset() {
         will.clear();
         run = null;
+    }
+
+    public static class Run {
+        public final ScratchBlock block;
+        public ScratchBlock pointer;
+        public boolean running = true;
+
+        public Run(ScratchBlock block) {
+            this.block = pointer = block;
+        }
     }
 }

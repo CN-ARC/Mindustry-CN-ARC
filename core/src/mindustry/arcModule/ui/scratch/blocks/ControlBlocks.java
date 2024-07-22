@@ -32,13 +32,8 @@ public class ControlBlocks {
             });
             block.inner(b -> b.labelBundle("else"));
         }, e -> {
-            if (((CondElement) ((ForkComponent) e.get(0)).elements.get(1)).getValue()) {
-                ScratchBlock run = ((ForkComponent) e.get(0)).linkFrom;
-                if (run != null) run.insertRun();
-            } else {
-                ScratchBlock run = ((ForkComponent) e.get(1)).linkFrom;
-                if (run != null) run.insertRun();
-            }
+            ScratchBlock run = ((ForkComponent) e.get(((CondElement) ((ForkComponent) e.get(0)).elements.get(1)).getValue() ? 0 : 1)).linkFrom;
+            if (run != null) run.insertRun();
         })));
         ScratchController.registerBlock("while", new ForkBlock(c, new ForkBlock.ForkInfo(block -> block.header(b -> b.labelBundle("while"), e -> {
             ScratchBlock run = ((ForkComponent) e.get(0)).linkFrom;

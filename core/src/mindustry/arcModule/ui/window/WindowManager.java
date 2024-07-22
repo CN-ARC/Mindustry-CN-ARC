@@ -7,16 +7,7 @@ import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 
 public class WindowManager {
-    public Group group = new WidgetGroup();
     Seq<Window> windows = new Seq<>();
-
-    public WindowManager() {
-        Core.scene.add(group);
-        group.setFillParent(true);
-        group.setTransform(true);
-        group.touchable = Touchable.childrenOnly;
-        group.update(() -> group.toFront());
-    }
 
     public Window createWindow() {
         Window w = new Window(this);
@@ -27,7 +18,7 @@ public class WindowManager {
     public void addWindow(Window w) {
         if (!w.added) return;
         windows.add(w);
-        group.addChild(w.table);
+        Core.scene.add(w.table);
         w.center();
     }
 

@@ -83,7 +83,7 @@ public class ScratchController {
         }
     }
 
-    public static void run(ScratchBlock.Run r) {
+    public static void run(ScratchRunner.Run r) {
         runner.add(r);
     }
 

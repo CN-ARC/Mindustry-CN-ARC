@@ -138,6 +138,15 @@ public class ForkBlock extends ScratchBlock {
         return super.remove();
     }
 
+    @Override
+    public void actChain(float delta) {
+        act(delta);
+        children.each(c -> {
+            if (c instanceof ScratchBlock sb) sb.actChain(delta);
+        });
+        if (linkFrom != null) linkFrom.actChain(delta);
+    }
+
     public static class ForkInfo extends BlockInfo {
         protected Cons<ForkBlock> builder;
 

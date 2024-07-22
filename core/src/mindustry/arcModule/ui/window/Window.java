@@ -19,6 +19,7 @@ import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.Image;
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.Table;
+import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Align;
@@ -279,7 +280,6 @@ public class Window {
         String cachedTitle = "";
 
         public WindowTable(float width, float height) {
-            setClip(true);
             setColor(new Color(127, 127, 127, 255));
             margin(0f);
             touchable = Touchable.childrenOnly;
@@ -339,12 +339,21 @@ public class Window {
                     Draw.reset();
                 }
             }).height(32).top().growX().row();
-            table(tt -> {
+            WidgetGroup group = new WidgetGroup() {
+                @Override
+                public void layout() {
+                    children.peek().setBounds(x, y, getWidth(), getHeight());
+                }
+            };
+            add(group).grow();
+            group.addChild(new Table(tt -> {
+                tt.setClip(true);
+                tt.setFillParent(true);
                 tt.align(Align.left);
                 tt.add().grow();
                 cont = tt;
                 tt.touchable = Touchable.enabled;
-            }).grow().pad(1);
+            }));
             addListener(new InputListener() {
                 float lastX, lastY;
 
@@ -463,9 +472,6 @@ public class Window {
             });
             setWidth(width);
             setHeight(height);
-            update(() -> {
-                if (fillParent) toFront();
-            });
         }
 
         @Override

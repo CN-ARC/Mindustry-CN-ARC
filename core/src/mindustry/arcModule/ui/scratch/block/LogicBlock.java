@@ -77,10 +77,10 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
     }
 
     public void build(LStatement statement) {
+        this.statement = statement;
         clearChildren();
         elemColor = statement.category().color;
         Table logicTable = new Table();
-        this.statement = statement;
         flat(() -> statement.build(logicTable));
         logicTable.setFillParent(true);
         logicTable.visible = false;
