@@ -116,13 +116,15 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
     @Override
     public void readElements(Reads r) {
         build(LAssembler.read(r.str(), true).first());
+        super.readElements(r);
     }
 
     @Override
-    public void writeElements(Writes w) {
+    public void writeElements(Writes w) 
         StringBuilder sb = new StringBuilder();
         LogicIO.write(statement, sb);
         w.str(sb.toString());
+        super.writeElements(w);
     }
 
     protected static void drawCurve(float x1, float y1, float x2, float y2, boolean left) {

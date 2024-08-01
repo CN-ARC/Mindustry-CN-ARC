@@ -45,6 +45,7 @@ public class InputElement extends ScratchElement implements ScratchBlock.HoldInp
     }
 
     private void calcWidth() {
+        if (child != null) return;
         prefSizeLayout.setText(style.font, field.getText() + "  ");
         cell.width(Math.max(minWidth, prefSizeLayout.width));
         invalidateHierarchy();
