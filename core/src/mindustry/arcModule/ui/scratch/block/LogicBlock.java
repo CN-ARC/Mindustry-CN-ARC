@@ -61,8 +61,9 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
         this(statement, new BlockInfo() {
             @Override
             public void run(ScratchBlock block) {
-                ScratchController.runner.executor.load(ScratchController.runner.asm);
-                ((LogicBlock) block).cache.run(ScratchController.runner.executor);
+                LogicBlock b = (LogicBlock) block;
+                if (b.cache == null) b.refresh();
+                b.cache.run(ScratchController.runner.executor);
             }
         }, false);
     }
@@ -84,7 +85,13 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
         logicTable.visible = false;
         addChild(logicTable);
         LogicConvertor.replaceLogicToScratch(logicTable, this, statement.getClass().getSimpleName().replace("Statement", ""));
+        logicTable.changed(() -> cache = null);
+    }
+
+    public void refresh() {
+        ObjectMap<String, Object> m = saveVars();
         cache = statement.build(ScratchController.runner.asm);
+        loadVars(m);
     }
 
     private static void flat(Runnable r) {
@@ -134,6 +141,37 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
         } else {
             Lines.curve(x1, y1, x1 + 100, y1, x2 + 100, y2, x2, y2, Math.max(18, (int)(Mathf.dst(x1, y1, x2, y2) / 6)));
         }
+    }
+
+    public static ObjectMap<String, Object> saveVars() {
+        ObjectMap<String, Object> m = new ObjectMap<>();
+        LExecutor executor = ScratchController.runner.executor;
+        ScratchController.runner.asm.vars.each((s, b) -> m.put(s, executor.vars[b.id].isobj ? executor.vars[b.id].objval : executor.vars[b.id].numval));
+        return m;
+    }
+
+    public static void loadVars(ObjectMap<String, Object> m) {
+        LExecutor executor = ScratchController.runner.executor;
+        LAssembler asm = ScratchController.runner.asm;
+        LExecutor.Var[] vars = new LExecutor.Var[asm.vars.size];
+        asm.vars.each((name, var) -> {
+            LExecutor.Var dest = new LExecutor.Var(name);
+            vars[var.id] = dest;
+            if (dest.name.equals("@ipt")) {
+                executor.iptIndex = var.id;
+            }
+            dest.constant = var.constant;
+            if(var.value instanceof Number number) {
+                Object val = m.get(name);
+                dest.isobj = false;
+                dest.numval = val instanceof Number n ? n.doubleValue() : number.doubleValue();
+            } else {
+                Object val = m.get(name);
+                dest.isobj = true;
+                dest.objval = val != null ? val : var.value;
+            }
+        });
+        executor.vars = vars;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

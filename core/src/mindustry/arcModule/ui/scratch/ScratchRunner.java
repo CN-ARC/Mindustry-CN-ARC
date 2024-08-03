@@ -18,6 +18,7 @@ public class ScratchRunner {
 
     public ScratchRunner() {
         Events.run(EventType.Trigger.update, this::update);
+        executor.load(asm);
     }
 
     public void add(Run r) {
