@@ -48,7 +48,8 @@ import static mindustry.gen.Tex.scrollKnobVerticalThin;
 
 public class ScratchUI extends Table {
     public Table blocks = new Table(), types = new Table();
-    public LinkedGroup group = new ScratchGroup(), overlay = new LinkedGroup(), overlay2 = new LinkedGroup();
+    public ScratchGroup group = new ScratchGroup();
+    public LinkedGroup overlay = new LinkedGroup(), overlay2 = new LinkedGroup();
     public ScrollPane pane = new ScrollPane(group, Styles.horizontalPane), blocksPane = new ScrollPane(blocks, Styles.smallPane), typesPane = new OutlinePane(types, Styles.smallPane, Align.right);
     public ScratchActorPanel panel = new ScratchActorPanel();
     public Stack stack = new Stack();
@@ -303,7 +304,8 @@ public class ScratchUI extends Table {
         }
     }
 
-    private static class ScratchGroup extends LinkedGroup {
+    public static class ScratchGroup extends LinkedGroup {
+
         @Override
         public float getPrefWidth() {
             return 10000;

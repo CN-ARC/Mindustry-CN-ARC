@@ -53,20 +53,18 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
         sclField.setAccessible(true);
     }
     public LStatement statement;
+    public LExecutor.LInstruction cache;
     public ScratchBlock jump = null;
     private static LogicBlock tmp;
 
-
     public LogicBlock(LStatement statement) {
-        this(statement, new BlockInfo());
-    }
-
-    public LogicBlock(LStatement statement, boolean dragEnabled) {
-        this(statement, new BlockInfo(), dragEnabled);
-    }
-
-    public LogicBlock(LStatement statement, BlockInfo info) {
-        this(statement, info, false);
+        this(statement, new BlockInfo() {
+            @Override
+            public void run(ScratchBlock block) {
+                ScratchController.runner.executor.load(ScratchController.runner.asm);
+                ((LogicBlock) block).cache.run(ScratchController.runner.executor);
+            }
+        }, false);
     }
 
     public LogicBlock(LStatement statement, BlockInfo info, boolean dragEnabled) {
@@ -86,6 +84,7 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
         logicTable.visible = false;
         addChild(logicTable);
         LogicConvertor.replaceLogicToScratch(logicTable, this, statement.getClass().getSimpleName().replace("Statement", ""));
+        cache = statement.build(ScratchController.runner.asm);
     }
 
     private static void flat(Runnable r) {
@@ -120,7 +119,7 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
     }
 
     @Override
-    public void writeElements(Writes w) 
+    public void writeElements(Writes w) {
         StringBuilder sb = new StringBuilder();
         LogicIO.write(statement, sb);
         w.str(sb.toString());

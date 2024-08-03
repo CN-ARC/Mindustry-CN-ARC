@@ -5,8 +5,12 @@ import arc.struct.Seq;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.arcModule.ui.scratch.block.fork.ForkHasChild;
 import mindustry.game.EventType;
+import mindustry.logic.LAssembler;
+import mindustry.logic.LExecutor;
 
 public class ScratchRunner {
+    public LExecutor executor = new LExecutor();
+    public LAssembler asm = new LAssembler();
     public int runCount = 0, runLimit = 1;
     private final Seq<Run> runs = new Seq<>(), will = new Seq<>();
     private Run run;

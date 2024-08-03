@@ -11,15 +11,12 @@ import mindustry.arcModule.ui.scratch.block.LogicBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.arcModule.ui.scratch.element.InputElement;
 import mindustry.gen.LogicIO;
-import mindustry.logic.LCategory;
-import mindustry.logic.LExecutor;
-import mindustry.logic.LStatement;
-import mindustry.logic.LogicOp;
+import mindustry.logic.*;
 
 import java.util.Objects;
 
 public class LogicBlocks {
-    public LExecutor executor = new LExecutor();
+
     public static void init() {
         generateLogic();
         initExtra();
@@ -111,7 +108,7 @@ public class LogicBlocks {
 
     public static double toDouble(Object o) {
         if (o instanceof Boolean b) return b ? 1 : 0;
-        return (double) o;
+        return ((Number) o).doubleValue();
     }
 
     public static class DoubleResult {

@@ -27,6 +27,7 @@ public class ScratchBlock extends ScratchTable {
     public byte dir = 0;
     public Seq<Element> elements = new Seq<>();
     public ScratchRunner.Run running;
+    public boolean header;
     protected float minWidth = 0, minHeight = 0;
 
     public ScratchBlock(ScratchType type, Color color, BlockInfo info) {
@@ -122,7 +123,7 @@ public class ScratchBlock extends ScratchTable {
         }
     }
 
-    public void linkFrom(@Nullable ScratchBlock source) {
+    public void linkFrom(ScratchBlock source) {
         linkFrom = source;
     }
 
