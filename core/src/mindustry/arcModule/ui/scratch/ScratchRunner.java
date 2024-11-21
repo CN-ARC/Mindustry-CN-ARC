@@ -12,61 +12,65 @@ public class ScratchRunner {
     public LExecutor executor = new LExecutor();
     public LAssembler asm = new LAssembler();
     public int runCount = 0, runLimit = 1;
-    private final Seq<Run> runs = new Seq<>(), will = new Seq<>();
-    private Run run;
+    public boolean paused = false;
+    private final Seq<Task> tasks = new Seq<>(), will = new Seq<>();
+    private Task task;
     private boolean inserted;
 
     public ScratchRunner() {
-        Events.run(EventType.Trigger.update, this::update);
         executor.load(asm);
     }
 
-    public void add(Run r) {
+    public void add(Task r) {
         will.add(r);
     }
 
-    public void remove(Run r) {
+    public void remove(Task r) {
         will.remove(r);
     }
 
     public void update() {
-        if (will.size == 0) return;
-        runs.addAll(will);
-        for (int i = 0, l = runs.size; i < l; i++) {
-            Run value = runs.get(i);
+        if (paused || will.size == 0) return;
+        tasks.addAll(will);
+        for (int i = 0, l = tasks.size; i < l; i++) {
+            Task r = tasks.get(i);
+            if (r.paused) {
+                will.add(r);
+                continue;
+            }
             runCount = 0;
-            run = value;
+            task = r;
             label:
-            while (runCount < runLimit && run.pointer != null) {
+            while (runCount < runLimit && task.pointer != null) {
                 do {
                     inserted = false;
-                    if (run.running) run.pointer.prepareRun();
-                    run.pointer.run();
-                    if (!run.pointer.runFinished()) {
-                        run.running = false;
+                    if (task.running) task.pointer.prepareRun();
+                    task.pointer.run();
+                    if (!task.pointer.runFinished()) {
+                        task.running = false;
                         break label;
                     }
-                    run.running = true;
+                    task.running = true;
                     runCount++;
                 } while (inserted && runCount < runLimit);
                 if (inserted) break;
-                if (run.pointer.linkFrom == null) {
-                    if (run.pointer.getTopBlock().linkTo instanceof ForkHasChild fork) {
-                        run.pointer = fork.pop();
-                        if (run.pointer != null) continue;
+                if (task.pointer.linkFrom == null) {
+                    if (task.pointer.getTopBlock().linkTo instanceof ForkHasChild fork) {
+                        task.pointer = fork.pop();
+                        if (task.pointer != null) continue;
                     }
-                    run.block.finishRun();
-                    will.remove(run);
+                    task.block.finishRun();
+                    will.remove(task);
                     break;
                 }
-                run.pointer = run.pointer.linkFrom;
+                task.pointer = task.pointer.linkFrom;
             }
         }
-        runs.clear();
+        tasks.clear();
     }
 
     public void insert(ScratchBlock target) {
-        run.pointer = target;
+        task.pointer = target;
         inserted = true;
     }
 
@@ -76,15 +80,19 @@ public class ScratchRunner {
 
     public void reset() {
         will.clear();
-        run = null;
+        task = null;
     }
 
-    public static class Run {
+    public Seq<Task> getTasks() {
+        return will;
+    }
+
+    public static class Task {
         public final ScratchBlock block;
         public ScratchBlock pointer;
-        public boolean running = true;
+        public boolean running = true, paused = false;
 
-        public Run(ScratchBlock block) {
+        public Task(ScratchBlock block) {
             this.block = pointer = block;
         }
     }

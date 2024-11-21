@@ -9,7 +9,6 @@ import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
 import arc.struct.Seq;
 import arc.util.Align;
-import arc.util.Nullable;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.arcModule.ui.scratch.*;
@@ -26,7 +25,7 @@ public class ScratchBlock extends ScratchTable {
     public ScratchBlock linkTo, linkFrom;
     public byte dir = 0;
     public Seq<Element> elements = new Seq<>();
-    public ScratchRunner.Run running;
+    public ScratchRunner.Task running;
     public boolean header;
     protected float minWidth = 0, minHeight = 0;
 
@@ -264,7 +263,7 @@ public class ScratchBlock extends ScratchTable {
 
     public void scheduleRun() {
         if (running != null) return;
-        running = new ScratchRunner.Run(this);
+        running = new ScratchRunner.Task(this);
         ScratchController.run(running);
     }
 

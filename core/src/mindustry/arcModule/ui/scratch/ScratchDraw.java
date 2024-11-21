@@ -2,20 +2,44 @@ package mindustry.arcModule.ui.scratch;
 
 import arc.Core;
 import arc.graphics.Color;
-import arc.graphics.g2d.Draw;
-import arc.graphics.g2d.Fill;
-import arc.graphics.g2d.Lines;
-import arc.graphics.g2d.TextureRegion;
+import arc.graphics.Pixmap;
+import arc.graphics.Texture;
+import arc.graphics.g2d.*;
+import arc.math.Mathf;
 import arc.util.Tmp;
 
 public class ScratchDraw {
     public static final Color selectedColor = Color.gold;
-    private static TextureRegion circle = null;
+    public static TextureRegion circle = null;
     private static final Color c1 = new Color();
+    private static TextureRegion arrow;
+
+    public static void init() {
+        circle = new TextureAtlas.AtlasRegion(Core.atlas.find("circle"));
+        circle.setHeight(circle.height / 2 - 4);
+        Pixmap p = new Pixmap(16, 15);
+        int b = Color.black.rgba8888(), w = Color.white.rgba8888();
+        for (int i = 0; i < 7; ++i) {
+            p.set(6 - i, i + 1, b);
+            p.set(i, i + 7, b);
+        }
+        for (int i = 1; i < 7; ++i) {
+            p.drawLine(i, 8 - i, i, i + 6, w);
+        }
+        p.drawLine(7, 0, 7, 4, b);
+        p.drawLine(7, 10, 7, 14, b);
+        p.drawLine(8, 4, 15, 4, b);
+        p.drawLine(8, 10, 15, 10, b);
+        p.drawLine(15, 5, 15, 9, b);
+        p.fillRect(7, 5, 8, 5, w);
+        arrow = new TextureRegion(new Texture(p));
+        p.dispose();
+    }
 
     public static void drawInput(float x, float y, float w, float h, Color c, boolean selected) {
         Color col = selected ? selectedColor : c1.set(c).lerp(Color.black, 0.3f);
         Lines.stroke(selected ? 2 : 1);
+        y = Mathf.floor(y);
         float halfH = h / 2;
         Draw.color(c);
         Fill.circle(x + halfH, y + halfH, halfH);
@@ -134,15 +158,14 @@ public class ScratchDraw {
     }
 
     public static void drawTriggerBlock(float x, float y, float w, Color c, boolean noBorder) {
-        if (circle == null) circle = Core.atlas.find("circle");
         int dark = 0;
         if (!noBorder) {
             dark = Tmp.c1.set(c).lerp(Color.black, 0.3f).rgba();
             Draw.color(dark);
-            Draw.rect(circle, x + 31, y + 31, 64, 36);
+            Draw.rect(circle, x + 31, y + 42, 64, 18);
         }
         Draw.color(c);
-        Draw.rect(circle, x + 31, y + 31, 62, 34);
+        Draw.rect(circle, x + 31, y + 42, 62, 17);
         ScratchDraw.drawBlockInner(x, y, w, 40);
         if (!noBorder) {
             Draw.color(dark);
@@ -169,5 +192,10 @@ public class ScratchDraw {
         Lines.linePoint(x + w / 2 - 9, y + h);
         Lines.linePoint(x, y + h);
         Lines.endLine(true);
+    }
+
+    public static void drawArrow(float x, float y, Color c) {
+        Draw.color(c);
+        Draw.rect(arrow, x, y, arrow.width, arrow.height);
     }
 }

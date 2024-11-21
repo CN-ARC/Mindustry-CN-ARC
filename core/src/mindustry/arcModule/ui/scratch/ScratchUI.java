@@ -2,8 +2,6 @@ package mindustry.arcModule.ui.scratch;
 
 import arc.func.Cons;
 import arc.graphics.Color;
-import arc.graphics.Pixmap;
-import arc.graphics.Texture;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
@@ -15,9 +13,7 @@ import arc.scene.Group;
 import arc.scene.actions.Actions;
 import arc.scene.event.ClickListener;
 import arc.scene.event.Touchable;
-import arc.scene.style.Drawable;
 import arc.scene.style.TextureRegionDrawable;
-import arc.scene.style.TiledDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.Table;
@@ -30,7 +26,6 @@ import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
-import mindustry.arcModule.ui.utils.BoundedGroup;
 import mindustry.arcModule.ui.window.Window;
 import mindustry.content.Blocks;
 import mindustry.gen.Icon;
@@ -43,8 +38,6 @@ import java.util.Objects;
 
 import static arc.Core.input;
 import static mindustry.arcModule.ui.scratch.ScratchController.getLocalized;
-import static mindustry.gen.Tex.clear;
-import static mindustry.gen.Tex.scrollKnobVerticalThin;
 
 public class ScratchUI extends Table {
     public Table blocks = new Table(), types = new Table();
@@ -56,21 +49,11 @@ public class ScratchUI extends Table {
     public Seq<Label> categories = new Seq<>();
     public String nowCategory = null;
     private float zoom = 1;
-    private static final TiledDrawable bg;
     private static final Vec2 v1 = new Vec2(), v2 = new Vec2();
     private static Label.LabelStyle ls;
     private static final Color hoverColor = new Color(Color.packRgba(76, 151, 255, 255));
-    private static final Color bgColor = new Color(Color.packRgba(230, 240, 255, 255));
     private static final Color selectColor = new Color(Color.packRgba(133, 92, 214, 255));
     private static byte[] tmpData;
-
-    static {
-        Pixmap pix = new Pixmap(27, 27);
-        pix.fill(Color.packRgba(249, 249, 249, 255));
-        pix.fillRect(0, 0, 2, 2, Color.packRgba(221, 221, 221, 255));
-        bg = new TiledDrawable(new TextureRegion(new Texture(pix)));
-        pix.dispose();
-    }
 
     public ScratchUI() {
         setFillParent(true);
@@ -103,7 +86,16 @@ public class ScratchUI extends Table {
                     over = Styles.black6;
                     down = Styles.black8;
                 }}, this::zoomOut).size(48).row();
-            })));
+            }) {
+                @Override
+                public void drawChildren() {
+                    super.drawChildren();
+                    for (ScratchRunner.Task task : ScratchController.runner.getTasks()) {
+                        Vec2 v = oldPosToNewPos(ScratchUI.this, task.pointer, v1.set(task.pointer.x + task.pointer.getWidth(), task.pointer.y + task.pointer.getHeight() / 2), this);
+                        ScratchDraw.drawArrow(v.x + x, v.y + y, Color.red);
+                    }
+                }
+            }));
             t.table(t2 -> {
                 t2.setBackground(RFuncs.tint(Color.gray.rgba()));
                 t2.add(new Table(t3 -> t3.setBackground(Styles.black3))).size(480, 360).pad(5).row();
@@ -126,7 +118,6 @@ public class ScratchUI extends Table {
             t.button(getLocalized("clear"), this::clearBlocks);
             t.button("reload", ScratchController::reload);
         }));
-        group.background = bg;
         group.setTransform(true);
         add(stack).grow();
         ls = new Label.LabelStyle(Styles.defaultLabel) {{
@@ -157,6 +148,7 @@ public class ScratchUI extends Table {
 
     @Override
     public void act(float delta) {
+        ScratchController.runner.update();
         super.act(delta);
         findCategory();
     }
@@ -168,7 +160,7 @@ public class ScratchUI extends Table {
 
     public static Vec2 oldPosToNewPos(Group top, Element e, Vec2 v, Element target) {
         top.localToDescendantCoordinates(target, e.parent.localToAscendantCoordinates(top, v));
-        return v2;
+        return v;
     }
 
     public void zoomIn() {
@@ -318,7 +310,6 @@ public class ScratchUI extends Table {
     }
 
     public static class LinkedGroup extends WidgetGroup {
-        public Drawable background = null;
 
         @Override
         public void act(float delta) {
@@ -333,13 +324,6 @@ public class ScratchUI extends Table {
                 }
             }
             children.end();
-        }
-
-        @Override
-        public void draw() {
-            validate();
-            if (background != null) background.draw(x, y, width, height);
-            super.draw();
         }
 
         @Override
@@ -398,10 +382,6 @@ public class ScratchUI extends Table {
 
     public static class OutlinePane extends ScrollPane {
         int dir;
-        public OutlinePane(Element widget, int direction) {
-            super(widget);
-            dir = direction;
-        }
 
         public OutlinePane(Element widget, ScrollPaneStyle style, int direction) {
             super(widget, style);

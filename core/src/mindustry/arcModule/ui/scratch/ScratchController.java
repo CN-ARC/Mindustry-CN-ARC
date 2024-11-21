@@ -22,6 +22,7 @@ public class ScratchController {
 
     public static void init() {
         loadBundle();
+        ScratchDraw.init();
         setContext(ScratchContext.createContext());
     }
 
@@ -83,7 +84,7 @@ public class ScratchController {
         }
     }
 
-    public static void run(ScratchRunner.Run r) {
+    public static void run(ScratchRunner.Task r) {
         runner.add(r);
     }
 

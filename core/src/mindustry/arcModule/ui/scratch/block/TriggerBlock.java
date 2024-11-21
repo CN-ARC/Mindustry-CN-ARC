@@ -3,6 +3,7 @@ package mindustry.arcModule.ui.scratch.block;
 import arc.graphics.Color;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
+import arc.scene.ui.layout.Table;
 import arc.util.Align;
 import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchDraw;
