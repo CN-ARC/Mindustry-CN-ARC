@@ -55,6 +55,20 @@ public class ScratchDraw {
         Lines.line(x + halfH, y + h, x + w - halfH, y + h);
     }
 
+    public static void drawInputBorderless(float x, float y, float w, float h, Color c) {
+        Lines.stroke(1);
+        y = Mathf.floor(y);
+        float halfH = h / 2;
+        Draw.color(c);
+        Fill.circle(x + halfH, y + halfH, halfH);
+        Fill.circle(x + w - halfH, y + halfH, halfH);
+        Draw.color(c);
+        Fill.rect(x + w / 2, y + halfH, w - 2 * halfH, h);
+        float ty =  y + 0.5f;
+        Lines.line(x + halfH, ty, x + w - halfH, ty);
+        Lines.line(x + halfH, y + h, x + w - halfH, y + h);
+    }
+
     public static void drawInputSelected(float x, float y, float w, float h) {
         float halfH = h / 2;
         Draw.color(selectedColor);
@@ -106,12 +120,7 @@ public class ScratchDraw {
         Fill.polyBegin();
         Fill.polyPoint(x, y + h - 7);
         Fill.polyPoint(x + w, y + h - 7);
-        Fill.polyPoint(x + w, y);
-        Fill.polyPoint(x + 35, y);
-        Fill.polyPoint(x + 30, y - 7);
-        Fill.polyPoint(x + 15, y - 7);
-        Fill.polyPoint(x + 10, y);
-        Fill.polyPoint(x, y);
+        drawInner(x, y, w);
         Fill.polyEnd();
     }
 
@@ -197,5 +206,41 @@ public class ScratchDraw {
     public static void drawArrow(float x, float y, Color c) {
         Draw.color(c);
         Draw.rect(arrow, x, y, arrow.width, arrow.height);
+    }
+
+    public static void drawFlatInner(float x, float y, float w, float h) {
+        Fill.polyBegin();
+        Fill.polyPoint(x, y + h);
+        Fill.polyPoint(x + w, y + h);
+        drawInner(x, y, w);
+        Fill.polyEnd();
+    }
+
+    private static void drawInner(float x, float y, float w) {
+        Fill.polyPoint(x + w, y);
+        Fill.polyPoint(x + 35, y);
+        Fill.polyPoint(x + 30, y - 7);
+        Fill.polyPoint(x + 15, y - 7);
+        Fill.polyPoint(x + 10, y);
+        Fill.polyPoint(x, y);
+    }
+
+    public static void drawFlatBorder(float x, float y, float w, float h) {
+        Lines.linePoint(x, y + h);
+        Lines.linePoint(x + w, y + h);
+        Lines.linePoint(x + w, y);
+    }
+
+    public static void drawFunctionBlock(float x, float y, float dx, float w, float dw, Color c, Color c2) {
+        Draw.color(c);
+        drawFlatInner(x, y, w, 56);
+        drawBlock(x + dx, y + 12, dw, 35, c2, true);
+        Lines.stroke(1);
+        Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
+        Lines.beginLine();
+        drawFlatBorder(x, y, w, 56);
+        drawBlockBorderBottom(x, y);
+        Lines.linePoint(x, y + 56);
+        Lines.endLine();
     }
 }

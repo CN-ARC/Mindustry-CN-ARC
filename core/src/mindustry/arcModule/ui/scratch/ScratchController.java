@@ -109,11 +109,19 @@ public class ScratchController {
     }
 
     public static ScratchBlock newBlock(String name) {
-        return getBlock(name).copy();
+        return newBlock(name, true);
+    }
+
+    public static ScratchBlock newBlock(String name, boolean drag) {
+        return getBlock(name).copy(drag);
     }
 
     public static ScratchBlock newBlock(int i) {
-        return getBlock(i).copy();
+        return newBlock(i, true);
+    }
+
+    public static ScratchBlock newBlock(int i, boolean drag) {
+        return getBlock(i).copy(drag);
     }
 
     public static void category(String name, Color color) {
