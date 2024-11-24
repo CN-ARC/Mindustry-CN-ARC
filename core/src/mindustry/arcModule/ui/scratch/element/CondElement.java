@@ -41,8 +41,12 @@ public class CondElement extends ScratchElement {
 
     @Override
     public void drawChildren() {
+        if (parent instanceof ScratchTable) {
+            ScratchDraw.drawCond(x, y, width, height, elemColor, true, false);
+            return;
+        }
         if (child == null) {
-            ScratchDraw.drawCond(x, y, width, height, elemColor, ScratchController.selected == this);
+            ScratchDraw.drawCond(x, y, width, height, elemColor, false, ScratchController.selected == this);
         } else if (ScratchController.selected == this && accept(ScratchController.dragging)) {
             ScratchDraw.drawCondSelected(x, y, width, height);
         }

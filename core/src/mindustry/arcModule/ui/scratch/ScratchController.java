@@ -2,6 +2,7 @@ package mindustry.arcModule.ui.scratch;
 
 import arc.files.Fi;
 import arc.graphics.Color;
+import arc.scene.ui.TextButton;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.I18NBundle;
@@ -22,6 +23,7 @@ public class ScratchController {
 
     public static void init() {
         loadBundle();
+        ScratchStyles.init();
         ScratchDraw.init();
         setContext(ScratchContext.createContext());
     }
@@ -75,10 +77,14 @@ public class ScratchController {
     }
 
     public static void registerBlock(String name, ScratchBlock e) {
+        registerBlock(name, e, true);
+    }
+
+    public static void registerBlock(String name, ScratchBlock e, boolean show) {
         if (!list.contains(e)) {
             int id = list.add(e).size - 1;
             map.put(name, id);
-            ui.registerBlock(e);
+            if (show) ui.registerBlock(e);
             ScratchInput.addNewInput(e);
             e.info.setID((short) id);
         }
@@ -122,6 +128,10 @@ public class ScratchController {
 
     public static ScratchBlock newBlock(int i, boolean drag) {
         return getBlock(i).copy(drag);
+    }
+
+    public static TextButton button(String name, Runnable callback) {
+        return ui.addButton(getLocalized("button." + name + ".name"), callback);
     }
 
     public static void category(String name, Color color) {

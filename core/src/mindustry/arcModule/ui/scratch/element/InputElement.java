@@ -14,8 +14,6 @@ import arc.util.io.Writes;
 import arc.util.pooling.Pools;
 import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
-import mindustry.ui.Fonts;
-import mindustry.ui.Styles;
 
 public class InputElement extends ScratchElement implements ScratchBlock.HoldInput {
     protected static TextField.TextFieldStyle style;
@@ -27,7 +25,7 @@ public class InputElement extends ScratchElement implements ScratchBlock.HoldInp
     private final ClickListener listener;
 
     public InputElement(boolean num, String def) {
-        field = new HoldTextField(def, getStyle());
+        field = new HoldTextField(def, ScratchStyles.clearField);
         field.changed(() -> {
             ChangeListener.ChangeEvent changeEvent = Pools.obtain(ChangeListener.ChangeEvent.class, ChangeListener.ChangeEvent::new);
             fire(changeEvent);
@@ -46,7 +44,7 @@ public class InputElement extends ScratchElement implements ScratchBlock.HoldInp
 
     private void calcWidth() {
         if (child != null) return;
-        prefSizeLayout.setText(style.font, field.getText() + "  ");
+        prefSizeLayout.setText(field.getStyle().font, field.getText() + "  ");
         cell.width(Math.max(minWidth, prefSizeLayout.width));
         invalidateHierarchy();
     }
@@ -94,7 +92,7 @@ public class InputElement extends ScratchElement implements ScratchBlock.HoldInp
         if (!num) return field.getText();
         try {
             return Double.parseDouble(field.getText());
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             return Double.NaN;
         }
     }
@@ -111,19 +109,6 @@ public class InputElement extends ScratchElement implements ScratchBlock.HoldInp
     @Override
     public void setElementValue(Object value) {
         if (field != null) field.setText((String) value);
-    }
-
-    private TextField.TextFieldStyle getStyle() {
-        if (style == null) {
-            style = new TextField.TextFieldStyle(Styles.defaultField);
-            style.focusedBackground = null;
-            style.disabledBackground = null;
-            style.background = null;
-            style.invalidBackground = null;
-            style.font = Fonts.outline;
-            style.fontColor = Color.gray;
-        }
-        return style;
     }
 
     @Override

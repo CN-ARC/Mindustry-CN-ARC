@@ -1,10 +1,8 @@
 package mindustry.arcModule.ui.scratch;
 
-import arc.Events;
 import arc.struct.Seq;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.arcModule.ui.scratch.block.fork.ForkHasChild;
-import mindustry.game.EventType;
 import mindustry.logic.LAssembler;
 import mindustry.logic.LExecutor;
 
@@ -34,6 +32,7 @@ public class ScratchRunner {
         tasks.addAll(will);
         for (int i = 0, l = tasks.size; i < l; i++) {
             Task r = tasks.get(i);
+            if (r.pointer.parent == null) continue;
             if (r.paused) {
                 will.add(r);
                 continue;

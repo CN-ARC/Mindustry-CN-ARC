@@ -7,12 +7,14 @@ import arc.util.io.Writes;
 import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
+import mindustry.arcModule.ui.scratch.ScratchUI;
 
 public class LabelElement extends ScratchElement {
-    private final Label l;
+    public final Label label;
 
     public LabelElement(String str) {
-        add(l = new Label(str));
+        add(label = new Label(str));
+        label.setFontScale(ScratchUI.textScale);
         hittable = false;
     }
 
@@ -32,7 +34,7 @@ public class LabelElement extends ScratchElement {
 
     @Override
     public ScratchElement copy() {
-        return new LabelElement(l.getText().toString());
+        return new LabelElement(label.getText().toString());
     }
 
     @Override

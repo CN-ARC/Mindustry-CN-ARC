@@ -20,6 +20,7 @@ import arc.util.pooling.Pools;
 import mindustry.arcModule.ui.scratch.ScratchController;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
+import mindustry.arcModule.ui.scratch.ScratchUI;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.ui.Styles;
 
@@ -57,6 +58,7 @@ public class ListElement extends ScratchElement implements ScratchBlock.HoldInpu
         listener = clicked(() -> {
             if (ScratchController.dragging == null) showList();
         });
+        l.setFontScale(ScratchUI.textScale);
     }
 
     public void setList(String... target) {

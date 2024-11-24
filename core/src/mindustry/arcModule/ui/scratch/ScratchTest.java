@@ -23,11 +23,9 @@ public class ScratchTest {
 
         Color c = new Color(Color.packRgba(255, 140, 26, 255));
         ScratchController.category("variable", c);
-        ScratchController.registerBlock("variable", new VariableBlock(c));
+        ScratchController.registerBlock("variable", new VariableBlock(c, new BlockInfo()));
 
-        c = new Color(Color.packRgba(255, 102, 128, 255));
-        ScratchController.category("function", c);
-        ScratchController.registerBlock("function", new FunctionBlock(c));
+        FunctionBlock.register();
 
         /*for (int x = 0; x < 10000; x += 100) {
             for (int y = 0; y < 10000; y += 100) {

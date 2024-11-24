@@ -35,7 +35,7 @@ public abstract class ForkComponent extends ScratchBlock {
     @Override
     public void cell(Cell<ScratchTable> c) {
         super.cell(c);
-        c.pad(0).align(Align.left).growX().row();
+        c.pad(0).left().growX().row();
     }
 
     @Override

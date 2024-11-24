@@ -9,7 +9,6 @@ import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
-import arc.util.Align;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
@@ -24,7 +23,7 @@ public abstract class ScratchTable extends Table {
 
     {
         touchable = Touchable.enabled;
-        align(Align.left);
+        left();
     }
 
     public void addListener(Enum<ScratchEvents> type, Cons<ScratchTable> listener) {

@@ -313,6 +313,10 @@ public class RFuncs {
         return cachedCursor;
     }
 
+    public static Drawable tint(Color color) {
+        return ((TextureRegionDrawable) whiteui).tint(color);
+    }
+
     public static Drawable tint(int color) {
         return ((TextureRegionDrawable) whiteui).tint(new Color(color));
     }

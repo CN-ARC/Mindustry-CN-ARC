@@ -7,6 +7,7 @@ import arc.graphics.g2d.Lines;
 import arc.scene.Element;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
+import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.io.Reads;
@@ -14,6 +15,7 @@ import arc.util.io.Writes;
 import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.block.fork.ForkComponent;
 import mindustry.arcModule.ui.scratch.element.*;
+import mindustry.ui.Styles;
 
 import static mindustry.arcModule.ui.scratch.ScratchController.dragging;
 
@@ -44,7 +46,7 @@ public class ScratchBlock extends ScratchTable {
     }
 
     public void init() {
-        minHeight = type == ScratchType.block ? 40 : 28;
+        minHeight = type == ScratchType.block ? 32 : 28;
     }
 
     public Cell<ScratchTable> label(String str) {
@@ -205,7 +207,7 @@ public class ScratchBlock extends ScratchTable {
     public void drawBackground() {
         switch (type) {
             case input -> ScratchDraw.drawInput(x, y, width, height, elemColor, false);
-            case condition -> ScratchDraw.drawCond(x, y, width, height, elemColor, false);
+            case condition -> ScratchDraw.drawCond(x, y, width, height, elemColor, false, false);
             case block -> ScratchDraw.drawBlock(x, y, width, height, elemColor, false);
         }
     }
@@ -301,6 +303,12 @@ public class ScratchBlock extends ScratchTable {
     public void actChain(float delta) {
         act(delta);
         if (linkFrom != null) linkFrom.actChain(delta);
+    }
+
+    public void buildMenu(Table t) {
+        t.button("copy", Styles.nonet, () -> getTopBlock().copyTree(true).setPosition(x + 15, y - 15));
+        t.row();
+        t.button("delete", Styles.nonet, this::remove);
     }
 
     @Override

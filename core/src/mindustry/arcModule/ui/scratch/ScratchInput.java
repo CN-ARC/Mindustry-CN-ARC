@@ -1,6 +1,7 @@
 package mindustry.arcModule.ui.scratch;
 
 import arc.Core;
+import arc.func.Boolp;
 import arc.input.KeyCode;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
@@ -27,14 +28,18 @@ public class ScratchInput {
     public static FakeBlock fake = new FakeBlock();
     public static boolean dragged = false, menu = false, removing = false, checking = false;
 
-    public static void addDraggingInput(ScratchBlock e) {
-        e.addListener(new ScratchDragListener(e));
+    public static ScratchDragListener addDraggingInput(ScratchBlock e) {
+        ScratchDragListener l;
+        e.addListener(l = new ScratchDragListener(e));
         e.addListener(new HandCursorListener());
+        return l;
     }
 
-    public static void addNewInput(ScratchBlock e) {
-        e.addListener(new ScratchNewInputListener(e));
+    public static ScratchNewInputListener addNewInput(ScratchBlock e) {
+        ScratchNewInputListener l;
+        e.addListener(l = new ScratchNewInputListener(e));
         e.addListener(new HandCursorListener());
+        return l;
     }
 
     public static void checkHit(float x, float y) {
@@ -82,10 +87,11 @@ public class ScratchInput {
         group, overlay
     }
 
-    static class ScratchDragListener extends InputListener {
+    public static class ScratchDragListener extends InputListener {
         float lastX, lastY;
         SLayer layer = SLayer.group;
         ScratchBlock target;
+        public Boolp enabled = null;
 
         public ScratchDragListener(ScratchBlock target) {
             this.target = target;
@@ -135,7 +141,7 @@ public class ScratchInput {
             if (!dragged && layer == SLayer.group && valid()) {
                 ScratchBlock b = target.getTopBlock();
                 if (menu) {
-                    ui.showMenu(b, true);
+                    ui.showMenu(b);
                 } else {
                     run(b);
                 }
@@ -180,7 +186,7 @@ public class ScratchInput {
 
         @Override
         public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
-            if (cur != target && cur != null || Core.scene.getKeyboardFocus() instanceof ScratchBlock.HoldInput f && f.holding())
+            if (enabled != null && !enabled.get() || cur != target && cur != null || Core.scene.getKeyboardFocus() instanceof ScratchBlock.HoldInput f && f.holding())
                 return false;
             dragged = false;
             target.selected = true;
@@ -239,9 +245,10 @@ public class ScratchInput {
         }
     }
 
-    static class ScratchNewInputListener extends InputListener {
+    public static class ScratchNewInputListener extends InputListener {
         boolean dragged;
         ScratchBlock target;
+        public Boolp enabled = null;
 
         public ScratchNewInputListener(ScratchBlock target) {
             this.target = target;
@@ -249,7 +256,7 @@ public class ScratchInput {
 
         @Override
         public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
-            if (Core.scene.getKeyboardFocus() instanceof ScratchBlock.HoldInput f && f.holding()) return false;
+            if (enabled != null && !enabled.get() || Core.scene.getKeyboardFocus() instanceof ScratchBlock.HoldInput f && f.holding()) return false;
             ui.blocksPane.setFlickScroll(false);
             ui.pane.setFlickScroll(false);
             return true;

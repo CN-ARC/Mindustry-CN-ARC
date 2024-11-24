@@ -1,12 +1,14 @@
 package mindustry.arcModule.ui.scratch;
 
 import arc.func.Cons;
+import arc.func.Cons4;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.graphics.g2d.Lines;
 import arc.graphics.g2d.TextureRegion;
 import arc.input.KeyCode;
+import arc.math.Interp;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.Group;
@@ -30,7 +32,6 @@ import mindustry.arcModule.ui.window.Window;
 import mindustry.content.Blocks;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
-import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 
 import java.io.*;
@@ -48,83 +49,77 @@ public class ScratchUI extends Table {
     public Stack stack = new Stack();
     public Seq<Label> categories = new Seq<>();
     public String nowCategory = null;
+    public static final float textScale = 0.8f;
     private float zoom = 1;
     private static final Vec2 v1 = new Vec2(), v2 = new Vec2();
-    private static Label.LabelStyle ls;
     private static final Color hoverColor = new Color(Color.packRgba(76, 151, 255, 255));
-    private static final Color selectColor = new Color(Color.packRgba(133, 92, 214, 255));
+    private static final Color themeColor = new Color(Color.packRgba(133, 92, 214, 255));
     private static byte[] tmpData;
 
     public ScratchUI() {
         setFillParent(true);
+        blocksPane.setOverscroll(false, false);
+        blocksPane.setClip(false);
+        blocksPane.setTransform(true);
+        blocksPane.addListener(new ClickListener());
+        types.top().defaults().size(64, 48);
+        types.setBackground(Tex.whiteui);
+        overlay.name = "blockOverlay";
+        overlay.touchable = Touchable.childrenOnly;
+        overlay.setTransform(true);
+        overlay2.name = "menuOverlay";
+        overlay2.touchable = Touchable.childrenOnly;
+        group.name = "main";
+        group.setTransform(true);
+        blocks.defaults().left().pad(10);
         stack.add(new Table(t -> {
             t.setFillParent(true);
-            t.add(typesPane).growY().width(64);
-            types.top().defaults().size(64, 48);
-            types.setBackground(Tex.whiteui);
-            blocksPane.setOverscroll(false, false);
-            blocksPane.setClip(false);
-            blocksPane.setTransform(true);
+            t.add(typesPane).name("types").growY().width(64);
             t.table(t2 -> {
                 t2.setBackground(((TextureRegionDrawable) Tex.whiteui).tint(Tmp.c1.set(Color.white).mul(0.97f)));
-                t2.add(blocksPane).grow();
+                t2.add(blocksPane).name("blocks").grow();
             }).growY().width(384).get().setClip(true);
-            blocksPane.addListener(new ClickListener());
             t.add(new Stack(pane, new Table(t2 -> {
+                t2.name = "zoom";
                 t2.setFillParent(true);
                 t2.margin(30);
                 t2.bottom().right();
                 t2.defaults().pad(5);
-                ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle(Styles.cleari) {{
-                    up = Styles.black3;
-                    over = Styles.black6;
-                    down = Styles.black8;
-                }};
-                t2.button(Icon.addSmall, style, this::zoomIn).size(48).row();
-                t2.button("一", new TextButton.TextButtonStyle(Styles.defaultt) {{
-                    up = Styles.black3;
-                    over = Styles.black6;
-                    down = Styles.black8;
-                }}, this::zoomOut).size(48).row();
+                t2.button(Icon.addSmall, ScratchStyles.flatImage, this::zoomIn).name("zoomIn").size(48).row();
+                t2.button("一", ScratchStyles.flatText, this::zoomOut).name("zoomOut").size(48).row();
             }) {
                 @Override
                 public void drawChildren() {
                     super.drawChildren();
                     for (ScratchRunner.Task task : ScratchController.runner.getTasks()) {
+                        if (task.pointer.parent == null) continue;
                         Vec2 v = oldPosToNewPos(ScratchUI.this, task.pointer, v1.set(task.pointer.x + task.pointer.getWidth(), task.pointer.y + task.pointer.getHeight() / 2), this);
                         ScratchDraw.drawArrow(v.x + x, v.y + y, Color.red);
                     }
                 }
-            }));
+            })).name("work");
             t.table(t2 -> {
-                t2.setBackground(RFuncs.tint(Color.gray.rgba()));
-                t2.add(new Table(t3 -> t3.setBackground(Styles.black3))).size(480, 360).pad(5).row();
-                t2.add(panel).grow().pad(5);
+                t2.setBackground(RFuncs.tint(Color.gray));
+                t2.add(new Table(t3 -> t3.setBackground(Styles.black3))).name("canvas").size(480, 360).pad(5).row();
+                t2.add(panel).name("actors").grow().pad(5);
                 panel.addActor(new ScratchActorPanel.ScratchActor(Blocks.logicProcessor.uiIcon, "logic1"));
             }).growY();
         }));
-        overlay.touchable = Touchable.childrenOnly;
-        overlay.setTransform(true);
-        overlay2.touchable = Touchable.childrenOnly;
         stack.add(overlay);
         stack.add(overlay2);
         stack.add(new Table(t -> {
-            t.button(getLocalized("save"), () -> {
+            t.defaults().size(48).pad(10);
+            t.bottom();
+            t.button(getLocalized("button.save.name"), ScratchStyles.flatText, () -> {
                 ByteArrayOutputStream o = new ByteArrayOutputStream();
                 write(new Writes(new DataOutputStream(o)));
                 tmpData = o.toByteArray();
             });
-            t.button(getLocalized("load"), () -> read(new Reads(new DataInputStream(new ByteArrayInputStream(tmpData))))).disabled(b -> tmpData == null);
-            t.button(getLocalized("clear"), this::clearBlocks);
-            t.button("reload", ScratchController::reload);
+            t.button(getLocalized("button.load.name"), ScratchStyles.flatText, () -> read(new Reads(new DataInputStream(new ByteArrayInputStream(tmpData))))).disabled(b -> tmpData == null);
+            t.button(getLocalized("button.clear.name"), ScratchStyles.flatText, this::clearBlocks);
+            t.button(getLocalized("button.reload.name"), ScratchStyles.flatText, ScratchController::reload);
         }));
-        group.setTransform(true);
-        add(stack).grow();
-        ls = new Label.LabelStyle(Styles.defaultLabel) {{
-            font = Fonts.outline;
-            fontColor = Color.gray;
-        }};
-        blocks.defaults().pad(10);
+        add(stack).name("container").grow();
     }
 
     public void read(Reads r) {
@@ -202,22 +197,43 @@ public class ScratchUI extends Table {
         });
     }
 
+    public void showWindow(String name, Group target) {
+        overlay2.addChild(new BackgroundTable(t -> {
+            t.color.a = 0;
+            t.addAction(Actions.fadeIn(0.1f));
+            t.touchable = Touchable.enabled;
+            t.setFillParent(true);
+            t.margin(50);
+            t.top();
+            t.add(new Table(t2 -> {
+                t2.add(new BackgroundTable(t3 -> t3.stack(new Table(t4 -> t4.add(getLocalized(name)).name("title")), new Table(t4 -> {
+                    t4.right();
+                    t4.button(Icon.cancel, ScratchStyles.flatImage, () -> {
+                        t.actions(Actions.fadeOut(0.5f), Actions.remove());
+                        t2.addAction(Actions.translateBy(0, t2.getHeight() + 50, 0.5f, Interp.swingIn));
+                    }).name("close").size(48).pad(4);
+                })).grow(), themeColor)).height(56).growX().row();
+                t2.add(target).name("body");
+            })).with(t2 -> {
+                float d = t2.getPrefHeight() + 50;
+                t2.translation.y = d;
+                t2.addAction(Actions.translateBy(0, -d, 0.5f, Interp.swingOut));
+            }).fillX();
+        }, themeColor.cpy().a(0.5f)));
+    }
+
     public void showResult(ScratchTable b, String str) {
         showPopup(b, t -> {
             t.margin(10);
-            t.add(new Label(str, ls));
+            t.add(new Label(str, ScratchStyles.grayOutline));
         }, Color.white);
     }
 
-    public void showMenu(Object e, boolean inStage) {
+    public void showMenu(Object e) {
         overlay2.addChild(new Table(t -> {
             t.setBackground(Styles.black3);
             t.defaults().size(100, 30);
-            if (e instanceof ScratchBlock sb && inStage) {
-                t.button("copy", Styles.nonet, () -> sb.getTopBlock().copyTree(true).setPosition(sb.x + 15, sb.y - 15));
-                t.row();
-                t.button("delete", Styles.nonet, sb::remove);
-            }
+            if (e instanceof ScratchBlock sb) sb.buildMenu(t);
             overlay2.stageToLocalCoordinates(v1.set(input.mouseX(), input.mouseY()));
             t.setPosition(v1.x, v1.y - t.getPrefHeight());
             t.getChildren().forEach(c -> c.clicked(t::remove));
@@ -237,7 +253,7 @@ public class ScratchUI extends Table {
     }
 
     public void registerBlock(ScratchBlock b) {
-        blocks.add(b).align(Align.left).row();
+        blocks.add(b).row();
     }
 
     public void clearBlocks() {
@@ -256,6 +272,13 @@ public class ScratchUI extends Table {
         group.addChild(e);
     }
 
+    public TextButton addButton(String name, Runnable callback) {
+        TextButton b = new TextButton(name, Styles.squareTogglet);
+        b.clicked(callback);
+        blocks.add(b).size(200, 40).row();
+        return b;
+    }
+
     public void addCategory(String cname, Color c) {
         types.table(t -> {
             t.add(new Element() {
@@ -270,13 +293,13 @@ public class ScratchUI extends Table {
                 }
             }).grow().row();
             Label title = blocks.add(cname).ellipsis(true).growX().get();
-            title.setStyle(ls);
+            title.setStyle(ScratchStyles.grayOutline);
             categories.add(title);
             Label l = t.add(cname).growX().get();
             ClickListener cl = new ClickListener();
             t.addListener(cl);
             l.update(() -> l.getStyle().fontColor = cl.isOver() ? hoverColor : Color.gray);
-            l.setStyle(new Label.LabelStyle(ls));
+            l.setStyle(new Label.LabelStyle(ScratchStyles.grayOutline));
             l.setFontScale(0.8f);
             l.setAlignment(Align.center);
             t.clicked(() -> blocksPane.setScrollY(blocks.getHeight() - title.getY(Align.top) - 10));
@@ -362,7 +385,7 @@ public class ScratchUI extends Table {
                 Draw.color(Color.white);
                 Fill.crect(x, y, width, height);
                 if (ScratchController.ui.panel.now == ScratchActor.this) {
-                    Draw.color(selectColor);
+                    Draw.color(themeColor);
                     Fill.crect(x, y, width, 24);
                     Lines.rect(x, y, width, height);
                 }
@@ -380,6 +403,22 @@ public class ScratchUI extends Table {
         }
     }
 
+    public static class OutlineTable extends Table {
+        int dir;
+
+        public OutlineTable(Cons<Table> cons, int dir) {
+            super(cons);
+            this.dir = dir;
+        }
+
+        @Override
+        public void draw() {
+            super.draw();
+            if (dir < 2) return;
+            ScratchDraw.drawOutline(x, y, width, height, dir);
+        }
+    }
+
     public static class OutlinePane extends ScrollPane {
         int dir;
 
@@ -392,20 +431,36 @@ public class ScratchUI extends Table {
         public void draw() {
             super.draw();
             if (dir < 2) return;
-            Draw.color(Tmp.c1.set(Color.black).a(0.2f));
-            Lines.stroke(1);
-            if ((dir & Align.right) != 0) {
-                Lines.line(x + width, y, x + width, y + height);
-            }
-            if ((dir & Align.bottom) != 0) {
-                Lines.line(x, y, x + width, y);
-            }
-            if ((dir & Align.left) != 0) {
-                Lines.line(x, y, x, y + height);
-            }
-            if ((dir & Align.top) != 0) {
-                Lines.line(x, y + height, x + width, y + height);
-            }
+            ScratchDraw.drawOutline(x, y, width, height, dir);
+        }
+    }
+
+    public static class BackgroundTable extends Table {
+        public Color backgroundColor;
+
+        public BackgroundTable(Cons<Table> cons, Color backgroundColor) {
+            super(cons);
+            this.backgroundColor = backgroundColor;
+        }
+
+        @Override
+        protected void drawBackground(float x, float y) {
+            Draw.color(Tmp.c1.set(backgroundColor).mulA(color.a * parentAlpha));
+            Fill.crect(x, y, width, height);
+        }
+    }
+
+    public static class DrawableElement extends Element {
+        Cons4<Float, Float, Float, Float> draw;
+
+        public DrawableElement(Cons4<Float, Float, Float, Float> draw) {
+            this.draw = draw;
+        }
+
+        @Override
+        public void draw() {
+            validate();
+            draw.get(x, y, width, height);
         }
     }
 }

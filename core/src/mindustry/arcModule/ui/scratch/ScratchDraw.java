@@ -6,6 +6,7 @@ import arc.graphics.Pixmap;
 import arc.graphics.Texture;
 import arc.graphics.g2d.*;
 import arc.math.Mathf;
+import arc.util.Align;
 import arc.util.Tmp;
 
 public class ScratchDraw {
@@ -36,6 +37,25 @@ public class ScratchDraw {
         p.dispose();
     }
 
+    public static void drawRect(float x, float y, float width, float height, Color c) {
+        Draw.color(c);
+        Fill.crect(x, y, width, height);
+        Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
+        Lines.line(x + width, y, x + width, y + height);
+        Lines.line(x, y, x + width, y);
+        Lines.line(x, y, x, y + height);
+        Lines.line(x, y + height, x + width, y + height);
+    }
+
+    public static void drawOutline(float x, float y, float width, float height, int dir) {
+        Draw.color(Tmp.c1.set(Color.black).a(0.2f));
+        Lines.stroke(1);
+        if ((dir & Align.right) != 0) Lines.line(x + width, y, x + width, y + height);
+        if ((dir & Align.bottom) != 0) Lines.line(x, y, x + width, y);
+        if ((dir & Align.left) != 0) Lines.line(x, y, x, y + height);
+        if ((dir & Align.top) != 0) Lines.line(x, y + height, x + width, y + height);
+    }
+
     public static void drawInput(float x, float y, float w, float h, Color c, boolean selected) {
         Color col = selected ? selectedColor : c1.set(c).lerp(Color.black, 0.3f);
         Lines.stroke(selected ? 2 : 1);
@@ -48,6 +68,10 @@ public class ScratchDraw {
         Lines.circle(x + halfH, y + halfH, halfH);
         Lines.circle(x + w - halfH, y + halfH, halfH);
         Draw.color(c);
+        if (w < h + halfH) {
+            Fill.circle(x + halfH, y + halfH, halfH - 1);
+            Fill.circle(x + w - halfH, y + halfH, halfH - 1);
+        }
         Fill.rect(x + w / 2, y + halfH, w - 2 * halfH, h);
         Draw.color(col);
         float ty = selected ? y : y + 0.5f;
@@ -79,12 +103,13 @@ public class ScratchDraw {
         Lines.line(x + halfH, y + h, x + w - halfH, y + h);
     }
 
-    public static void drawCond(float x, float y, float w, float h, Color c, boolean selected) {
+    public static void drawCond(float x, float y, float w, float h, Color c, boolean noBorder, boolean selected) {
         Draw.color(c);
         float halfH = h / 2;
         Fill.tri(x + halfH, y, x, y + halfH, x + halfH, y + h);
         Fill.tri(x + w - halfH, y, x + w, y + halfH, x + w - halfH, y + h);
         Fill.rect(x + w / 2, y + halfH, w - 2 * halfH, h);
+        if (noBorder) return;
         Draw.color(selected ? selectedColor : Tmp.c1.set(c).lerp(Color.black, 0.3f));
         Lines.stroke(selected ? 2 : 1);
         condPoint(x, y, w, h, halfH);
@@ -174,8 +199,8 @@ public class ScratchDraw {
             Draw.rect(circle, x + 31, y + 42, 64, 18);
         }
         Draw.color(c);
-        Draw.rect(circle, x + 31, y + 42, 62, 17);
-        ScratchDraw.drawBlockInner(x, y, w, 40);
+        Draw.rect(circle, x + 31, y + 41, 62, 17);
+        ScratchDraw.drawBlockInner(x, y, w, 41);
         if (!noBorder) {
             Draw.color(dark);
             Lines.stroke(1);
@@ -234,7 +259,7 @@ public class ScratchDraw {
     public static void drawFunctionBlock(float x, float y, float dx, float w, float dw, Color c, Color c2) {
         Draw.color(c);
         drawFlatInner(x, y, w, 56);
-        drawBlock(x + dx, y + 12, dw, 35, c2, true);
+        drawBlock(x + dx, y + 10, dw, 36, c2, true);
         Lines.stroke(1);
         Draw.color(Tmp.c1.set(c).lerp(Color.black, 0.3f));
         Lines.beginLine();

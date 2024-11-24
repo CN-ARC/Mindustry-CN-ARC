@@ -160,11 +160,6 @@ public class ForkBlock extends ScratchBlock {
             this.run = run;
         }
 
-
-        public void build(ForkBlock block) {
-            builder.get(block);
-        }
-
         @Override
         public void build(ScratchBlock block) {
             builder.get((ForkBlock) block);
