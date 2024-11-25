@@ -2,8 +2,11 @@ package mindustry.arcModule.ui.scratch.block;
 
 import arc.graphics.Color;
 import arc.scene.event.ClickListener;
+import arc.scene.ui.layout.Cell;
+import arc.scene.ui.layout.Table;
 import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchDraw;
+import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
 import mindustry.arcModule.ui.scratch.element.LabelElement;
 
@@ -11,12 +14,12 @@ public class VariableBlock extends ScratchBlock {
     public ClickListener click;
     private String var;
 
-    public VariableBlock(Color color, BlockInfo info) {
-        super(ScratchType.input, color, info);
+    public VariableBlock(ScratchType type, Color color, BlockInfo info) {
+        super(type, color, info);
     }
 
-    public VariableBlock(Color color, BlockInfo info, boolean dragEnabled) {
-        super(ScratchType.input, color, info, dragEnabled);
+    public VariableBlock(ScratchType type, Color color, BlockInfo info, boolean dragEnabled) {
+        super(type, color, info, dragEnabled);
     }
 
     public VariableBlock var(String name) {
@@ -36,18 +39,33 @@ public class VariableBlock extends ScratchBlock {
     }
 
     @Override
+    public void cell(Cell<? extends ScratchTable> c) {
+        c.minHeight(defHeight).pad(0, 5, 0, 5);
+    }
+
+    @Override
     public VariableBlock copy(boolean drag) {
-        VariableBlock sb = new VariableBlock(elemColor, info, drag).var(var);
+        VariableBlock sb = new VariableBlock(type, elemColor, info, drag).var(var);
         copyChildrenValue(sb, drag);
         return sb;
     }
 
     @Override
+    public void buildMenu(Table t) {
+    }
+
+    @Override
     public void drawBackground() {
         if (parent instanceof FunctionBlock) {
-            ScratchDraw.drawInputBorderless(x, y, width, height, elemColor);
+            switch (type) {
+                case input -> ScratchDraw.drawInputBorderless(x, y, width, height, elemColor);
+                case condition -> ScratchDraw.drawCond(x, y, width, height, elemColor, true, false);
+            }
         } else {
-            ScratchDraw.drawInput(x, y, width, height, elemColor, false);
+            switch (type) {
+                case input -> ScratchDraw.drawInput(x, y, width, height, elemColor, false);
+                case condition -> ScratchDraw.drawCond(x, y, width, height, elemColor, false, false);
+            }
         }
     }
 }

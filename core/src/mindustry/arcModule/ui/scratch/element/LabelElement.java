@@ -23,8 +23,12 @@ public class LabelElement extends ScratchElement {
     }
 
     @Override
-    public void cell(Cell<ScratchTable> c) {
-        if (parent.getChildren().size == 1) c.padLeft(addPadding * 3);
+    public void cell(Cell<? extends ScratchTable> c) {
+        if (parent.getChildren().size == 1) {
+            c.pad(0, addPadding * 3, 0, 1);
+        } else {
+            c.pad(0, 1, 0 ,1);
+        }
     }
 
     @Override

@@ -32,7 +32,7 @@ public class ForkFooter extends ForkComponent {
     }
 
     @Override
-    public void cell(Cell<ScratchTable> c) {
+    public void cell(Cell<? extends ScratchTable> c) {
         super.cell(c);
         c.minHeight(15);
         margin(0);

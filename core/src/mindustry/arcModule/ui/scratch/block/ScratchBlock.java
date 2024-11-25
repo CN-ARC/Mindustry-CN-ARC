@@ -42,11 +42,11 @@ public class ScratchBlock extends ScratchTable {
         init();
         info.build(this);
         if (dragEnabled) ScratchInput.addDraggingInput(this);
-        if (type == ScratchType.condition) margin(0, addPadding, 0, addPadding);
     }
 
     public void init() {
         minHeight = type == ScratchType.block ? 32 : 28;
+        if (type == ScratchType.condition) margin(0, addPadding, 0, addPadding);
     }
 
     public Cell<ScratchTable> label(String str) {

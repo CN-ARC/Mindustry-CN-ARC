@@ -28,18 +28,15 @@ import static arc.Core.input;
 import static mindustry.arcModule.ui.scratch.ScratchController.getLocalized;
 
 public class FunctionBlock extends ScratchBlock {
+    public static final String name = "function";
     private static final Color funcColor = new Color(Color.packRgba(255, 102, 128, 255));
     private static final Color innerColor = new Color(Color.packRgba(255, 77, 106, 255));
     private static final Vec2 v1 = new Vec2();
-    private static final String varName = "funcvar";
+    private static final String inputName = "funcvar", condName = inputName + 'c';
     private LabelElement define;
 
     public FunctionBlock(Color color) {
-        this(color, new FunctionInfo(b -> {
-            b.define = (LabelElement) b.labelBundle("define").padRight(addPadding * 6).get();
-            b.label("test").padRight(addPadding * 3);
-            b.inputVar("my variable");
-        }));
+        this(color, new FunctionInfo(b -> b.define = (LabelElement) b.labelBundle("define").padRight(addPadding * 6).get()));
     }
 
     public FunctionBlock(Color color, BlockInfo info) {
@@ -61,7 +58,11 @@ public class FunctionBlock extends ScratchBlock {
     }
 
     public void inputVar(String name) {
-        ScratchInput.addNewInput(add(((VariableBlock) ScratchController.newBlock(varName, false)).var(name)).get()).enabled = () -> getListeners().contains((Boolf<EventListener>) e -> e instanceof ScratchInput.ScratchDragListener);
+        ScratchInput.addNewInput(add(((VariableBlock) ScratchController.newBlock(inputName, false)).var(name)).self(c -> c.get().cell(c)).get()).enabled = () -> getListeners().contains((Boolf<EventListener>) e -> e instanceof ScratchInput.ScratchDragListener);
+    }
+
+    public void condVar(String name) {
+        ScratchInput.addNewInput(add(((VariableBlock) ScratchController.newBlock(condName, false)).var(name)).self(c -> c.get().cell(c)).get()).enabled = () -> getListeners().contains((Boolf<EventListener>) e -> e instanceof ScratchInput.ScratchDragListener);
     }
 
     @Override
@@ -98,11 +99,16 @@ public class FunctionBlock extends ScratchBlock {
         return sb;
     }
 
+    @Override
+    public void buildMenu(Table t) {
+    }
+
     public static void register() {
-        ScratchController.registerBlock(varName, new VariableBlock(funcColor, new BlockInfo()), false);
+        ScratchController.registerBlock(inputName, new VariableBlock(ScratchType.input, funcColor, new BlockInfo()), false);
+        ScratchController.registerBlock(condName, new VariableBlock(ScratchType.condition, funcColor, new BlockInfo()), false);
         ScratchController.category("function", funcColor);
         ScratchController.button("function.create", () -> ScratchController.ui.showWindow("button.function.create.name", new Table(MakeFunctionUI::build))).setStyle(ScratchStyles.flatText);
-        ScratchController.registerBlock("function", new FunctionBlock(funcColor));
+        ScratchController.registerBlock(name, new FunctionBlock(funcColor));
         ScratchController.registerBlock("return", new ScratchBlock(ScratchType.block, funcColor, new BlockInfo(b -> {
             b.labelBundle("return");
             b.input();
@@ -131,7 +137,12 @@ public class FunctionBlock extends ScratchBlock {
             fontColor = Color.white;
             focusedFontColor = Color.gray;
             focusedFont = Fonts.outline;
-        }};
+        }
+            @Override
+            public void build(PreviewField f, FunctionBlock b) {
+                b.label(f.getText());
+            }
+        };
         public static PreviewFieldStyle cond = new PreviewFieldStyle(Styles.defaultField) {{
             focusedBackground = Tex.whiteui;
             background = new BaseDrawable() {
@@ -142,7 +153,12 @@ public class FunctionBlock extends ScratchBlock {
             };
             font = Fonts.outline;
             fontColor = Color.gray;
-        }};
+        }
+            @Override
+            public void build(PreviewField f, FunctionBlock b) {
+                b.condVar(f.getText());
+            }
+        };
         public static PreviewFieldStyle input = new PreviewFieldStyle(Styles.defaultField) {{
             background = new BaseDrawable() {
                 @Override
@@ -152,20 +168,26 @@ public class FunctionBlock extends ScratchBlock {
             };
             font = Fonts.outline;
             fontColor = Color.gray;
-        }};
-        public static Drawable bg;
+        }
+            @Override
+            public void build(PreviewField f, FunctionBlock b) {
+                b.inputVar(f.getText());
+            }
+        };
+        public static Drawable bg = RFuncs.tint(new Color(Color.packRgba(230, 240, 255, 255)));
 
         public static void build(Table t) {
-            if (bg == null) bg = RFuncs.tint(new Color(Color.packRgba(230, 240, 255, 255)));
             t.table(t2 -> {
                 PreviewTable preview = new PreviewTable();
                 t2.setBackground(Tex.whiteui);
                 t2.margin(10);
-                t2.pane(Styles.noBarPane, new Table(t3 -> {
+                t2.table(t3 -> {
                     t3.setBackground(bg);
-                    t3.margin(100);
-                    t3.add(preview);
-                })).name("pane").fillX().height(200).row();
+                    t3.pane(Styles.noBarPane, new Table(t4 -> {
+                        t4.margin(100);
+                        t4.add(preview);
+                    })).name("pane").grow();
+                }).fillX().height(200).row();
                 t2.table(t3 -> {
                     t3.defaults().pad(10);
                     int all = 0x7fffffff;
@@ -211,10 +233,24 @@ public class FunctionBlock extends ScratchBlock {
                 t2.table(t3 -> {
                     t3.right();
                     t3.defaults().pad(3);
-                    t3.button("取消", ScratchStyles.flatText, () -> {}).size(64, 48);
-                    t3.button("取消", ScratchStyles.flatText, () -> {}).size(64, 48);
+                    t3.button("取消", ScratchStyles.flatText, () -> t.parent.find("close").fireClick()).size(64, 48);
+                    t3.button("确定", ScratchStyles.flatText, () -> {
+                        t.parent.find("close").fireClick();
+                        createFunction(preview);
+                    }).size(64, 48);
                 }).margin(10f).fillX();
             }).width(620);
+        }
+
+        public static void createFunction(PreviewTable p) {
+            FunctionBlock b = (FunctionBlock) ScratchController.newBlock(name);
+            p.getChildren().each(e -> {
+                PreviewField f = (PreviewField) e;
+                f.style.build(f, b);
+            });
+            if (!(b.getChildren().get(1) instanceof LabelElement)) b.getCell(b.getChildren().get(0)).padRight(addPadding * 3 + 35);
+            ScratchController.ui.addBlock(b);
+            b.setPosition(100, 9900);
         }
 
         public static class PreviewTable extends Table {
@@ -273,12 +309,14 @@ public class FunctionBlock extends ScratchBlock {
             }
         }
 
-        public static class PreviewFieldStyle extends TextField.TextFieldStyle {
+        public static abstract class PreviewFieldStyle extends TextField.TextFieldStyle {
             public Font focusedFont;
 
             public PreviewFieldStyle(TextField.TextFieldStyle style) {
                 super(style);
             }
+
+            abstract public void build(PreviewField f, FunctionBlock b);
         }
 
         public static class TrashImage extends Image {

@@ -62,7 +62,7 @@ public class InputElement extends ScratchElement implements ScratchBlock.HoldInp
     }
 
     @Override
-    public void cell(Cell<ScratchTable> c) {
+    public void cell(Cell<? extends ScratchTable> c) {
         c.pad(addPadding, 5, addPadding, 5);
     }
 

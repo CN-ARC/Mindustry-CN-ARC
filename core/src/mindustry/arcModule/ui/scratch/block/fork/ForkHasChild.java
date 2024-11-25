@@ -66,7 +66,7 @@ abstract public class ForkHasChild extends ForkComponent {
     }
 
     @Override
-    public void cell(Cell<ScratchTable> c) {
+    public void cell(Cell<? extends ScratchTable> c) {
         super.cell(c);
         c.marginTop(0).marginBottom(0);
     }

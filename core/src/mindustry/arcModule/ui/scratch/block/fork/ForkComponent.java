@@ -3,7 +3,6 @@ package mindustry.arcModule.ui.scratch.block.fork;
 import arc.graphics.Color;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Cell;
-import arc.util.Align;
 import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
@@ -33,7 +32,7 @@ public abstract class ForkComponent extends ScratchBlock {
     }
 
     @Override
-    public void cell(Cell<ScratchTable> c) {
+    public void cell(Cell<? extends ScratchTable> c) {
         super.cell(c);
         c.pad(0).left().growX().row();
     }

@@ -56,7 +56,7 @@ public abstract class ScratchTable extends Table {
         return false;
     }
 
-    public void cell(Cell<ScratchTable> c) {
+    public void cell(Cell<? extends ScratchTable> c) {
         c.minWidth(defWidth).minHeight(defHeight).pad(addPadding);
     }
 

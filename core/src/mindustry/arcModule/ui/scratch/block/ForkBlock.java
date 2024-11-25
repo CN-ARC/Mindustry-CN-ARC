@@ -100,7 +100,7 @@ public class ForkBlock extends ScratchBlock {
     }
 
     @Override
-    public void cell(Cell<ScratchTable> c) {
+    public void cell(Cell<? extends ScratchTable> c) {
         super.cell(c);
         c.pad(0);
     }

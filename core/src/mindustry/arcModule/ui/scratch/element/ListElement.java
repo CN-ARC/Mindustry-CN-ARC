@@ -145,7 +145,7 @@ public class ListElement extends ScratchElement implements ScratchBlock.HoldInpu
     }
 
     @Override
-    public void cell(Cell<ScratchTable> c) {
+    public void cell(Cell<? extends ScratchTable> c) {
         super.cell(c);
         c.minSize(Float.NEGATIVE_INFINITY);
         elemColor = getBlock().elemColor.cpy().lerp(Color.black, 0.3f);

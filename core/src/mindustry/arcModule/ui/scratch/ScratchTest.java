@@ -2,7 +2,6 @@ package mindustry.arcModule.ui.scratch;
 
 import arc.graphics.Color;
 import mindustry.arcModule.ui.scratch.block.FunctionBlock;
-import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 import mindustry.arcModule.ui.scratch.block.VariableBlock;
 import mindustry.arcModule.ui.scratch.blocks.ARCBlocks;
 import mindustry.arcModule.ui.scratch.blocks.ControlBlocks;
@@ -23,7 +22,7 @@ public class ScratchTest {
 
         Color c = new Color(Color.packRgba(255, 140, 26, 255));
         ScratchController.category("variable", c);
-        ScratchController.registerBlock("variable", new VariableBlock(c, new BlockInfo()));
+        ScratchController.registerBlock("variable", new VariableBlock(ScratchType.input, c, new BlockInfo()));
 
         FunctionBlock.register();
 

@@ -24,7 +24,7 @@ public class CondElement extends ScratchElement {
     }
 
     @Override
-    public void cell(Cell<ScratchTable> c) {
+    public void cell(Cell<? extends ScratchTable> c) {
         c.pad(addPadding, 5, addPadding, 5).minSize(40, 23);
         elemColor = getBlock().elemColor.cpy().lerp(Color.black, 0.3f);
     }
