@@ -6,6 +6,7 @@ import arc.scene.ui.TextButton;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.I18NBundle;
+import mindustry.arcModule.ui.scratch.block.FunctionBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 import java.util.Locale;
@@ -136,5 +137,9 @@ public class ScratchController {
 
     public static void category(String name, Color color) {
         ui.addCategory(getLocalized("category." + name + ".name"), color);
+    }
+
+    public static void registerFunction(FunctionBlock f) {
+        nowContext.registerFunction(f);
     }
 }

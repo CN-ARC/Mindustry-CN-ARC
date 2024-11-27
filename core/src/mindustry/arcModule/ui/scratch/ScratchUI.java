@@ -54,6 +54,8 @@ public class ScratchUI extends Table {
     private static final Vec2 v1 = new Vec2(), v2 = new Vec2();
     private static final Color hoverColor = new Color(Color.packRgba(76, 151, 255, 255));
     private static final Color themeColor = new Color(Color.packRgba(133, 92, 214, 255));
+    private static final ByteArrayOutputStream tmp = new ByteArrayOutputStream();
+    private static final Writes tmpWrites = new Writes(new DataOutputStream(tmp));
     private static byte[] tmpData;
 
     public ScratchUI() {
@@ -125,6 +127,11 @@ public class ScratchUI extends Table {
     public void read(Reads r) {
         int size = r.i();
         for (int i = 0; i < size; i++) {
+            r.str();
+            r.skip(r.i());
+        }
+        size = r.i();
+        for (int i = 0; i < size; i++) {
             ScratchBlock sb = ScratchController.newBlock(r.s());
             sb.read(r);
             addBlock(sb);
@@ -132,6 +139,18 @@ public class ScratchUI extends Table {
     }
 
     public void write(Writes w) {
+        Seq<ScratchBlock> all = types.getChildren().select(e -> e instanceof ScratchBlock).map(e -> (ScratchBlock) e);
+        w.i(all.size);
+        tmp.reset();
+        Seq<String> keys = ScratchController.map.keys().toSeq();
+        for (ScratchBlock sb : all) {
+            if (sb.info.id == -1) throw new IllegalStateException("ID is unset! block: " + sb.getClass().getSimpleName());
+            w.str(keys.get(sb.info.id));
+            sb.writeStatic(tmpWrites);
+            w.i(tmp.size());
+            w.b(tmp.toByteArray());
+            tmp.reset();
+        }
         Seq<ScratchBlock> blocks = group.getChildren().select(e -> e instanceof ScratchBlock).map(e -> (ScratchBlock) e);
         w.i(blocks.size);
         for (ScratchBlock sb : blocks) {

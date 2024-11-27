@@ -39,9 +39,13 @@ public class ScratchBlock extends ScratchTable {
         this.type = type;
         elemColor = color;
         this.info = info;
-        init();
+        construct();
         info.build(this);
         if (dragEnabled) ScratchInput.addDraggingInput(this);
+    }
+
+    public void construct() {
+        init();
     }
 
     public void init() {
@@ -388,6 +392,13 @@ public class ScratchBlock extends ScratchTable {
     public void addChild(Element actor) {
         super.addChild(actor);
         elements.add(actor);
+    }
+
+    @Override
+    public boolean removeChild(Element element, boolean unfocus) {
+        boolean success = super.removeChild(element, unfocus);
+        if (success) elements.remove(element);
+        return success;
     }
 
     @Override

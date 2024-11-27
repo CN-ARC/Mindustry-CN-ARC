@@ -21,7 +21,7 @@ public abstract class ScratchTable extends Table {
     public ScratchBlock child = null;
     public Color elemColor = new Color(1, 1, 1, 1);
 
-    {
+    public ScratchTable() {
         touchable = Touchable.enabled;
         left();
     }
@@ -114,6 +114,14 @@ public abstract class ScratchTable extends Table {
     public void toFront() {
         super.toFront();
         if (parent != null) parent.toFront();
+    }
+
+    public void readStatic(Reads r) {
+
+    }
+
+    public void writeStatic(Writes w) {
+
     }
 
     abstract public boolean acceptLink(ScratchBlock block);

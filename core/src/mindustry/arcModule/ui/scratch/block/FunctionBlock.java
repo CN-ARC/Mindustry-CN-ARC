@@ -16,6 +16,8 @@ import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Align;
+import arc.util.io.Reads;
+import arc.util.io.Writes;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.element.LabelElement;
@@ -34,6 +36,7 @@ public class FunctionBlock extends ScratchBlock {
     private static final Vec2 v1 = new Vec2();
     private static final String inputName = "funcvar", condName = inputName + 'c';
     private LabelElement define;
+    private int id = -1;
 
     public FunctionBlock(Color color) {
         this(color, new FunctionInfo(b -> b.define = (LabelElement) b.labelBundle("define").padRight(addPadding * 6).get()));
@@ -57,12 +60,26 @@ public class FunctionBlock extends ScratchBlock {
         };
     }
 
+    private FuncVarBlock addVar(String name) {
+        FuncVarBlock b = (FuncVarBlock) ScratchController.newBlock(name, false);
+        b.func(this);
+        b.cell(add(b));
+        ScratchInput.addNewInput(b).enabled = () -> getListeners().contains((Boolf<EventListener>) e -> e instanceof ScratchInput.ScratchDragListener);
+        return b;
+    }
+
     public void inputVar(String name) {
-        ScratchInput.addNewInput(add(((VariableBlock) ScratchController.newBlock(inputName, false)).var(name)).self(c -> c.get().cell(c)).get()).enabled = () -> getListeners().contains((Boolf<EventListener>) e -> e instanceof ScratchInput.ScratchDragListener);
+        addVar(inputName).var(name);
     }
 
     public void condVar(String name) {
-        ScratchInput.addNewInput(add(((VariableBlock) ScratchController.newBlock(condName, false)).var(name)).self(c -> c.get().cell(c)).get()).enabled = () -> getListeners().contains((Boolf<EventListener>) e -> e instanceof ScratchInput.ScratchDragListener);
+        addVar(condName).var(name);
+    }
+
+    public FunctionBlock id(int id) {
+        if (this.id != -1) throw new IllegalStateException("ID has already been set: old: " + this.id + ", new: " + id);
+        this.id = id;
+        return this;
     }
 
     @Override
@@ -103,9 +120,45 @@ public class FunctionBlock extends ScratchBlock {
     public void buildMenu(Table t) {
     }
 
+    @Override
+    public void readElements(Reads r) {
+        int size = r.b();
+        for (int i = 0; i < size; ++i) {
+            switch (r.b()) {
+                case 0 -> label(r.str());
+                case 1 -> {
+                    switch (ScratchType.all[r.b()]) {
+                        case input -> addVar(inputName).read(r);
+                        case condition -> addVar(condName).read(r);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void writeElements(Writes w) {
+        w.b(elements.size - 1);
+        for (int i = 1; i < elements.size; ++i) {
+            Element e = elements.get(i);
+            if (e.getClass() == LabelElement.class) {
+                LabelElement el = (LabelElement) e;
+                w.b(0);
+                w.str(el.value);
+            } else if (e.getClass() == FuncVarBlock.class) {
+                FuncVarBlock b = (FuncVarBlock) e;
+                w.b(1);
+                w.b(b.type.ordinal());
+                b.write(w);
+            } else {
+                throw new IllegalArgumentException("Unknown element type: " + e.getClass());
+            }
+        }
+    }
+
     public static void register() {
-        ScratchController.registerBlock(inputName, new VariableBlock(ScratchType.input, funcColor, new BlockInfo()), false);
-        ScratchController.registerBlock(condName, new VariableBlock(ScratchType.condition, funcColor, new BlockInfo()), false);
+        ScratchController.registerBlock(inputName, new FuncVarBlock(ScratchType.input, funcColor, new BlockInfo()), false);
+        ScratchController.registerBlock(condName, new FuncVarBlock(ScratchType.condition, funcColor, new BlockInfo()), false);
         ScratchController.category("function", funcColor);
         ScratchController.button("function.create", () -> ScratchController.ui.showWindow("button.function.create.name", new Table(MakeFunctionUI::build))).setStyle(ScratchStyles.flatText);
         ScratchController.registerBlock(name, new FunctionBlock(funcColor));
@@ -130,45 +183,114 @@ public class FunctionBlock extends ScratchBlock {
         }
     }
 
-    public static class MakeFunctionUI {
-        public static PreviewFieldStyle label = new PreviewFieldStyle(Styles.defaultField) {{
-            focusedBackground = Tex.whiteui;
-            background = RFuncs.tint(innerColor);
-            fontColor = Color.white;
-            focusedFontColor = Color.gray;
-            focusedFont = Fonts.outline;
+    public static class FuncVarBlock extends VariableBlock {
+        public FunctionBlock function;
+
+        public FuncVarBlock(ScratchType type, Color color, BlockInfo info) {
+            super(type, color, info);
         }
+
+        public FuncVarBlock(ScratchType type, Color color, BlockInfo info, boolean dragEnabled) {
+            super(type, color, info, dragEnabled);
+        }
+
+        public FuncVarBlock func(FunctionBlock function) {
+            this.function = function;
+            return this;
+        }
+
+        @Override
+        public void read(Reads r) {
+            super.read(r);
+            r.i();
+            var(r.str());
+        }
+
+        @Override
+        public void write(Writes w) {
+            if (function == null) throw new IllegalStateException("function is null");
+            super.write(w);
+            w.i(function.id);
+            w.str(var);
+        }
+
+        @Override
+        public FuncVarBlock var(String name) {
+            super.var(name);
+            return this;
+        }
+
+        @Override
+        public FuncVarBlock copy(boolean drag) {
+            FuncVarBlock sb = new FuncVarBlock(type, elemColor, info, drag).func(function).var(var);
+            copyChildrenValue(sb, drag);
+            return sb;
+        }
+
+        @Override
+        public void copyChildrenValue(ScratchBlock target, boolean drag) {
+            super.copyChildrenValue(target, drag);
+            ((FuncVarBlock) target).function = function;
+        }
+
+        @Override
+        public void drawBackground() {
+            if (parent instanceof FunctionBlock) {
+                switch (type) {
+                    case input -> ScratchDraw.drawInputBorderless(x, y, width, height, elemColor);
+                    case condition -> ScratchDraw.drawCond(x, y, width, height, elemColor, true, false);
+                }
+                return;
+            }
+            super.drawBackground();
+        }
+    }
+
+    public static class MakeFunctionUI {
+        public static PreviewFieldStyle label = new PreviewFieldStyle(Styles.defaultField) {
+            {
+                focusedBackground = Tex.whiteui;
+                background = RFuncs.tint(innerColor);
+                fontColor = Color.white;
+                focusedFontColor = Color.gray;
+                focusedFont = Fonts.outline;
+            }
+
             @Override
             public void build(PreviewField f, FunctionBlock b) {
                 b.label(f.getText());
             }
         };
-        public static PreviewFieldStyle cond = new PreviewFieldStyle(Styles.defaultField) {{
-            focusedBackground = Tex.whiteui;
-            background = new BaseDrawable() {
-                @Override
-                public void draw(float x, float y, float width, float height) {
-                    ScratchDraw.drawCond(x, y, width, height, Color.white, true, false);
-                }
-            };
-            font = Fonts.outline;
-            fontColor = Color.gray;
-        }
+        public static PreviewFieldStyle cond = new PreviewFieldStyle(Styles.defaultField) {
+            {
+                focusedBackground = Tex.whiteui;
+                background = new BaseDrawable() {
+                    @Override
+                    public void draw(float x, float y, float width, float height) {
+                        ScratchDraw.drawCond(x, y, width, height, Color.white, true, false);
+                    }
+                };
+                font = Fonts.outline;
+                fontColor = Color.gray;
+            }
+
             @Override
             public void build(PreviewField f, FunctionBlock b) {
                 b.condVar(f.getText());
             }
         };
-        public static PreviewFieldStyle input = new PreviewFieldStyle(Styles.defaultField) {{
-            background = new BaseDrawable() {
-                @Override
-                public void draw(float x, float y, float width, float height) {
-                    ScratchDraw.drawInputBorderless(x, y, width, height, Color.white);
-                }
-            };
-            font = Fonts.outline;
-            fontColor = Color.gray;
-        }
+        public static PreviewFieldStyle input = new PreviewFieldStyle(Styles.defaultField) {
+            {
+                background = new BaseDrawable() {
+                    @Override
+                    public void draw(float x, float y, float width, float height) {
+                        ScratchDraw.drawInputBorderless(x, y, width, height, Color.white);
+                    }
+                };
+                font = Fonts.outline;
+                fontColor = Color.gray;
+            }
+
             @Override
             public void build(PreviewField f, FunctionBlock b) {
                 b.inputVar(f.getText());
@@ -249,6 +371,7 @@ public class FunctionBlock extends ScratchBlock {
                 f.style.build(f, b);
             });
             if (!(b.getChildren().get(1) instanceof LabelElement)) b.getCell(b.getChildren().get(0)).padRight(addPadding * 3 + 35);
+            ScratchController.registerFunction(b);
             ScratchController.ui.addBlock(b);
             b.setPosition(100, 9900);
         }
@@ -304,7 +427,8 @@ public class FunctionBlock extends ScratchBlock {
 
             @Override
             public void draw() {
-                if (style.focusedFont != null) style.font = getScene().getKeyboardFocus() == this ? style.focusedFont : Fonts.def;
+                if (style.focusedFont != null)
+                    style.font = getScene().getKeyboardFocus() == this ? style.focusedFont : Fonts.def;
                 super.draw();
             }
         }
@@ -321,6 +445,7 @@ public class FunctionBlock extends ScratchBlock {
 
         public static class TrashImage extends Image {
             public static final Color c = new Color(Color.packRgba(255, 102, 26, 255));
+
             public TrashImage(PreviewField target) {
                 super(Icon.trashSmall);
                 color.set(c);

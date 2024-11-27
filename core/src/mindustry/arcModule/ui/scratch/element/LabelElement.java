@@ -11,8 +11,10 @@ import mindustry.arcModule.ui.scratch.ScratchUI;
 
 public class LabelElement extends ScratchElement {
     public final Label label;
+    public final String value;
 
     public LabelElement(String str) {
+        value = str;
         add(label = new Label(str));
         label.setFontScale(ScratchUI.textScale);
         hittable = false;

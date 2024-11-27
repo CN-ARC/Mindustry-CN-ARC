@@ -4,6 +4,8 @@ import arc.graphics.Color;
 import arc.scene.event.ClickListener;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
+import arc.util.io.Reads;
+import arc.util.io.Writes;
 import mindustry.arcModule.ui.scratch.BlockInfo;
 import mindustry.arcModule.ui.scratch.ScratchDraw;
 import mindustry.arcModule.ui.scratch.ScratchTable;
@@ -12,7 +14,7 @@ import mindustry.arcModule.ui.scratch.element.LabelElement;
 
 public class VariableBlock extends ScratchBlock {
     public ClickListener click;
-    private String var;
+    protected String var;
 
     public VariableBlock(ScratchType type, Color color, BlockInfo info) {
         super(type, color, info);
@@ -29,6 +31,11 @@ public class VariableBlock extends ScratchBlock {
             ((LabelElement) elements.get(0)).label.setText(var = name);
         }
         return this;
+    }
+
+    @Override
+    public void copyChildrenValue(ScratchBlock target, boolean drag) {
+        ((VariableBlock) target).var = var;
     }
 
     @Override
@@ -55,17 +62,20 @@ public class VariableBlock extends ScratchBlock {
     }
 
     @Override
+    public void readElements(Reads r) {
+        super.readElements(r);
+    }
+
+    @Override
+    public void writeElements(Writes w) {
+        super.writeElements(w);
+    }
+
+    @Override
     public void drawBackground() {
-        if (parent instanceof FunctionBlock) {
-            switch (type) {
-                case input -> ScratchDraw.drawInputBorderless(x, y, width, height, elemColor);
-                case condition -> ScratchDraw.drawCond(x, y, width, height, elemColor, true, false);
-            }
-        } else {
-            switch (type) {
-                case input -> ScratchDraw.drawInput(x, y, width, height, elemColor, false);
-                case condition -> ScratchDraw.drawCond(x, y, width, height, elemColor, false, false);
-            }
+        switch (type) {
+            case input -> ScratchDraw.drawInput(x, y, width, height, elemColor, false);
+            case condition -> ScratchDraw.drawCond(x, y, width, height, elemColor, false, false);
         }
     }
 }
