@@ -114,10 +114,10 @@ public class ScratchUI extends Table {
             t.bottom();
             t.button(getLocalized("button.save.name"), ScratchStyles.flatText, () -> {
                 ByteArrayOutputStream o = new ByteArrayOutputStream();
-                write(new Writes(new DataOutputStream(o)));
+                ScratchController.write(new Writes(new DataOutputStream(o)));
                 tmpData = o.toByteArray();
             });
-            t.button(getLocalized("button.load.name"), ScratchStyles.flatText, () -> read(new Reads(new DataInputStream(new ByteArrayInputStream(tmpData))))).disabled(b -> tmpData == null);
+            t.button(getLocalized("button.load.name"), ScratchStyles.flatText, () -> ScratchController.read(new Reads(new DataInputStream(new ByteArrayInputStream(tmpData))))).disabled(b -> tmpData == null);
             t.button(getLocalized("button.clear.name"), ScratchStyles.flatText, this::clearBlocks);
             t.button(getLocalized("button.reload.name"), ScratchStyles.flatText, ScratchController::reload);
         }));

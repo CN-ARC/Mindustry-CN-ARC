@@ -6,6 +6,8 @@ import arc.scene.ui.TextButton;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.I18NBundle;
+import arc.util.io.Reads;
+import arc.util.io.Writes;
 import mindustry.arcModule.ui.scratch.block.FunctionBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
@@ -105,6 +107,7 @@ public class ScratchController {
         map.clear();
         list.clear();
         ui.clearData();
+        nowContext.reset();
     }
 
     public static ScratchBlock getBlock(String name) {
@@ -139,7 +142,27 @@ public class ScratchController {
         ui.addCategory(getLocalized("category." + name + ".name"), color);
     }
 
+    public static void write(Writes w) {
+        nowContext.write(w);
+    }
+
+    public static void read(Reads r) {
+        nowContext.read(r);
+    }
+
     public static void registerFunction(FunctionBlock f) {
         nowContext.registerFunction(f);
+    }
+
+    public static FunctionBlock getFunction(int id) {
+        return nowContext.functions.get(id);
+    }
+
+    public static State getState() {
+        return nowContext.state;
+    }
+
+    public enum State {
+        saving, loading, idle, running
     }
 }

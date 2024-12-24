@@ -16,7 +16,6 @@ import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 public abstract class ScratchTable extends Table {
     public static final float defWidth = 50, defHeight = 30, addPadding = 3;
     protected static final float padValue = 25;
-    protected final ObjectMap<Enum<ScratchEvents>, Seq<Cons<ScratchTable>>> events = new ObjectMap<>();
     public boolean selected = false, hittable = true;
     public ScratchBlock child = null;
     public Color elemColor = new Color(1, 1, 1, 1);
@@ -24,22 +23,6 @@ public abstract class ScratchTable extends Table {
     public ScratchTable() {
         touchable = Touchable.enabled;
         left();
-    }
-
-    public void addListener(Enum<ScratchEvents> type, Cons<ScratchTable> listener) {
-        events.get(type, () -> new Seq<>(Cons.class)).add(listener);
-    }
-
-    public void fire(Enum<ScratchEvents> type) {
-        Seq<Cons<ScratchTable>> listeners = events.get(type);
-
-        if (listeners != null) {
-            int len = listeners.size;
-            Cons<ScratchTable>[] items = listeners.items;
-            for (int i = 0; i < len; i++) {
-                items[i].get(this);
-            }
-        }
     }
 
     public void asChild(ScratchTable parent) {

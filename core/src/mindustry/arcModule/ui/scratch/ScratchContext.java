@@ -1,6 +1,5 @@
 package mindustry.arcModule.ui.scratch;
 
-import arc.graphics.Color;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.io.Reads;
@@ -16,21 +15,38 @@ public class ScratchContext {
     public ObjectMap<String, Integer> map = new ObjectMap<>();
     public Seq<ScratchBlock> list = new Seq<>();
     public Seq<FunctionBlock> functions = new Seq<>();
+    public ScratchController.State state = ScratchController.State.idle;
 
-    public ScratchContext() {
-        functions.add(new FunctionBlock(Color.white));
+    public void save(Writes w) {
+        state = ScratchController.State.saving;
+        ScratchEvents.fire(ScratchEvents.Event.saveBegin);
+        write(w);
+        state = ScratchController.State.idle;
+        ScratchEvents.fire(ScratchEvents.Event.saveEnd);
+    }
+
+    public void load(Reads r) {
+        state = ScratchController.State.loading;
+        ScratchEvents.fire(ScratchEvents.Event.loadBegin);
+        read(r);
+        state = ScratchController.State.idle;
+        ScratchEvents.fire(ScratchEvents.Event.loadEnd);
     }
 
     public void write(Writes w) {
-
+        ui.write(w);
     }
 
     public void read(Reads r) {
-
+        ui.read(r);
     }
 
     public void registerFunction(FunctionBlock f) {
         functions.add(f.id(functions.size));
+    }
+
+    public void reset() {
+        functions.clear();
     }
 
     public static ScratchContext createContext() {

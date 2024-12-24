@@ -28,6 +28,7 @@ import mindustry.ui.Styles;
 
 import static arc.Core.input;
 import static mindustry.arcModule.ui.scratch.ScratchController.getLocalized;
+import static mindustry.arcModule.ui.scratch.ScratchController.getState;
 
 public class FunctionBlock extends ScratchBlock {
     public static final String name = "function";
@@ -121,6 +122,19 @@ public class FunctionBlock extends ScratchBlock {
     }
 
     @Override
+    public void read(Reads r) {
+        super.read(r);
+        id = r.i();
+        if (getState() == ScratchController.State.loading) ScratchController.nowContext.functions.add(this);
+    }
+
+    @Override
+    public void write(Writes w) {
+        super.write(w);
+        w.i(id);
+    }
+
+    @Override
     public void readElements(Reads r) {
         int size = r.b();
         for (int i = 0; i < size; ++i) {
@@ -184,7 +198,13 @@ public class FunctionBlock extends ScratchBlock {
     }
 
     public static class FuncVarBlock extends VariableBlock {
+        private static final Seq<FuncVarBlock> neededLink = new Seq<>();
         public FunctionBlock function;
+        private int funcID = -1;
+
+        static {
+            ScratchEvents.on(ScratchEvents.Event.loadEnd, FuncVarBlock::map);
+        }
 
         public FuncVarBlock(ScratchType type, Color color, BlockInfo info) {
             super(type, color, info);
@@ -202,8 +222,9 @@ public class FunctionBlock extends ScratchBlock {
         @Override
         public void read(Reads r) {
             super.read(r);
-            r.i();
+            funcID = r.i();
             var(r.str());
+            link();
         }
 
         @Override
@@ -243,6 +264,19 @@ public class FunctionBlock extends ScratchBlock {
                 return;
             }
             super.drawBackground();
+        }
+
+        public void link() {
+            if (ScratchController.getState() == ScratchController.State.loading) {
+                neededLink.add(this);
+            } else {
+                function = ScratchController.getFunction(funcID);
+            }
+        }
+
+        public static void map() {
+            neededLink.each(b -> b.function = ScratchController.getFunction(b.funcID));
+            neededLink.clear();
         }
     }
 
