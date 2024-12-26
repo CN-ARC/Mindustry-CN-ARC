@@ -3,6 +3,7 @@ package mindustry.arcModule.ui.scratch;
 import arc.Core;
 import arc.func.Boolp;
 import arc.input.KeyCode;
+import arc.math.Mathf;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.event.HandCursorListener;
@@ -268,7 +269,7 @@ public class ScratchInput {
                 ScratchBlock b = target.copy();
                 ui.overlay.addChild(b);
                 Vec2 v = ScratchUI.oldPosToNewPos(ui.stack, target, ui.overlay);
-                b.setPosition(v.x, v.y);
+                b.setPosition(Mathf.round(v.x), Mathf.round(v.y));
                 ScratchDragListener sl = (ScratchDragListener) b.getListeners().find(l -> l instanceof ScratchDragListener);
                 sl.touchDown(event, x, y, pointer, KeyCode.mouseLeft);
                 sl.touchDragged(event, x, y, pointer);

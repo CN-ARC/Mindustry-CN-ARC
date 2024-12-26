@@ -124,6 +124,12 @@ public class ScratchUI extends Table {
         add(stack).name("container").grow();
     }
 
+    public void destroy() {
+        remove();
+        clearData();
+        clear();
+    }
+
     public void read(Reads r) {
         int size = r.i();
         for (int i = 0; i < size; i++) {

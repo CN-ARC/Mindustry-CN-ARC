@@ -32,8 +32,17 @@ public class ScratchController {
     }
 
     public static void reload() {
-        ui.remove();
+        destroy();
         ScratchTest.test();
+    }
+
+    public static void destroy() {
+        ui.destroy();
+        runner.destroy();
+        selected = dragging = null;
+        map.clear();
+        list.clear();
+        setContext(null);
     }
 
     public static void loadBundle() {

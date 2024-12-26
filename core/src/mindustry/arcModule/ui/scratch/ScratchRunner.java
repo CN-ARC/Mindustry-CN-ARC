@@ -19,6 +19,14 @@ public class ScratchRunner {
         executor.load(asm);
     }
 
+    public void destroy() {
+        tasks.clear();
+        will.clear();
+        task = null;
+        executor = null;
+        asm = null;
+    }
+
     public void add(Task r) {
         will.add(r);
     }
