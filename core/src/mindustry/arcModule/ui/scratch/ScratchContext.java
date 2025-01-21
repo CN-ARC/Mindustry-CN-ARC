@@ -4,7 +4,7 @@ import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
-import mindustry.arcModule.ui.scratch.block.FunctionBlock;
+import mindustry.arcModule.ui.scratch.block.DefineBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 public class ScratchContext {
@@ -14,7 +14,7 @@ public class ScratchContext {
     public ScratchBlock dragging;
     public ObjectMap<String, Integer> map = new ObjectMap<>();
     public Seq<ScratchBlock> list = new Seq<>();
-    public Seq<FunctionBlock> functions = new Seq<>();
+    public Seq<DefineBlock> functions = new Seq<>();
     public ScratchController.State state = ScratchController.State.idle;
 
     public void save(Writes w) {
@@ -41,7 +41,7 @@ public class ScratchContext {
         ui.read(r);
     }
 
-    public void registerFunction(FunctionBlock f) {
+    public void registerFunction(DefineBlock f) {
         functions.add(f.id(functions.size));
     }
 

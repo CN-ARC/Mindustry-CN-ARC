@@ -1,7 +1,7 @@
 package mindustry.arcModule.ui.scratch;
 
 import arc.graphics.Color;
-import mindustry.arcModule.ui.scratch.block.FunctionBlock;
+import mindustry.arcModule.ui.scratch.block.DefineBlock;
 import mindustry.arcModule.ui.scratch.block.VariableBlock;
 import mindustry.arcModule.ui.scratch.blocks.ARCBlocks;
 import mindustry.arcModule.ui.scratch.blocks.ControlBlocks;
@@ -24,7 +24,7 @@ public class ScratchTest {
         ScratchController.category("variable", c);
         ScratchController.registerBlock("variable", new VariableBlock(ScratchType.input, c, new BlockInfo()));
 
-        FunctionBlock.register();
+        DefineBlock.register();
 
         /*for (int x = 0; x < 10000; x += 100) {
             for (int y = 0; y < 10000; y += 100) {

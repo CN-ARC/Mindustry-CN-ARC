@@ -8,7 +8,7 @@ import arc.struct.Seq;
 import arc.util.I18NBundle;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
-import mindustry.arcModule.ui.scratch.block.FunctionBlock;
+import mindustry.arcModule.ui.scratch.block.DefineBlock;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
 import java.util.Locale;
@@ -93,11 +93,12 @@ public class ScratchController {
     }
 
     public static void registerBlock(String name, ScratchBlock e, boolean show) {
+        if (map.containsKey(name)) throw new IllegalArgumentException("block name \"" + name + "\" already registered!");
         if (!list.contains(e)) {
             int id = list.add(e).size - 1;
             map.put(name, id);
-            if (show) ui.registerBlock(e);
             ScratchInput.addNewInput(e);
+            if (show) ui.registerBlock(e);
             e.info.setID((short) id);
         }
     }
@@ -127,8 +128,9 @@ public class ScratchController {
         return list.get(i);
     }
 
-    public static ScratchBlock newBlock(String name) {
-        return newBlock(name, true);
+    @SuppressWarnings("unchecked")
+    public static <T extends ScratchBlock> T newBlock(String name) {
+        return (T) newBlock(name, true);
     }
 
     public static ScratchBlock newBlock(String name, boolean drag) {
@@ -159,11 +161,11 @@ public class ScratchController {
         nowContext.read(r);
     }
 
-    public static void registerFunction(FunctionBlock f) {
+    public static void registerFunction(DefineBlock f) {
         nowContext.registerFunction(f);
     }
 
-    public static FunctionBlock getFunction(int id) {
+    public static DefineBlock getFunction(int id) {
         return nowContext.functions.get(id);
     }
 

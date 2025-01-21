@@ -389,7 +389,7 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
         }
 
         public static LogicBlock from(LStatement l) {
-            LogicBlock block = (LogicBlock) ScratchController.newBlock(l.name());
+            LogicBlock block = ScratchController.newBlock(l.name());
             block.build(l);
             return block;
         }

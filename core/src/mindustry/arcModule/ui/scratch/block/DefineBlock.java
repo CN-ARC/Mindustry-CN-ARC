@@ -30,8 +30,8 @@ import static arc.Core.input;
 import static mindustry.arcModule.ui.scratch.ScratchController.getLocalized;
 import static mindustry.arcModule.ui.scratch.ScratchController.getState;
 
-public class FunctionBlock extends ScratchBlock {
-    public static final String name = "function";
+public class DefineBlock extends ScratchBlock {
+    public static final String defineName = "define", functionName = "function";
     private static final Color funcColor = new Color(Color.packRgba(255, 102, 128, 255));
     private static final Color innerColor = new Color(Color.packRgba(255, 77, 106, 255));
     private static final Vec2 v1 = new Vec2();
@@ -39,15 +39,15 @@ public class FunctionBlock extends ScratchBlock {
     private LabelElement define;
     private int id = -1;
 
-    public FunctionBlock(Color color) {
+    public DefineBlock(Color color) {
         this(color, new FunctionInfo(b -> b.define = (LabelElement) b.labelBundle("define").padRight(addPadding * 6).get()));
     }
 
-    public FunctionBlock(Color color, BlockInfo info) {
+    public DefineBlock(Color color, BlockInfo info) {
         super(ScratchType.block, color, info, false);
     }
 
-    public FunctionBlock(Color color, BlockInfo info, boolean drag) {
+    public DefineBlock(Color color, BlockInfo info, boolean drag) {
         super(ScratchType.block, color, info, false);
         if (drag) ScratchInput.addDraggingInput(this).enabled = () -> {
             for (Element e : getChildren()) {
@@ -77,7 +77,7 @@ public class FunctionBlock extends ScratchBlock {
         addVar(condName).var(name);
     }
 
-    public FunctionBlock id(int id) {
+    public DefineBlock id(int id) {
         if (this.id != -1) throw new IllegalStateException("ID has already been set: old: " + this.id + ", new: " + id);
         this.id = id;
         return this;
@@ -111,8 +111,8 @@ public class FunctionBlock extends ScratchBlock {
     }
 
     @Override
-    public FunctionBlock copy(boolean drag) {
-        FunctionBlock sb = new FunctionBlock(elemColor, info, drag);
+    public DefineBlock copy(boolean drag) {
+        DefineBlock sb = new DefineBlock(elemColor, info, drag);
         copyChildrenValue(sb, drag);
         return sb;
     }
@@ -175,17 +175,18 @@ public class FunctionBlock extends ScratchBlock {
         ScratchController.registerBlock(condName, new FuncVarBlock(ScratchType.condition, funcColor, new BlockInfo()), false);
         ScratchController.category("function", funcColor);
         ScratchController.button("function.create", () -> ScratchController.ui.showWindow("button.function.create.name", new Table(MakeFunctionUI::build))).setStyle(ScratchStyles.flatText);
-        ScratchController.registerBlock(name, new FunctionBlock(funcColor));
+        ScratchController.registerBlock(defineName, new DefineBlock(funcColor));
         ScratchController.registerBlock("return", new ScratchBlock(ScratchType.block, funcColor, new BlockInfo(b -> {
             b.labelBundle("return");
             b.input();
         })));
+        ScratchController.registerBlock(functionName, new FunctionBlock(), false);
     }
 
     public static class FunctionInfo extends BlockInfo {
-        protected Cons<FunctionBlock> builder;
+        protected Cons<DefineBlock> builder;
 
-        public FunctionInfo(Cons<FunctionBlock> builder) {
+        public FunctionInfo(Cons<DefineBlock> builder) {
             this.builder = builder;
             run = s -> {
             };
@@ -193,13 +194,13 @@ public class FunctionBlock extends ScratchBlock {
 
         @Override
         public void build(ScratchBlock block) {
-            builder.get((FunctionBlock) block);
+            builder.get((DefineBlock) block);
         }
     }
 
     public static class FuncVarBlock extends VariableBlock {
         private static final Seq<FuncVarBlock> neededLink = new Seq<>();
-        public FunctionBlock function;
+        public DefineBlock function;
         private int funcID = -1;
 
         static {
@@ -214,7 +215,7 @@ public class FunctionBlock extends ScratchBlock {
             super(type, color, info, dragEnabled);
         }
 
-        public FuncVarBlock func(FunctionBlock function) {
+        public FuncVarBlock func(DefineBlock function) {
             this.function = function;
             return this;
         }
@@ -256,7 +257,7 @@ public class FunctionBlock extends ScratchBlock {
 
         @Override
         public void drawBackground() {
-            if (parent instanceof FunctionBlock) {
+            if (parent instanceof DefineBlock) {
                 switch (type) {
                     case input -> ScratchDraw.drawInputBorderless(x, y, width, height, elemColor);
                     case condition -> ScratchDraw.drawCond(x, y, width, height, elemColor, true, false);
@@ -291,6 +292,11 @@ public class FunctionBlock extends ScratchBlock {
             }
 
             @Override
+            public void build(PreviewField f, DefineBlock b) {
+                b.label(f.getText());
+            }
+
+            @Override
             public void build(PreviewField f, FunctionBlock b) {
                 b.label(f.getText());
             }
@@ -309,8 +315,13 @@ public class FunctionBlock extends ScratchBlock {
             }
 
             @Override
-            public void build(PreviewField f, FunctionBlock b) {
+            public void build(PreviewField f, DefineBlock b) {
                 b.condVar(f.getText());
+            }
+
+            @Override
+            public void build(PreviewField f, FunctionBlock b) {
+                b.cond();
             }
         };
         public static PreviewFieldStyle input = new PreviewFieldStyle(Styles.defaultField) {
@@ -326,8 +337,13 @@ public class FunctionBlock extends ScratchBlock {
             }
 
             @Override
-            public void build(PreviewField f, FunctionBlock b) {
+            public void build(PreviewField f, DefineBlock b) {
                 b.inputVar(f.getText());
+            }
+
+            @Override
+            public void build(PreviewField f, FunctionBlock b) {
+                b.input();
             }
         };
         public static Drawable bg = RFuncs.tint(new Color(Color.packRgba(230, 240, 255, 255)));
@@ -399,14 +415,18 @@ public class FunctionBlock extends ScratchBlock {
         }
 
         public static void createFunction(PreviewTable p) {
-            FunctionBlock b = (FunctionBlock) ScratchController.newBlock(name);
+            DefineBlock b = ScratchController.newBlock(defineName);
+            FunctionBlock fb = ScratchController.newBlock(functionName);
             p.getChildren().each(e -> {
                 PreviewField f = (PreviewField) e;
                 f.style.build(f, b);
+                f.style.build(f, fb);
             });
             if (!(b.getChildren().get(1) instanceof LabelElement)) b.getCell(b.getChildren().get(0)).padRight(addPadding * 3 + 35);
             ScratchController.registerFunction(b);
             ScratchController.ui.addBlock(b);
+            ScratchInput.addNewInput(fb);
+            ScratchController.ui.registerBlock(fb);
             b.setPosition(100, 9900);
         }
 
@@ -474,6 +494,7 @@ public class FunctionBlock extends ScratchBlock {
                 super(style);
             }
 
+            abstract public void build(PreviewField f, DefineBlock b);
             abstract public void build(PreviewField f, FunctionBlock b);
         }
 
@@ -507,6 +528,65 @@ public class FunctionBlock extends ScratchBlock {
                     y = target.parent.y + target.y + 50;
                 });
             }
+        }
+    }
+
+    public static class FunctionBlock extends ScratchBlock {
+        private static final Seq<FunctionBlock> neededLink = new Seq<>();
+        private int funcID = -1;
+        public DefineBlock function;
+
+        static {
+            ScratchEvents.on(ScratchEvents.Event.loadEnd, FunctionBlock::map);
+        }
+
+        public FunctionBlock() {
+            super(ScratchType.block, funcColor, emptyInfo);
+        }
+
+        public FunctionBlock(boolean dragEnabled) {
+            super(ScratchType.block, funcColor, emptyInfo, dragEnabled);
+        }
+
+        public FunctionBlock func(DefineBlock function) {
+            this.function = function;
+            return this;
+        }
+
+        @Override
+        public void write(Writes w) {
+            super.write(w);
+            w.i(funcID);
+        }
+
+        @Override
+        public void read(Reads r) {
+            super.read(r);
+            funcID = r.i();
+        }
+
+        @Override
+        public FunctionBlock copy(boolean drag) {
+            return new FunctionBlock(drag).func(function);
+        }
+
+        @Override
+        public void copyChildrenValue(ScratchBlock target, boolean drag) {
+            super.copyChildrenValue(target, drag);
+            ((FunctionBlock) target).function = function;
+        }
+
+        public void link() {
+            if (ScratchController.getState() == ScratchController.State.loading) {
+                neededLink.add(this);
+            } else {
+                function = ScratchController.getFunction(funcID);
+            }
+        }
+
+        public static void map() {
+            neededLink.each(b -> b.function = ScratchController.getFunction(b.funcID));
+            neededLink.clear();
         }
     }
 }
