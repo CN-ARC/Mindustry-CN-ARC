@@ -567,7 +567,9 @@ public class DefineBlock extends ScratchBlock {
 
         @Override
         public FunctionBlock copy(boolean drag) {
-            return new FunctionBlock(drag).func(function);
+            FunctionBlock b = new FunctionBlock(drag);
+            copyChildrenValue(b, drag);
+            return b;
         }
 
         @Override
