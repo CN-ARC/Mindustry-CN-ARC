@@ -15,7 +15,7 @@ import arc.util.pooling.Pools;
 import mindustry.arcModule.ui.scratch.*;
 import mindustry.arcModule.ui.scratch.block.ScratchBlock;
 
-public class InputElement extends ScratchElement implements ScratchBlock.HoldInput {
+public class InputElement extends UserElement implements ScratchBlock.HoldInput {
     protected static TextField.TextFieldStyle style;
     protected static GlyphLayout prefSizeLayout = new GlyphLayout();
     private static final float minWidth = 40;

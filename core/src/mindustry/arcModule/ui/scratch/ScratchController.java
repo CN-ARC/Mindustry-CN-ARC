@@ -128,13 +128,13 @@ public class ScratchController {
         return list.get(i);
     }
 
-    @SuppressWarnings("unchecked")
     public static <T extends ScratchBlock> T newBlock(String name) {
-        return (T) newBlock(name, true);
+        return newBlock(name, true);
     }
 
-    public static ScratchBlock newBlock(String name, boolean drag) {
-        return getBlock(name).copy(drag);
+    @SuppressWarnings("unchecked")
+    public static <T extends ScratchBlock> T newBlock(String name, boolean drag) {
+        return (T) getBlock(name).copy(drag);
     }
 
     public static ScratchBlock newBlock(int i) {

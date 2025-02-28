@@ -35,7 +35,7 @@ public class LabelElement extends ScratchElement {
 
     @Override
     public ScratchType getType() {
-        return ScratchType.none;
+        return ScratchType.label;
     }
 
     @Override

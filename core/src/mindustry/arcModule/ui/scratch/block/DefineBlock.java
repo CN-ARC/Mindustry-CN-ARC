@@ -20,7 +20,10 @@ import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.scratch.*;
+import mindustry.arcModule.ui.scratch.element.CondElement;
 import mindustry.arcModule.ui.scratch.element.LabelElement;
+import mindustry.arcModule.ui.scratch.element.ScratchElement;
+import mindustry.arcModule.ui.scratch.element.UserElement;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
 import mindustry.ui.Fonts;
@@ -36,8 +39,10 @@ public class DefineBlock extends ScratchBlock {
     private static final Color innerColor = new Color(Color.packRgba(255, 77, 106, 255));
     private static final Vec2 v1 = new Vec2();
     private static final String inputName = "funcvar", condName = inputName + 'c';
+    private static final Seq<FuncVarBlock> tmpVars = new Seq<>();
     private LabelElement define;
-    private int id = -1;
+    private int id = -1, varID = 0;
+    private Seq<FuncVarBlock>[] vars;
 
     public DefineBlock(Color color) {
         this(color, new FunctionInfo(b -> b.define = (LabelElement) b.labelBundle("define").padRight(addPadding * 6).get()));
@@ -62,8 +67,9 @@ public class DefineBlock extends ScratchBlock {
     }
 
     private FuncVarBlock addVar(String name) {
-        FuncVarBlock b = (FuncVarBlock) ScratchController.newBlock(name, false);
-        b.func(this);
+        FuncVarBlock b = ScratchController.newBlock(name, false);
+        tmpVars.add(b);
+        b.varID = varID++;
         b.cell(add(b));
         ScratchInput.addNewInput(b).enabled = () -> getListeners().contains((Boolf<EventListener>) e -> e instanceof ScratchInput.ScratchDragListener);
         return b;
@@ -81,6 +87,24 @@ public class DefineBlock extends ScratchBlock {
         if (this.id != -1) throw new IllegalStateException("ID has already been set: old: " + this.id + ", new: " + id);
         this.id = id;
         return this;
+    }
+
+    public void registerVar(FuncVarBlock var) {
+        vars[var.varID].add(var);
+    }
+
+    public void unregisterVar(FuncVarBlock var) {
+        vars[var.varID].remove(var);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void make() {
+        vars = new Seq[varID];
+        for (int i = 0; i < varID; i++) {
+            vars[i] = new Seq<>();
+        }
+        tmpVars.each(v -> v.func(this));
+        tmpVars.clear();
     }
 
     @Override
@@ -137,7 +161,7 @@ public class DefineBlock extends ScratchBlock {
     @Override
     public void readElements(Reads r) {
         int size = r.b();
-        for (int i = 0; i < size; ++i) {
+        for (int i = 0; i < size; i++) {
             switch (r.b()) {
                 case 0 -> label(r.str());
                 case 1 -> {
@@ -153,7 +177,7 @@ public class DefineBlock extends ScratchBlock {
     @Override
     public void writeElements(Writes w) {
         w.b(elements.size - 1);
-        for (int i = 1; i < elements.size; ++i) {
+        for (int i = 1; i < elements.size; i++) {
             Element e = elements.get(i);
             if (e.getClass() == LabelElement.class) {
                 LabelElement el = (LabelElement) e;
@@ -168,6 +192,15 @@ public class DefineBlock extends ScratchBlock {
                 throw new IllegalArgumentException("Unknown element type: " + e.getClass());
             }
         }
+    }
+
+    public void invoke(FunctionBlock f) {
+        Seq<Element> c = f.getChildren().select(e -> e instanceof UserElement);
+        for (int i = 0; i < vars.length; i++) {
+            Object val = ((ScratchElement) c.get(i)).getValue();
+            vars[i].each(b -> b.obj = val);
+        }
+        insertRun();
     }
 
     public static void register() {
@@ -202,6 +235,8 @@ public class DefineBlock extends ScratchBlock {
         private static final Seq<FuncVarBlock> neededLink = new Seq<>();
         public DefineBlock function;
         private int funcID = -1;
+        private int varID = -1;
+        private Object obj;
 
         static {
             ScratchEvents.on(ScratchEvents.Event.loadEnd, FuncVarBlock::map);
@@ -215,15 +250,29 @@ public class DefineBlock extends ScratchBlock {
             super(type, color, info, dragEnabled);
         }
 
-        public FuncVarBlock func(DefineBlock function) {
-            this.function = function;
+        public FuncVarBlock varID(int id) {
+            varID = id;
             return this;
+        }
+
+        public FuncVarBlock func(DefineBlock f) {
+            if (function != null) function.unregisterVar(this);
+            function = f;
+            if (function != null) function.registerVar(this);
+            return this;
+        }
+
+        @Override
+        public boolean remove() {
+            if (function != null) function.unregisterVar(this);
+            return super.remove();
         }
 
         @Override
         public void read(Reads r) {
             super.read(r);
             funcID = r.i();
+            varID = r.i();
             var(r.str());
             link();
         }
@@ -233,6 +282,7 @@ public class DefineBlock extends ScratchBlock {
             if (function == null) throw new IllegalStateException("function is null");
             super.write(w);
             w.i(function.id);
+            w.i(varID);
             w.str(var);
         }
 
@@ -243,8 +293,13 @@ public class DefineBlock extends ScratchBlock {
         }
 
         @Override
+        public Object getValue() {
+            return obj;
+        }
+
+        @Override
         public FuncVarBlock copy(boolean drag) {
-            FuncVarBlock sb = new FuncVarBlock(type, elemColor, info, drag).func(function).var(var);
+            FuncVarBlock sb = new FuncVarBlock(type, elemColor, info, drag).varID(varID).var(var).func(function);
             copyChildrenValue(sb, drag);
             return sb;
         }
@@ -252,7 +307,9 @@ public class DefineBlock extends ScratchBlock {
         @Override
         public void copyChildrenValue(ScratchBlock target, boolean drag) {
             super.copyChildrenValue(target, drag);
-            ((FuncVarBlock) target).function = function;
+            FuncVarBlock b = ((FuncVarBlock) target);
+            b.function = function;
+            b.varID = varID;
         }
 
         @Override
@@ -271,12 +328,12 @@ public class DefineBlock extends ScratchBlock {
             if (ScratchController.getState() == ScratchController.State.loading) {
                 neededLink.add(this);
             } else {
-                function = ScratchController.getFunction(funcID);
+                func(ScratchController.getFunction(funcID));
             }
         }
 
         public static void map() {
-            neededLink.each(b -> b.function = ScratchController.getFunction(b.funcID));
+            neededLink.each(b -> b.func(ScratchController.getFunction(b.funcID)));
             neededLink.clear();
         }
     }
@@ -416,7 +473,7 @@ public class DefineBlock extends ScratchBlock {
 
         public static void createFunction(PreviewTable p) {
             DefineBlock b = ScratchController.newBlock(defineName);
-            FunctionBlock fb = ScratchController.newBlock(functionName);
+            FunctionBlock fb = ScratchController.newBlock(functionName, false);
             p.getChildren().each(e -> {
                 PreviewField f = (PreviewField) e;
                 f.style.build(f, b);
@@ -424,6 +481,8 @@ public class DefineBlock extends ScratchBlock {
             });
             if (!(b.getChildren().get(1) instanceof LabelElement)) b.getCell(b.getChildren().get(0)).padRight(addPadding * 3 + 35);
             ScratchController.registerFunction(b);
+            b.make();
+            fb.func(b);
             ScratchController.ui.addBlock(b);
             ScratchInput.addNewInput(fb);
             ScratchController.ui.registerBlock(fb);
@@ -548,8 +607,9 @@ public class DefineBlock extends ScratchBlock {
             super(ScratchType.block, funcColor, emptyInfo, dragEnabled);
         }
 
-        public FunctionBlock func(DefineBlock function) {
-            this.function = function;
+        public FunctionBlock func(DefineBlock f) {
+            function = f;
+            funcID = f.id;
             return this;
         }
 
@@ -566,6 +626,32 @@ public class DefineBlock extends ScratchBlock {
         }
 
         @Override
+        public void writeElements(Writes w) {
+            w.i(elements.size);
+            elements.each(e -> {
+                ScratchElement r = (ScratchElement) e;
+                w.i(r.getType().ordinal());
+                if (r instanceof LabelElement l) w.str(l.value);
+            });
+            super.writeElements(w);
+        }
+
+        @Override
+        public void readElements(Reads r) {
+            int s = r.i();
+            for (int i = 0; i < s; i++) {
+                ScratchType t = ScratchType.all[r.i()];
+                switch (t) {
+                    case label -> label(r.str());
+                    case input -> input();
+                    case condition -> cond();
+                    default -> throw new IllegalStateException("Unexpected type: " + t);
+                }
+            }
+            super.readElements(r);
+        }
+
+        @Override
         public FunctionBlock copy(boolean drag) {
             FunctionBlock b = new FunctionBlock(drag);
             copyChildrenValue(b, drag);
@@ -574,8 +660,13 @@ public class DefineBlock extends ScratchBlock {
 
         @Override
         public void copyChildrenValue(ScratchBlock target, boolean drag) {
-            super.copyChildrenValue(target, drag);
+            cloneCopy(target);
             ((FunctionBlock) target).function = function;
+        }
+
+        @Override
+        public void run() {
+            function.invoke(this);
         }
 
         public void link() {

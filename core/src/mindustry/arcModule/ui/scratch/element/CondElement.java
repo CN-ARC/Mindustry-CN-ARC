@@ -7,7 +7,7 @@ import mindustry.arcModule.ui.scratch.ScratchDraw;
 import mindustry.arcModule.ui.scratch.ScratchTable;
 import mindustry.arcModule.ui.scratch.ScratchType;
 
-public class CondElement extends ScratchElement {
+public class CondElement extends UserElement {
     public CondElement() {
     }
 

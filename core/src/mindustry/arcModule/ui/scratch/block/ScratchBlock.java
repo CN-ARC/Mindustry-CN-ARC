@@ -17,6 +17,11 @@ import mindustry.arcModule.ui.scratch.block.fork.ForkComponent;
 import mindustry.arcModule.ui.scratch.element.*;
 import mindustry.ui.Styles;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
 import static mindustry.arcModule.ui.scratch.ScratchController.dragging;
 
 public class ScratchBlock extends ScratchTable {
@@ -126,6 +131,12 @@ public class ScratchBlock extends ScratchTable {
                 if (st1.child != null) st2.setChild(st1.child.copy(drag));
             }
         }
+    }
+
+    public void cloneCopy(ScratchBlock target) {
+        ByteArrayOutputStream tmp = new ByteArrayOutputStream();
+        writeElements(new Writes(new DataOutputStream(tmp)));
+        target.readElements(new Reads(new DataInputStream(new ByteArrayInputStream(tmp.toByteArray()))));
     }
 
     public void linkFrom(ScratchBlock source) {

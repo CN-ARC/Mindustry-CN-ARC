@@ -26,7 +26,7 @@ import mindustry.ui.Styles;
 
 import java.util.Objects;
 
-public class ListElement extends ScratchElement implements ScratchBlock.HoldInput {
+public class ListElement extends UserElement implements ScratchBlock.HoldInput {
     private static final String[] empty = {""};
     private String[] lists;
     private Tooltip[] tips;
