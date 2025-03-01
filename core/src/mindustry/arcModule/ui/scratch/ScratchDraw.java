@@ -109,7 +109,7 @@ public class ScratchDraw {
         Fill.tri(x + halfH, y, x, y + halfH, x + halfH, y + h);
         Fill.tri(x + w - halfH, y, x + w, y + halfH, x + w - halfH, y + h);
         Fill.rect(x + w / 2, y + halfH, w - 2 * halfH, h);
-        if (noBorder) return;
+        if (noBorder && !selected) return;
         Draw.color(selected ? selectedColor : Tmp.c1.set(c).lerp(Color.black, 0.3f));
         Lines.stroke(selected ? 2 : 1);
         condPoint(x, y, w, h, halfH);

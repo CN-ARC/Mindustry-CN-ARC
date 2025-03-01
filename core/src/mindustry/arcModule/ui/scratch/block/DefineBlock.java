@@ -20,7 +20,6 @@ import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.scratch.*;
-import mindustry.arcModule.ui.scratch.element.CondElement;
 import mindustry.arcModule.ui.scratch.element.LabelElement;
 import mindustry.arcModule.ui.scratch.element.ScratchElement;
 import mindustry.arcModule.ui.scratch.element.UserElement;
@@ -195,7 +194,7 @@ public class DefineBlock extends ScratchBlock {
     }
 
     public void invoke(FunctionBlock f) {
-        Seq<Element> c = f.getChildren().select(e -> e instanceof UserElement);
+        Seq<Element> c = f.elements.select(e -> e instanceof UserElement);
         for (int i = 0; i < vars.length; i++) {
             Object val = ((ScratchElement) c.get(i)).getValue();
             vars[i].each(b -> b.obj = val);
@@ -462,8 +461,8 @@ public class DefineBlock extends ScratchBlock {
                 t2.table(t3 -> {
                     t3.right();
                     t3.defaults().pad(3);
-                    t3.button("取消", ScratchStyles.flatText, () -> t.parent.find("close").fireClick()).size(64, 48);
-                    t3.button("确定", ScratchStyles.flatText, () -> {
+                    t3.button(getLocalized("button.cancel.name"), ScratchStyles.flatText, () -> t.parent.find("close").fireClick()).size(64, 48);
+                    t3.button(getLocalized("button.confirm.name"), ScratchStyles.flatText, () -> {
                         t.parent.find("close").fireClick();
                         createFunction(preview);
                     }).size(64, 48);

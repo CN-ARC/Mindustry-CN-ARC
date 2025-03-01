@@ -238,6 +238,7 @@ public class ScratchInput {
             ui.overlay.stageToLocalCoordinates(Tmp.v1.set(input.mouseX(), input.mouseY()));
             float tx = Tmp.v1.x, ty = Tmp.v1.y;
             if (0 < tx && ui.overlay.y < ty && ui.blocksPane.getWidth() + ui.typesPane.getWidth() > tx && ui.overlay.getHeight() > ty) {
+                target.destroy();
                 target.remove();
                 return;
             }

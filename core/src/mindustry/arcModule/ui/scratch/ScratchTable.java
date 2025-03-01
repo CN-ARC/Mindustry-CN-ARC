@@ -93,6 +93,9 @@ public abstract class ScratchTable extends Table {
         w.f(y);
     }
 
+    public void destroy() {
+    }
+
     @Override
     public void toFront() {
         super.toFront();

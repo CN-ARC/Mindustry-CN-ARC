@@ -323,7 +323,10 @@ public class ScratchBlock extends ScratchTable {
     public void buildMenu(Table t) {
         t.button("copy", Styles.nonet, () -> getTopBlock().copyTree(true).setPosition(x + 15, y - 15));
         t.row();
-        t.button("delete", Styles.nonet, this::remove);
+        t.button("delete", Styles.nonet, () -> {
+            destroy();
+            remove();
+        });
     }
 
     @Override
