@@ -90,11 +90,10 @@ public class Minimap extends Table{
                     public void clicked(InputEvent event, float cx, float cy){
                         var region = renderer.minimap.getRegion();
                         if(region == null) return;
-                        
+
                         float
                         sx = (cx - x) / width,
-                        sy = (cy - y) / height,
-                            
+                        sy = (cy - y) / height, 
                         scaledX = Mathf.lerp(region.u, region.u2, sx) * world.width() * tilesize,
                         scaledY = Mathf.lerp(1f - region.v2, 1f - region.v, sy) * world.height() * tilesize;
                         control.input.panCamera(Tmp.v1.set(scaledX, scaledY));
@@ -104,7 +103,7 @@ public class Minimap extends Table{
             @Override
             public void act(float delta){
                 setPosition(Scl.scl(margin), Scl.scl(margin));
- 
+
                super.act(delta);
             }
 
@@ -112,14 +111,14 @@ public class Minimap extends Table{
             public void draw(){
                 if(renderer.minimap.getRegion() == null) return;
                 if(!clipBegin()) return;
- 
+
                 Draw.rect(renderer.minimap.getRegion(), x + width / 2f, y + height / 2f, width, height);
- 
+
                 if(renderer.minimap.getTexture() != null){
                     Draw.alpha(parentAlpha);
                     renderer.minimap.drawEntities(x, y, width, height, renderer.minimap.getZoom(), false);
                 }
- 
+
                 clipEnd();
             }
         }).size(140f);
