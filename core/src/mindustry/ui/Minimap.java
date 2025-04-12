@@ -60,7 +60,6 @@ public class Minimap extends Table{
         public void pan(InputEvent event, float x, float y, float deltaX, float deltaY) {
             if (event.keyCode == KeyCode.mouseMiddle) {
                 float dragDist = (float) Math.sqrt(Math.pow(x - initialX, 2) + Math.pow(y - initialY, 2));
-                if (dragDist > DRAG_THRESHOLD) {
                     isDragging = true;
                     Element target = event.listenerActor;
                     float scaleX = (world.width() * tilesize) / target.getWidth();
@@ -71,7 +70,6 @@ public class Minimap extends Table{
                     worldStartY = worldTargetY;
                     control.input.panCamera(Tmp.v1.set(worldTargetX, worldTargetY));
                     event.handle();
-                }
             }
         }
     }
