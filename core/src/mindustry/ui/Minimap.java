@@ -104,13 +104,13 @@ public class Minimap extends Table{
                 });
             }
             @Override
-            public void act(float delta){                
-                setPosition(Scl.scl(margin), Scl.scl(margin));   
+            public void act(float delta){
+                setPosition(Scl.scl(margin), Scl.scl(margin));
                 
                 super.act(delta);
                 
             }
-            
+
             @Override
             public void draw(){
                 if(renderer.minimap.getRegion() == null) return;
