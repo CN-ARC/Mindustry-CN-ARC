@@ -101,6 +101,7 @@ public class Minimap extends Table{
                     }
                 });
             }
+            
             @Override
             public void act(float delta){
                 setPosition(Scl.scl(margin), Scl.scl(margin));
