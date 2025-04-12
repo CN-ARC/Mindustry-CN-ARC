@@ -104,11 +104,13 @@ public class Minimap extends Table{
                 });
             }
             @Override
-            public void act(float delta){
+            public void act(float delta){                
+                setPosition(Scl.scl(margin), Scl.scl(margin));   
                 
-                setPosition(Scl.scl(margin), Scl.scl(margin));      
                 super.act(delta);
-            }            
+                
+            }
+            
             @Override
             public void draw(){
                 if(renderer.minimap.getRegion() == null) return;
@@ -161,6 +163,7 @@ public class Minimap extends Table{
                     public void clicked(InputEvent event, float cx, float cy) {
                         var region = renderer.minimap.getRegion();
                         if(region == null) return;
+                        
                         float sx = (cx - x) / width,
                               sy = (cy - y) / height,
                               scaledX = Mathf.lerp(region.u, region.u2, sx) * world.width() * tilesize,
