@@ -36,9 +36,11 @@ v2-支持：[green]Root[blue]Channel[white]、[blue]MyIndustry2[white]、[yellow
 
 # 发布|fork|自改端声明
 如果fork本端，请在Vars.arcVersion后面加上你自己的子版本号，或者你私仓版本的代号（如30123selfclient) \
-如果需要公开发布你自行修改的版本，请联系Lucky Clover \
-不鼓励传播到国外！未经授权请不要转载或搬运到任何游戏平台或论坛！允许在Q群内传播  \
-仅适配简中且为硬编码，并不打算做多语言兼容。(太麻烦了) \
+如果希望公开发布你自行修改的版本，建议先联系Lucky Clover \
+不鼓励传播到国外或转载到游戏平台或论坛（Q群内传播除外）\
+尽管如此，根据 GNU 通用公共许可证第 3 版，你拥有传播和发布本程序和其延伸分支的权利。不过，我们仍然希望在此之前你能先与我们联系。
+
+仅适配简中且为硬编码，并不打算做多语言兼容。(太麻烦了) 
 Only support for simplified Chinese, would not support any other languague.
 
 # 下面是anuke-mindustry的说明
