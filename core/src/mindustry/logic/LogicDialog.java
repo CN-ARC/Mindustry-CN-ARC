@@ -18,7 +18,6 @@ import arc.util.Nullable;
 import arc.util.Strings;
 import arc.util.Time;
 import mindustry.arcModule.ui.scratch.ScratchController;
-import mindustry.arcModule.ui.scratch.block.LogicBlock;
 import mindustry.core.GameState.State;
 import mindustry.ctype.Content;
 import mindustry.game.Team;
@@ -328,7 +327,7 @@ public class LogicDialog extends BaseDialog{
                     t.row();
                     t.button("[orange]转scratch", Icon.edit, style, () -> {
                         Seq<LStatement> st = canvas.statements.getChildren().<LCanvas.StatementElem>as().map(s -> s.st);
-                        LogicBlock.LogicConvertor.convert(ScratchController.ui, st);
+                        mindustry.arcModule.ui.scratch.block.LogicBlock.LogicConvertor.convert(ScratchController.ui, st);
                     }).marginLeft(12f);
                 });
             });

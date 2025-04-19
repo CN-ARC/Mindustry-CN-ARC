@@ -146,31 +146,33 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
     public static ObjectMap<String, Object> saveVars() {
         ObjectMap<String, Object> m = new ObjectMap<>();
         LExecutor executor = ScratchController.runner.executor;
-        ScratchController.runner.asm.vars.each((s, b) -> m.put(s, executor.vars[b.id].isobj ? executor.vars[b.id].objval : executor.vars[b.id].numval));
+        ScratchController.runner.asm.vars.each((s, b) -> m.put(s, b.isobj ? b.objval : b.numval));
         return m;
     }
 
     public static void loadVars(ObjectMap<String, Object> m) {
         LExecutor executor = ScratchController.runner.executor;
         LAssembler asm = ScratchController.runner.asm;
-        LExecutor.Var[] vars = new LExecutor.Var[asm.vars.size];
-        asm.vars.each((name, var) -> {
-            LExecutor.Var dest = new LExecutor.Var(name);
-            vars[var.id] = dest;
+        LVar[] vars = new LVar[asm.vars.size];
+        int i = 0;
+        for (ObjectMap.Entry<String, LVar> kv : asm.vars.entries()) {
+            String name = kv.key;
+            LVar var = kv.value;
+            LVar dest = new LVar(name);
+            vars[i++] = dest;
             if (dest.name.equals("@ipt")) {
-                executor.iptIndex = var.id;
+                executor.ipt = var;
             }
             dest.constant = var.constant;
-            if(var.value instanceof Number number) {
-                Object val = m.get(name);
-                dest.isobj = false;
-                dest.numval = val instanceof Number n ? n.doubleValue() : number.doubleValue();
-            } else {
-                Object val = m.get(name);
+            Object val = m.get(name);
+            if (var.isobj) {
                 dest.isobj = true;
-                dest.objval = val != null ? val : var.value;
+                dest.objval = val != null ? val : var.objval;
+            } else {
+                dest.isobj = false;
+                dest.numval = val instanceof Number n ? n.doubleValue() : var.num();
             }
-        });
+        }
         executor.vars = vars;
     }
 
@@ -351,7 +353,6 @@ public class LogicBlock extends ScratchBlock implements LogicBuildable {
                                 s.cell(t.add(s));
                             }
                         } else {
-                            //match failed
                             Log.warn("convert failed: @ @", ee.size, b);
                         }
                     } else if (e instanceof Table tt) {

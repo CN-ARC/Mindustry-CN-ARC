@@ -599,11 +599,11 @@ public class DefineBlock extends ScratchBlock {
         }
 
         public FunctionBlock() {
-            super(ScratchType.block, funcColor, emptyInfo);
+            super(ScratchType.block, funcColor, new BlockInfo());
         }
 
         public FunctionBlock(boolean dragEnabled) {
-            super(ScratchType.block, funcColor, emptyInfo, dragEnabled);
+            super(ScratchType.block, funcColor, new BlockInfo(), dragEnabled);
         }
 
         public FunctionBlock func(DefineBlock f) {
