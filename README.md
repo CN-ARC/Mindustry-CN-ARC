@@ -3,9 +3,9 @@
 [![Build Status](https://github.com/Anuken/Mindustry/workflows/Tests/badge.svg?event=push)](https://github.com/Anuken/Mindustry/actions)
 [![Discord](https://img.shields.io/discord/391020510269669376.svg?logo=discord&logoColor=white&logoWidth=20&labelColor=7289DA&label=Discord&color=17cf48)](https://discord.gg/mindustry)  
 
-The automation tower defense RTS, written in Java.
+The automation tower defense RTS, written in Java.  
 
-![IMG_20250331_114518](https://github.com/user-attachments/assets/a07fe948-9ce4-49ff-899d-fef37e9704ee)
+# 目前无人维护，可使用[MDTX](https://github.com/TinyLake/MindustryX)
 
 _[资料导航站](https://docs.qq.com/sheet/DVEVob2xrcVBzQk5R)_  
 _[地图档案馆](https://docs.qq.com/sheet/DVGpmQ3lIR25rdnZo)_  
