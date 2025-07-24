@@ -30,7 +30,7 @@ public class Fonts{
 
     static String fontPack = "fonts/font.woff";
     private static final String mainFont = "fonts/font.woff";
-    private static final ObjectSet<String> unscaled = ObjectSet.with("iconLarge");
+    private static final ObjectSet<String> unscaled = ObjectSet.with("iconLarge", "logic");
     private static ObjectIntMap<String> unicodeIcons = new ObjectIntMap<>();
     private static IntMap<String> unicodeToName = new IntMap<>();
     public static ObjectMap<String, String> stringIcons = new ObjectMap<>();

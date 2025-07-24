@@ -156,7 +156,7 @@ public class Separator extends Block{
                 }
             }
 
-            if(timer(timerDump, dumpTime)){
+            if(timer(timerDump, dumpTime / timeScale)){
                 dump();
             }
         }

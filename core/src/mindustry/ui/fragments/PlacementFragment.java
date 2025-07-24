@@ -148,8 +148,9 @@ public class PlacementFragment{
     }
 
     boolean updatePick(InputHandler input){
-        if(Core.input.keyTap(Binding.pick) && player.isBuilder() && !Core.scene.hasDialog()){ //mouse eyedropper select
-            var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
+        Tile tile = world.tileWorld(Core.input.mouseWorldX(), Core.input.mouseWorldY());
+        if(tile != null && Core.input.keyTap(Binding.pick) && player.isBuilder() && !Core.scene.hasDialog()){ //mouse eyedropper select
+            var build = tile.build;
 
             if (build == null && AdvanceToolTable.worldCreator) {
                 var tile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
@@ -177,33 +178,35 @@ public class PlacementFragment{
                 build = null;
             }
 
-            Block tryRecipe = build == null ? null : build instanceof ConstructBuild c ? c.current : build.block;
+            Block tryBlock = build == null ? null : build instanceof ConstructBuild c ? c.current : build.block;
             Object tryConfig = build == null || !build.block.copyConfig ? null : build.config();
 
             for(BuildPlan req : player.unit().plans()){
                 if(!req.breaking && req.block.bounds(req.x, req.y, Tmp.r1).contains(Core.input.mouseWorld())){
-                    tryRecipe = req.block;
+                    tryBlock = req.block;
                     tryConfig = req.config;
                     break;
                 }
             }
 
-            if(tryRecipe == null && state.rules.editor){
-                var tile = world.tileWorld(Core.input.mouseWorldX(), Core.input.mouseWorldY());
-                if(tile != null){
-                    tryRecipe =
+            if(tryBlock == null && state.rules.editor){
+                tryBlock =
                     tile.block() != Blocks.air ? tile.block() :
                     tile.overlay() != Blocks.air ? tile.overlay() :
                     tile.floor() != Blocks.air ? tile.floor() : null;
-                }
             }
 
-            if(tryRecipe != null && ((tryRecipe.isVisible() && unlocked(tryRecipe)) || state.rules.editor)){
-                input.block = tryRecipe;
-                tryRecipe.lastConfig = tryConfig;
-                if(tryRecipe.isVisible()){
+            if(tryBlock != null && build == null && tryConfig == null){
+                tryConfig = tryBlock.getConfig(tile);
+            }
+
+            if(tryBlock != null && ((tryBlock.isVisible() && unlocked(tryBlock)) || state.rules.editor)){
+                input.block = tryBlock;
+                tryBlock.lastConfig = tryConfig;
+                if(tryBlock.isVisible()){
                     currentCategory = input.block.category;
                 }
+                tryBlock.onPicked(tile);
                 return true;
             }
         }
@@ -294,12 +297,16 @@ public class PlacementFragment{
         }
 
         if(Core.input.keyTap(Binding.blockInfo)){
-            var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-            Block hovering = build == null ? null : build instanceof ConstructBuild c ? c.current : build.block;
-            Block displayBlock = menuHoverBlock != null ? menuHoverBlock : input.block != null ? input.block : hovering;
-            if(displayBlock != null && displayBlock.unlockedNow()){
-                ui.content.show(displayBlock);
-                Events.fire(new BlockInfoEvent());
+            if(hovered() instanceof Unit unit && unit.type.unlockedNow()){
+                ui.content.show(unit.type());
+            }else{
+                var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
+                Block hovering = build == null ? null : build instanceof ConstructBuild c ? c.current : build.block;
+                Block displayBlock = menuHoverBlock != null ? menuHoverBlock : input.block != null ? input.block : hovering;
+                if(displayBlock != null && displayBlock.unlockedNow()){
+                    ui.content.show(displayBlock);
+                    Events.fire(new BlockInfoEvent());
+                }
             }
         }
 
@@ -417,7 +424,7 @@ public class PlacementFragment{
                                         }
                                     }
                                 }
-                                final String keyComboFinal = keyCombo;
+                                String keyComboFinal = keyCombo;
                                 header.left();
                                 header.add(new Image(displayBlock.uiIcon)).size(8 * 4);
                                 header.labelWrap(() -> !unlocked(displayBlock) && !AdvanceToolTable.allBlocksReveal ? Core.bundle.get("block.unknown") : displayBlock.localizedName + keyComboFinal)
@@ -643,7 +650,7 @@ public class PlacementFragment{
                                         for(var stance : stances){
 
                                             coms.button(stance.getIcon(), Styles.clearNoneTogglei, () -> {
-                                                Call.setUnitStance(player, units.mapInt(un -> un.id, un -> un.type.allowStance(un, stance)).toArray(), stance);
+                                                Call.setUnitStance(player, units.mapInt(un -> un.id, un -> un.type.allowStance(un, stance)).toArray(), stance, !activeStances.get(stance.id));
                                             }).checked(i -> activeStances.get(stance.id)).size(50f).tooltip(stance.localized(), true);
 
                                             if(++scol % 6 == 0) coms.row();
@@ -719,18 +726,18 @@ public class PlacementFragment{
                                 for(var unit : control.input.selectedUnits){
                                     if(unit.controller() instanceof CommandAI cmd){
                                         activeCommands.set(cmd.command.id);
-                                        activeStances.set(cmd.stance.id);
+                                        activeStances.set(cmd.stances);
+                                    }
 
-                                        for(var command : unit.type.commands){
-                                            availableCommands.set(command.id);
-                                        }
+                                    stancesOut.clear();
+                                    unit.type.getUnitStances(unit, stancesOut);
 
-                                        stancesOut.clear();
-                                        unit.type.getUnitStances(unit, stancesOut);
+                                    for(var stance : stancesOut){
+                                        availableStances.set(stance.id);
+                                    }
 
-                                        for(var stance : stancesOut){
-                                            availableStances.set(stance.id);
-                                        }
+                                    for(var command : unit.type.commands){
+                                        availableCommands.set(command.id);
                                     }
                                 }
 
@@ -746,7 +753,7 @@ public class PlacementFragment{
                                 for(UnitStance stance : stances){
                                     //first stance must always be the stop stance
                                     if(stance.keybind != null && Core.input.keyTap(stance.keybind)){
-                                        Call.setUnitStance(player, control.input.selectedUnits.mapInt(un -> un.id, un -> un.type.allowStance(un, stance)).toArray(), stance);
+                                        Call.setUnitStance(player, control.input.selectedUnits.mapInt(un -> un.id, un -> un.type.allowStance(un, stance)).toArray(), stance, !activeStances.get(stance.id));
                                     }
                                 }
 

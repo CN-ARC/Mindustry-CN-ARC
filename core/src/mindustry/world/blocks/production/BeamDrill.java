@@ -261,7 +261,7 @@ public class BeamDrill extends Block{
                 time %= drillTime;
             }
 
-            if(timer(timerDump, dumpTime)){
+            if(timer(timerDump, dumpTime / timeScale)){
                 dump();
             }
         }

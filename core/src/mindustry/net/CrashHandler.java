@@ -29,8 +29,11 @@ public class CrashHandler{
             report += "Report this at " + Vars.reportIssueURL + "\n\n";
         }
 
+        var enabledMods = mods == null ? null : mods.list().select(m -> m.shouldBeEnabled() && m.isSupported());
+
         return report
-        + "版本: " + Version.combined() + (Vars.headless ? " (服务器)" : "") + "\n"
+        + "版本: " + Version.combined() + (Version.buildDate.equals("unknown") ? "" : " (Built " + Version.buildDate + ")") + (Vars.headless ? " (服务器)" : "") + "\n"
+        + "Date: " + new SimpleDateFormat("MMMM d, yyyy HH:mm:ss a", Locale.getDefault()).format(new Date()) + "\n"
         + "学术版本: " + ARCVars.arcVersion + "\n"
         + "系统: " + OS.osName + " x" + (OS.osArchBits) + " (" + OS.osArch + ")\n"
         + ((OS.isAndroid || OS.isIos) && app != null ? "Android API level: " + Core.app.getVersion() + "\n" : "")
@@ -38,7 +41,7 @@ public class CrashHandler{
         + "Runtime Available Memory: " + (Runtime.getRuntime().maxMemory() / 1024 / 1024) + "mb\n"
         + "Cores: " + OS.cores + "\n"
         + (cause == null ? "" : "Likely Cause: " + cause.meta.displayName + " (" + cause.name + " v" + cause.meta.version + ")\n")
-        + (mods == null ? "<no mod init>" : "Mods: " + (!mods.list().contains(LoadedMod::shouldBeEnabled) ? "none (vanilla)" : mods.list().select(LoadedMod::shouldBeEnabled).toString(", ", mod -> mod.name + ":" + mod.meta.version)))
+        + (enabledMods == null ? "<no mod init>" : "Mods: " + (enabledMods.isEmpty() ? "none (vanilla)" : enabledMods.toString(", ", mod -> mod.name + ":" + mod.meta.version)))
         + "\n\n" + error;
     }
 

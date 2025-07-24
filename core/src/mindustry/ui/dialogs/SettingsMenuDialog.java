@@ -348,23 +348,19 @@ public class SettingsMenuDialog extends BaseDialog{
 
             game.addCategory("arcCAssist");
             game.checkPref("autotarget", true);
-            if (mobile) {
-                if (!ios) {
-                    game.checkPref("keyboard", false, val -> {
-                        control.setInput(val ? new DesktopInput() : new MobileInput());
-                        input.setUseKeyboard(val);
-                    });
-                    if (Core.settings.getBool("keyboard")) {
-                        control.setInput(new DesktopInput());
-                        input.setUseKeyboard(true);
-                    }
-                } else {
-                    Core.settings.put("keyboard", false);
-                }
+            game.checkPref("keyboard", false, val -> {
+                control.setInput(val ? new DesktopInput() : new MobileInput());
+                input.setUseKeyboard(val);
+            });
+            if(Core.settings.getBool("keyboard")){
+                control.setInput(new DesktopInput());
+                input.setUseKeyboard(true);
             }
-            //the issue with touchscreen support on desktop is that:
-            //1) I can't test it
-            //2) the SDL backend doesn't support multitouch
+
+        }
+        //the issue with touchscreen support on desktop is that:
+        //1) I can't test it
+        //2) the SDL backend doesn't support multitouch
         /*else{
             game.checkPref("touchscreen", false, val -> control.setInput(!val ? new DesktopInput() : new MobileInput()));
             if(Core.settings.getBool("touchscreen")){
@@ -528,7 +524,9 @@ public class SettingsMenuDialog extends BaseDialog{
         graphics.checkPref("minimap", !mobile);
             graphics.sliderPref("minimapSize", 140, 40, 400, 10, i -> i + "");
             graphics.checkPref("minimapTools", !mobile);
-            graphics.checkPref("position", false);
+            if(!mobile){
+            graphics.checkPref("detach-camera", false);
+        }graphics.checkPref("position", false);
             graphics.checkPref("mouseposition", false);
             graphics.sliderPref("chatopacity", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
 

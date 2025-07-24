@@ -19,7 +19,6 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.ui.*;
-import mindustry.world.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.RFuncs.colorizeContent;
@@ -98,7 +97,7 @@ public class DatabaseDialog extends BaseDialog{
 
                 if(++i % 10 == 0) t.row();
             }
-        }).row();;
+        }).row();
 
         for(int j = 0; j < allContent.length; j++){
             ContentType type = ContentType.all[j];
@@ -111,6 +110,11 @@ public class DatabaseDialog extends BaseDialog{
 
             if(array.size == 0) continue;
 
+            //sorting only makes sense when in-game; otherwise, banned blocks can't exist
+            if(state.isGame()){
+                array.sort(Structs.comps(Structs.comparingBool(UnlockableContent::isBanned), Structs.comparingInt(u -> u.id)));
+            }
+
             all.add("@content." + type.name() + ".name").growX().left().color(ARCVars.getThemeColor());
             all.row();
             all.image().growX().pad(5).padLeft(0).padRight(0).height(3).color(ARCVars.getThemeColor());
@@ -121,13 +125,11 @@ public class DatabaseDialog extends BaseDialog{
                 int cols = (int)Mathf.clamp((Core.graphics.getWidth() - Scl.scl(30)) / Scl.scl(32 + 12), 1, 22);
                 int count = 0;
 
-                for(int i = 0; i < array.size; i++){
-                    UnlockableContent unlock = array.get(i);
-
+                for(var unlock : array){
                     Image image = unlocked(unlock) ? new Image(new TextureRegionDrawable(unlock.uiIcon), mobile ? Color.white : Color.lightGray).setScaling(Scaling.fit) : new Image(Icon.lock, Pal.gray);
 
                     //banned cross
-                    if(state.isGame() && (unlock instanceof UnitType u && u.isBanned() || unlock instanceof Block b && state.rules.isBanned(b))){
+                    if(state.isGame() && unlock.isBanned()){
                         list.stack(image, new Image(Icon.cancel){{
                             setColor(Color.scarlet);
                             touchable = Touchable.disabled;
