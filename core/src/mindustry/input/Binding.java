@@ -108,7 +108,6 @@ public class Binding{
     chatMode = KeyBind.add("chat_mode", KeyCode.tab),
     console = KeyBind.add("console", KeyCode.f8),
     debugHitboxes = KeyBind.add("debug_hitboxes", KeyCode.unset),
-    console = KeyBind.add("console", KeyCode.f8),
     point = KeyBind.add("point", KeyCode.j),
     showRTSAi = KeyBind.add("showRTSAi", KeyCode.l),
     lockonLastMark = KeyBind.add("lockonLastMark", KeyCode.unknown),

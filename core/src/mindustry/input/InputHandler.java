@@ -1388,7 +1388,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
             if (Core.settings.getBool("rotateCanvas") && plan.block instanceof CanvasBlock cb) {
                 CanvasBlock.CanvasBuild temp = cb.new CanvasBuild();
-                Pixmap pix = cb.makePixmap((byte[]) plan.config), pix2 = new Pixmap(cb.canvasSize, cb.canvasSize);
+                Pixmap pix = cb.makePixmap((byte[]) plan.config, cb.previewPixmap), pix2 = new Pixmap(cb.canvasSize, cb.canvasSize);
                 pix.each((px,py) -> pix2.setRaw(
                         direction >= 0 ? py : cb.canvasSize - py - 1,
                         direction >= 0 ? cb.canvasSize - px - 1 : px,
@@ -1430,7 +1430,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
             if (Core.settings.getBool("rotateCanvas") && plan.block instanceof CanvasBlock cb) {
                 CanvasBlock.CanvasBuild temp = cb.new CanvasBuild();
-                Pixmap pix = cb.makePixmap((byte[]) plan.config);
+                Pixmap pix = cb.makePixmap((byte[]) plan.config, cb.previewPixmap);
                 plan.config = temp.packPixmap(x ? pix.flipX() : pix.flipY());
                 temp.remove();
                 pix.dispose();

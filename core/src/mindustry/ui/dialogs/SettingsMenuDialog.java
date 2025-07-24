@@ -925,7 +925,7 @@ public class SettingsMenuDialog extends BaseDialog{
                 Core.settings.put("swapdiagonal", false);
             }
 
-        }
+
     }
 
     public void exportData(Fi file) throws IOException{

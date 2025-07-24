@@ -153,25 +153,22 @@ public class PlacementFragment{
             var build = tile.build;
 
             if (build == null && AdvanceToolTable.worldCreator) {
-                var tile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-                if (tile != null) {
-                    Block target;
-                    if (tile.block() != Blocks.air) {
-                        target = tile.block();
-                    }
-                    else if (tile.overlay() != Blocks.air) {
-                        target = tile.overlay();
-                    }
-                    else {
-                        target = tile.floor();
-                    }
-                    if (target != Blocks.air && (target.isVisible() || AdvanceToolTable.allBlocksReveal)) {
-                        input.block = target;
-                        currentCategory = input.block.category;
-                        return true;
-                    }
-
+                Block target;
+                if (tile.block() != Blocks.air) {
+                    target = tile.block();
                 }
+                else if (tile.overlay() != Blocks.air) {
+                    target = tile.overlay();
+                }
+                else {
+                    target = tile.floor();
+                }
+                if (target != Blocks.air && (target.isVisible() || AdvanceToolTable.allBlocksReveal)) {
+                    input.block = target;
+                    currentCategory = input.block.category;
+                    return true;
+                }
+
             }
             //can't middle click buildings in fog
             if(build != null && build.inFogTo(player.team())){

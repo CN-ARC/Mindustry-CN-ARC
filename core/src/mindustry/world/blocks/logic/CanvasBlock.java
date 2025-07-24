@@ -37,7 +37,7 @@ public class CanvasBlock extends Block{
     public @Load("@-corner1") TextureRegion corner1;
     public @Load("@-corner2") TextureRegion corner2;
 
-    protected @Nullable Pixmap previewPixmap; // please use only for previews
+    public @Nullable Pixmap previewPixmap; // please use only for previews
     protected @Nullable Texture previewTexture;
     protected int tempBlend = 0;
 
