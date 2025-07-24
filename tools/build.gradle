@@ -359,10 +359,3 @@ task updateBundles{
         })
     }
 }
-
-task packClasses(dependsOn: classes, type: JavaExec) {
-    mainClass = "mindustry._extraClasses.Packer"
-    classpath = sourceSets.main.runtimeClasspath
-    standardInput = System.in
-    workingDir = "../core"
-}
