@@ -36,7 +36,7 @@ import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
 
 public class LExecutor{
-    public static final int maxInstructions = 1000;
+    public static int maxInstructions = 1000;
 
     public static final int
     maxGraphicsBuffer = 256,
@@ -59,11 +59,11 @@ public class LExecutor{
     public IntSet linkIds = new IntSet();
     public Team team = Team.derelict;
     public boolean privileged = false;
+    //maps variable name to index in vars; lazily initialized
+    protected @Nullable ObjectIntMap<String> nameMap;
 
     //yes, this is a minor memory leak, but it's probably not significant enough to matter
     protected static IntFloatMap unitTimeouts = new IntFloatMap();
-    //lookup variable by name, lazy init.
-    protected @Nullable ObjectIntMap<String> nameMap;
 
     static{
         Events.on(ResetEvent.class, e -> unitTimeouts.clear());
@@ -970,7 +970,7 @@ public class LExecutor{
             //graphics on headless servers are useless.
             if(Vars.headless) return;
 
-            if(target.building() instanceof LogicDisplayBuild d && (d.team == exec.team || exec.privileged)){
+            if(target.building() instanceof LogicDisplayBuild d && d.isValid() && (d.team == exec.team || exec.privileged)){
                 d.flushCommands(exec.graphicsBuffer);
                 exec.graphicsBuffer.clear();
             }
@@ -1104,8 +1104,7 @@ public class LExecutor{
         @Override
         public void run(LExecutor exec){
 
-            if(target.building() instanceof MessageBuild d && (exec.privileged || (d.team == exec.team && !d.block.privileged))){
-
+            if(target.building() instanceof MessageBuild d && d.isValid() && (exec.privileged || (d.team == exec.team && !d.block.privileged))){
                 d.message.setLength(0);
                 d.message.append(exec.textBuffer, 0, Math.min(exec.textBuffer.length(), maxTextBuffer));
 

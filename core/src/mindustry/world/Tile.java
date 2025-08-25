@@ -24,6 +24,7 @@ public class Tile implements Position, QuadTreeObject, Displayable{
     private static final TileChangeEvent tileChange = new TileChangeEvent();
     private static final TilePreChangeEvent preChange = new TilePreChangeEvent();
     private static final TileFloorChangeEvent floorChange = new TileFloorChangeEvent();
+    private static final TileOverlayChangeEvent overlayChange = new TileOverlayChangeEvent();;
     private static final ObjectSet<Building> tileSet = new ObjectSet<>();
 
     /**
@@ -410,9 +411,16 @@ public class Tile implements Position, QuadTreeObject, Displayable{
     public void setOverlay(Block block){
         if(this.overlay == block) return;
 
+        var prev = this.overlay;
+
         this.overlay = (Floor)block;
 
         recache();
+
+        if(!world.isGenerating()){
+            Events.fire(overlayChange.set(this, prev, this.overlay));
+        }
+
         if(!world.isGenerating() && build != null){
             build.onProximityUpdate();
         }
@@ -677,6 +685,19 @@ public class Tile implements Position, QuadTreeObject, Displayable{
         }
     }
 
+    /** @return all extra tile data, packed into a single long for data transfer convenience. */
+    public long getPackedData(){
+        return PackedTileData.get(extraData, data, floorData, overlayData);
+    }
+
+    /** Sets the packed data as obtained from {@link #getPackedData()}*/
+    public void setPackedData(long packed){
+        extraData = PackedTileData.extraData(packed);
+        data = PackedTileData.data(packed);
+        floorData = PackedTileData.floorData(packed);
+        overlayData = PackedTileData.overlayData(packed);
+    }
+
     @Override
     public void display(Table table){
 
@@ -802,5 +823,11 @@ public class Tile implements Position, QuadTreeObject, Displayable{
                 indexer.notifyHealthChanged(build);
             }
         }
+    }
+
+    @Struct
+    class PackedTileDataStruct{
+        int extraData;
+        byte data, floorData, overlayData;
     }
 }

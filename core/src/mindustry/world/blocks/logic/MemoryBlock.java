@@ -73,8 +73,9 @@ public class MemoryBlock extends Block{
             return accessible();
         }
 
+        @Override
         public boolean readable(LExecutor exec){
-            return exec.privileged || (this.team == exec.team && !this.block.privileged);
+            return isValid() && (exec.privileged || (this.team == exec.team && !this.block.privileged));
         }
 
         @Override
@@ -86,7 +87,7 @@ public class MemoryBlock extends Block{
 
         @Override
         public boolean writable(LExecutor exec){
-            return exec.privileged || (this.team == exec.team && !this.block.privileged);
+            return readable(exec);
         }
 
         @Override

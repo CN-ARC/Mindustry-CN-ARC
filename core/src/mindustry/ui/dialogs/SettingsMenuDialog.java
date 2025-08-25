@@ -773,10 +773,11 @@ public class SettingsMenuDialog extends BaseDialog{
             forcehide.checkPref("showweather", true);
             forcehide.checkPref("animatedwater", true);
 
-            if (Shaders.shield != null) {
-                forcehide.checkPref("animatedshields", !mobile);
-                forcehide.checkPref("staticShieldsBorder", false);
-            }
+        if(Shaders.shield != null){
+            //animated shields are off by default on android (generally lower spec devices)
+            forcehide.checkPref("animatedshields", !mobile);
+            forcehide.checkPref("staticShieldsBorder", false);
+        }
 
             forcehide.checkPref("atmosphere", !mobile);
 
@@ -787,16 +788,12 @@ public class SettingsMenuDialog extends BaseDialog{
         });
 
         //iOS (and possibly Android) devices do not support linear filtering well, so disable it
-        if(!ios){
-            graphics.checkPref("linear", !mobile, b -> {
-                for(Texture tex : Core.atlas.getTextures()){
-                    TextureFilter filter = b ? TextureFilter.linear : TextureFilter.nearest;
-                    tex.setFilter(filter, filter);
-                }
-            });
-        }else{
-            settings.put("linear", false);
-        }
+        graphics.checkPref("linear", !mobile, b -> {
+            for(Texture tex : Core.atlas.getTextures()){
+                TextureFilter filter = b ? TextureFilter.linear : TextureFilter.nearest;
+                tex.setFilter(filter, filter);
+            }
+        });
 
         if(Core.settings.getBool("linear")){
             for(Texture tex : Core.atlas.getTextures()){

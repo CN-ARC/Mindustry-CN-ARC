@@ -227,8 +227,9 @@ public class CanvasBlock extends Block{
             }
         }
 
+        @Override
         public boolean readable(LExecutor exec){
-            return exec.privileged || this.team == exec.team;
+            return isValid() && (exec.privileged || this.team == exec.team);
         }
 
         @Override
@@ -238,7 +239,7 @@ public class CanvasBlock extends Block{
 
         @Override
         public boolean writable(LExecutor exec){
-            return exec.privileged || this.team == exec.team;
+            return readable(exec);
         }
 
         @Override
