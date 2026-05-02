@@ -12,6 +12,7 @@ import arc.scene.ui.layout.Table;
 import arc.util.*;
 import arc.util.serialization.*;
 import mindustry.*;
+import mindustry.arcModule.ARCVars;
 import mindustry.core.*;
 import mindustry.game.EventType;
 import mindustry.gen.*;

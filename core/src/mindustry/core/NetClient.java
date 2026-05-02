@@ -294,7 +294,7 @@ public class NetClient implements ApplicationListener{
             }
 
             Vars.ui.chatfrag.addMessage(message, true);
-            Sounds.chatMessage.play();
+            Sounds.uiChat.play();
         }
     }
 
@@ -755,13 +755,13 @@ public class NetClient implements ApplicationListener{
             Call.clientSnapshot(
             lastSent++,
             uid,
-            player.dead(),
-            player.dead() ? player.x : unit.x, player.dead() ? player.y : unit.y,
-            player.unit().aimX(), player.unit().aimY(),
-            unit.rotation,
+            dead,
+            dead ? player.x : unit.x, dead ? player.y : unit.y,
+            dead ? 0f : unit.aimX(), dead ? 0f : unit.aimY(),
+            unit == null ? 0f : unit.rotation,
             unit instanceof Mechc m ? m.baseRotation() : 0,
-            unit.vel.x, unit.vel.y,
-            player.unit().mineTile,
+            unit == null ? 0f : unit.vel.x, unit == null ? 0f : unit.vel.y,
+            dead ? null : unit.mineTile,
             player.boosting, player.shooting, ui.chatfrag.shown(), control.input.isBuilding,
             player.selectedBlock, player.selectedRotation, player.isBuilder() && unit != null ? unit.plans : null,
             Core.camera.position.x, Core.camera.position.y,

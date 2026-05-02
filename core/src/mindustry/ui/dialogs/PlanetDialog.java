@@ -1216,15 +1216,6 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
         });
     }
 
-    float arcGetProduction(Sector sector, Item item){
-        ExportStat pro = sector.info.production.get(item), exp = sector.info.export.get(item),in = sector.info.importStats(sector.planet).get(item);
-        float result = 0f;
-        if(pro != null) result += pro.mean * viewInt * sector.getProductionScale();
-        if(exp != null) result -= exp.mean * viewInt * sector.getProductionScale();
-        if(in != null) result += in.mean * viewInt;
-        return result;
-    }
-
     void addSurvivedInfo(Sector sector, Table table, boolean wrap){
         if(!wrap){
             table.add("@sectors.underattack").wrapLabel(wrap).row();

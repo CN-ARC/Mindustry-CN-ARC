@@ -2217,7 +2217,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     public @Nullable Building selectedControlBuild(){
         Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-        if(build != null && !player.dead() && build.canControlSelect(player.unit()) && (build.team == player.team() || (build instanceof CoreBuild && state.rules.editor))){
+        if(build != null && !player.dead() && build.canControlSelect(player.unit()) && (build.team == player.team() || (build instanceof CoreBlock.CoreBuild && state.rules.editor))){
             return build;
         }
         return null;

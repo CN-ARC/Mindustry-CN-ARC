@@ -460,7 +460,6 @@ public class CustomRulesDialog extends BaseDialog{
                 TeamRule teams = rules.teams.get(team);
 
                 check("@rules.cheat", b -> teams.cheat = b, () -> teams.cheat);
-                check("@rules.infiniteAmmo",b -> teams.infiniteAmmo = b, () -> teams.infiniteAmmo);
                 check("@rules.aiCoreSpawn", b -> teams.aiCoreSpawn = b, () -> teams.aiCoreSpawn);
 
                 number("@rules.blockhealthmultiplier", f -> teams.blockHealthMultiplier = f, () -> teams.blockHealthMultiplier);

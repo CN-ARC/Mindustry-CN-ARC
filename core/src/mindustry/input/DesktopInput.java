@@ -13,6 +13,7 @@ import arc.scene.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.Vars;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.Marker;
 import mindustry.arcModule.SimpleKeystrokes;

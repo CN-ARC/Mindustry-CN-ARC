@@ -85,7 +85,7 @@ public class Stat implements Comparable<Stat>{
     unitItemCapacity = new Stat("unitItemCapacity", StatCat.support),
     payloadCapacity = new Stat("payloadCapacity", StatCat.support),
 
-    abilities = new Stat("abilities", StatCat.combat),
+    //abilities = new Stat("abilities", StatCat.combat),
     weapons = new Stat("weapons", StatCat.combat),
     bullet = new Stat("bullet", StatCat.combat),
     estimateDPS = new Stat("estimateDPS", StatCat.combat),
@@ -97,7 +97,7 @@ public class Stat implements Comparable<Stat>{
     flying = new Stat("flying", StatCat.movement),
     speed = new Stat("speed", StatCat.movement),
     rotateSpeed = new Stat("rotateSpeed", StatCat.movement),
-    canBoost = new Stat("canBoost", StatCat.movement),
+    //canBoost = new Stat("canBoost", StatCat.movement),
     boostMultiplier = new Stat("boostMultiplier", StatCat.movement),
     drownTimeMultiplier = new Stat("drownTimeMultiplier", StatCat.movement),
 

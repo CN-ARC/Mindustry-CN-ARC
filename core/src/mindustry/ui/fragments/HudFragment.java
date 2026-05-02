@@ -1381,19 +1381,17 @@ public class HudFragment{
                     () -> Pal.health,
                     () -> Math.min(player.unit().health / player.unit().maxHealth, 1))).height(18).growX();
             t.row();
-            t.add(new Bar(
-                    () -> {
-                        if (player.unit() instanceof BlockUnitUnit u && u.tile().buildOn() instanceof ItemTurret.ItemTurretBuild it) return ((float) it.totalAmmo > 0 ? ((ItemTurret.ItemEntry) it.ammo.peek()).item.emoji() + it.totalAmmo + "/" + ((ItemTurret) it.block).maxAmmo : "");
-                        if (state.rules.unitAmmo)
-                            return player.unit().type.ammoType.icon() + (int) player.unit().ammo + "/" + player.unit().type.ammoCapacity;
-                        else return player.unit().type.ammoType.icon();
-                    },
-                    () -> player.unit().type.ammoType.barColor(),
-                    () -> {
-                        if (state.rules.unitAmmo || player.unit() instanceof BlockUnitUnit) return player.unit().ammof();
-                        else return 1;
-                    })).height(18).growX();
-            t.row();
+            if (player.unit() instanceof BlockUnitUnit blockUnitUnit && blockUnitUnit.tile().buildOn() instanceof ItemTurret.ItemTurretBuild it){
+                t.add(new Bar(
+                        () -> {
+                            return ((float) it.totalAmmo > 0 ? ((ItemTurret.ItemEntry) it.ammo.peek()).item.emoji() + it.totalAmmo + "/" + ((ItemTurret) it.block).maxAmmo : "");
+                        },
+                        () -> ((ItemTurret.ItemEntry) it.ammo.peek()).item.color,
+                        () -> player.unit().ammof())
+                ).height(18).growX();
+                t.row();
+            }
+
 
         }).size(110, 80).padRight(4);
 

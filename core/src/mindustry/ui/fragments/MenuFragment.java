@@ -39,7 +39,7 @@ import java.util.zip.ZipInputStream;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
-import static mindustry.gen.Tex.discordBanner;
+import static mindustry.gen.Tex.*;
 import static mindustry.ui.Styles.cleart;
 
 public class MenuFragment{
@@ -118,22 +118,25 @@ public class MenuFragment{
             up = discordBanner;
         }}, ui.discord::show).visible(() -> !ui.consolefrag.shown()).marginTop(9f).marginLeft(10f).tooltip("@discord").size(84, 45).name("discord"));
 
-        parent.fill(c -> {
-            c.bottom().right().button("提交反馈", Icon.github, () -> {
-                String link = "https://docs.qq.com/form/page/DTllxbXlCc0lJb1ps";
-                if (!Core.app.openURI(link)) {
-                    ui.showErrorMessage("@linkfail");
-                    Core.app.setClipboardText(link);
+        if(mobile){
+            //left/right gutter areas
+            parent.fill((x, y, w, h) -> {
+                x = 0f;
+                y = 0f;
+                w = Core.graphics.getWidth();
+                h = Core.graphics.getHeight();
+                if(Core.scene.marginLeft > 0){
+                    paneRight.draw(x, y, Core.scene.marginLeft, h);
+                }
+
+                if(Core.scene.marginRight > 0){
+                    paneLeft.draw(x + w - Core.scene.marginRight, y, Core.scene.marginRight, h);
                 }
 
                 if(Core.scene.marginBottom > 0){
                     Tex.paneTop.draw(Core.scene.marginLeft, 0, Core.graphics.getWidth() - Core.scene.marginRight - Core.scene.marginLeft, Core.scene.marginBottom);
                 }
-            }).size(200, 60).tooltip("发现了bug/提交功能建议?\n点击这里提交反馈").with(b -> {
-                TextButton.TextButtonStyle s = new TextButton.TextButtonStyle(b.getStyle());
-                s.fontColor = b.color;
-                b.setStyle(s);
-            }).update(b -> b.color.fromHsv(Time.time % 360,1,1)).row();
+            });
 
             parent.fill(c -> {
                 c.bottom().left();
@@ -145,7 +148,7 @@ public class MenuFragment{
                     up = infoBanner;
                 }}, ui.about::show).size(84, 45).visible(() -> !ui.consolefrag.shown()).name("info");
             });
-        }else if(becontrol.active()){
+        }else if(becontrol.active()) {
             parent.fill(c -> c.bottom().right().button("@be.check", Icon.refresh, () -> {
                 ui.loadfrag.show();
                 becontrol.checkUpdate(result -> {
@@ -154,8 +157,8 @@ public class MenuFragment{
                 });
             }).size(200, 60).name("检查更新").update(t -> {
                 t.getLabel().setColor(becontrol.isUpdateAvailable() ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
-            });
-        });
+            }));
+        }
 
         parent.fill(c -> c.bottom().left().table(t -> {
             t.background(Tex.buttonEdge3);

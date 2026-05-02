@@ -11,6 +11,7 @@ import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.RFuncs;
 import mindustry.ctype.*;
 import mindustry.gen.*;
+import mindustry.graphics.Pal;
 import mindustry.ui.Styles;
 import mindustry.input.*;
 import mindustry.ui.*;

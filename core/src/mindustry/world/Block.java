@@ -416,7 +416,7 @@ public class Block extends UnlockableContent implements Senseable{
     protected OrderedMap<String, Func<Building, Bar>> barMap = new OrderedMap<>();
     /** List for building up consumption before init(). */
     @NoPatch
-    protected Seq<Consume> consumeBuilder = new Seq<>();
+    public Seq<Consume> consumeBuilder = new Seq<>();
 
     protected TextureRegion[] generatedIcons;
 

@@ -1005,8 +1005,8 @@ public class StatValues{
                         bt.row();
 
                         Table sc = new Table();
-                        for(BulletType spawn : type.spawnBullets){
-                            if(spawn.showStats) ammo(ObjectMap.of(t, spawn), true, false).display(sc);
+                        for(BulletType spawnBullet : type.spawnBullets){
+                            if(spawnBullet.showStats) ammo(ObjectMap.of(t, spawnBullet), true, false).display(sc);
                         }
                         Collapser coll = new Collapser(sc, true);
                         coll.setDuration(0.1f);

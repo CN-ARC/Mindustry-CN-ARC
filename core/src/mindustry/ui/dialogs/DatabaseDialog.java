@@ -25,7 +25,7 @@ import static arc.Core.*;
 import static mindustry.Vars.*;
 import static mindustry.arcModule.RFuncs.colorizeContent;
 
-public class DatabaseDialog extends BaseDialog{
+public class DatabaseDialog extends BaseDialog {
     private final OrderedMap<String, OrderedMap<String, Seq<UnlockableContent>>> sortedContents = new OrderedMap<>();
     private final OrderedMap<String, Seq<UnlockableContent>> tmpCategory = new OrderedMap<>();
 
@@ -36,7 +36,7 @@ public class DatabaseDialog extends BaseDialog{
     //sun means "all content"
     private UnlockableContent tab = Planets.sun;
 
-    public DatabaseDialog(){
+    public DatabaseDialog() {
         super("@database");
 
         shouldPause = true;
@@ -44,9 +44,9 @@ public class DatabaseDialog extends BaseDialog{
         shown(() -> {
             checkTabList();
             sortContents();
-            if(state.isCampaign() && allTabs.contains(state.getPlanet())){
+            if (state.isCampaign() && allTabs.contains(state.getPlanet())) {
                 tab = state.getPlanet();
-            }else if(state.isGame() && state.rules.planet != null && allTabs.contains(state.rules.planet)){
+            } else if (state.isGame() && state.rules.planet != null && allTabs.contains(state.rules.planet)) {
                 tab = state.rules.planet;
             }
 
@@ -67,13 +67,13 @@ public class DatabaseDialog extends BaseDialog{
         colorizeContent();
     }
 
-    void checkTabList(){
-        if(allTabs == null){
+    void checkTabList() {
+        if (allTabs == null) {
             Seq<Content>[] allContent = Vars.content.getContentMap();
             ObjectSet<UnlockableContent> all = new ObjectSet<>();
-            for(var contents : allContent){
-                for(var content : contents){
-                    if(content instanceof UnlockableContent u){
+            for (var contents : allContent) {
+                for (var content : contents) {
+                    if (content instanceof UnlockableContent u) {
                         all.addAll(u.databaseTabs);
                     }
                 }
@@ -83,12 +83,12 @@ public class DatabaseDialog extends BaseDialog{
         }
     }
 
-    void sortContents(){
+    void sortContents() {
         Seq<Content>[] allContent = Vars.content.getContentMap();
         sortedContents.clear();
-        for(var contents : allContent){
-            for(var content : contents){
-                if(content instanceof UnlockableContent u){
+        for (var contents : allContent) {
+            for (var content : contents) {
+                if (content instanceof UnlockableContent u) {
                     //some mods don't initialize these properly
                     String cat = u.databaseCategory == null ? u.getContentType().name() : u.databaseCategory;
                     String tag = u.databaseTag == null ? "default" : u.databaseTag;
@@ -103,7 +103,7 @@ public class DatabaseDialog extends BaseDialog{
         }
     }
 
-    void rebuild(){
+    void rebuild() {
         checkTabList();
 
         all.clear();
@@ -111,7 +111,7 @@ public class DatabaseDialog extends BaseDialog{
 
         all.table(t -> {
             int i = 0;
-            for(var content : allTabs){
+            for (var content : allTabs) {
                 t.button(content == Planets.sun ? Icon.eyeSmall : content instanceof Planet p ? Icon.icons.get(p.icon, Icon.commandRally) : new TextureRegionDrawable(content.uiIcon), Styles.clearNoneTogglei, iconMed, () -> {
                     tab = content;
                     rebuild();
@@ -119,49 +119,39 @@ public class DatabaseDialog extends BaseDialog{
                     but.getStyle().imageUpColor = content instanceof Planet p ? p.iconColor : Color.white.cpy();
                 });
 
-                if(++i % 10 == 0) t.row();
+                if (++i % 10 == 0) t.row();
             }
         }).row();
 
         boolean hasResult = false;
 
-        for(int i = 0; i < sortedContents.size; i++){
+        for (int i = 0; i < sortedContents.size; i++) {
             String categoryName = sortedContents.orderedKeys().get(i);
             OrderedMap<String, Seq<UnlockableContent>> categoryContents = sortedContents.get(categoryName);
 
             tmpCategory.clear();
-            Seq<UnlockableContent> array = allContent[j]
-                .select(c -> c instanceof UnlockableContent u &&
-                    (AdvanceToolTable.allBlocksReveal || !u.isHidden()) &&
-                    (text.isEmpty() || u.localizedName.toLowerCase().contains(text.toLowerCase()))
-                ).as();
 
             boolean categoryHasResult = false;
 
-            for(int j = 0; j < categoryContents.size; j++){
+            for (int j = 0; j < categoryContents.size; j++) {
                 String tagName = categoryContents.orderedKeys().get(j);
                 Seq<UnlockableContent> array = categoryContents.get(tagName).select(u ->
-                !u.isHidden() && !u.hideDatabase &&
-                (tab == Planets.sun || u.allDatabaseTabs || u.databaseTabs.contains(tab)) &&
-                (text.isEmpty() || u.localizedName.toLowerCase(Locale.ROOT).contains(text))).as();
-                if(array.isEmpty()) continue;
+                        !u.isHidden() && !u.hideDatabase &&
+                                (tab == Planets.sun || u.allDatabaseTabs || u.databaseTabs.contains(tab)) &&
+                                (text.isEmpty() || u.localizedName.toLowerCase(Locale.ROOT).contains(text))).as();
+                if (array.isEmpty()) continue;
 
                 hasResult = true;
                 categoryHasResult = true;
 
                 //sorting only makes sense when in-game; otherwise, banned blocks can't exist
-                if(state.isGame()){
+                if (state.isGame()) {
                     array.sort(Structs.comps(Structs.comparingBool(UnlockableContent::isBanned), Structs.comparingInt(u -> u.id)));
                 }
                 tmpCategory.put(tagName, array);
             }
 
-            if(tmpCategory.isEmpty() || !categoryHasResult) continue;
-
-                tmpCategory.put(tagName, array);
-            }
-
-            if(tmpCategory.isEmpty() || !categoryHasResult) continue;
+            if (tmpCategory.isEmpty() || !categoryHasResult) continue;
 
             all.add("@database-category." + categoryName).growX().left().color(ARCVars.getThemeColor());
             all.row();
@@ -169,12 +159,12 @@ public class DatabaseDialog extends BaseDialog{
             all.row();
 
             all.table(sub -> {
-                for(int j = 0; j < tmpCategory.size; j++){
+                for (int j = 0; j < tmpCategory.size; j++) {
                     String tagName = tmpCategory.orderedKeys().get(j);
                     Seq<UnlockableContent> array = tmpCategory.get(tagName);
-                    if(array == null || array.isEmpty()) continue;
+                    if (array == null || array.isEmpty()) continue;
 
-                    if(!"default".equals(tagName)){
+                    if (!"default".equals(tagName)) {
                         sub.table(tag -> {
                             tag.add("@database-tag." + tagName).left().color(Pal.gray);
                             tag.image().growX().pad(5).height(3).color(Pal.gray);
@@ -185,53 +175,53 @@ public class DatabaseDialog extends BaseDialog{
                     sub.table(list -> {
                         list.left();
 
-                        int cols = (int)Mathf.clamp((graphics.getWidth() - Scl.scl(30)) / Scl.scl(32 + 12), 1, 22);
+                        int cols = (int) Mathf.clamp((graphics.getWidth() - Scl.scl(30)) / Scl.scl(32 + 12), 1, 22);
                         int count = 0;
 
-                        for(var unlock : array){
+                        for (var unlock : array) {
                             Image image = unlocked(unlock) ? new Image(new TextureRegionDrawable(unlock.uiIcon), mobile ? Color.white : Color.lightGray).setScaling(Scaling.fit) : new Image(Icon.lock, Pal.gray);
 
                             //banned cross
-                            if(state.isGame() && unlock.isBanned()){
-                                list.stack(image, new Image(Icon.cancel){{
+                            if (state.isGame() && unlock.isBanned()) {
+                                list.stack(image, new Image(Icon.cancel) {{
                                     setColor(Color.scarlet);
                                     touchable = Touchable.disabled;
                                 }}).size(8 * 4).pad(3);
-                            }else if(state.isGame() && state.patcher.isPatched(unlock)){
-                                list.stack(image, new Table(){{
+                            } else if (state.isGame() && state.patcher.isPatched(unlock)) {
+                                list.stack(image, new Table() {{
                                     right().bottom().touchable = Touchable.disabled;
                                     // Interpolated color (lerp lightishGray and white) for better contrast
                                     image(Icon.fileSmall).size(12f).color(Tmp.c1.set(Color.white).a(0.5f));
                                 }}).size(8 * 4).pad(3);
-                            }else{
+                            } else {
                                 list.add(image).size(8 * 4).pad(3);
                             }
 
                             ClickListener listener = new ClickListener();
                             image.addListener(listener);
-                            if(!mobile && unlocked(unlock)){
+                            if (!mobile && unlocked(unlock)) {
                                 image.addListener(new HandCursorListener());
                                 image.update(() -> image.color.lerp(!listener.isOver() ? Color.lightGray : Color.white, Mathf.clamp(0.4f * Time.delta)));
                             }
 
-                            if(unlocked(unlock)){
+                            if (unlocked(unlock)) {
                                 image.clicked(() -> {
-                                    if(input.keyDown(KeyCode.shiftLeft) && Fonts.getUnicode(unlock.name) != 0){
-                                        app.setClipboardText((char)Fonts.getUnicode(unlock.name) + "");
+                                    if (input.keyDown(KeyCode.shiftLeft) && Fonts.getUnicode(unlock.name) != 0) {
+                                        app.setClipboardText((char) Fonts.getUnicode(unlock.name) + "");
                                         ui.showInfoFade("@copied");
-                                    }else{
+                                    } else {
                                         ui.content.show(unlock);
                                     }
                                 });
-                                image.addListener(new Tooltip(t -> t.background(Tex.button).add(unlock.localizedName +"\n[gray]" + unlock.name+ (logicVars.lookupLogicId(unlock) != -1 ? " <#" + logicVars.lookupLogicId(unlock) +">": ""))));
+                                image.addListener(new Tooltip(t -> t.background(Tex.button).add(unlock.localizedName + "\n[gray]" + unlock.name + (logicVars.lookupLogicId(unlock) != -1 ? " <#" + logicVars.lookupLogicId(unlock) + ">" : ""))));
                             }
 
-                            if((++count) % cols == 0){
+                            if ((++count) % cols == 0) {
                                 list.row();
                             }
                         }
 
-                        for(int k = 0; k < cols - count; k++){
+                        for (int k = 0; k < cols - count; k++) {
                             Image image = new Image();
                             image.setColor(Color.clear);
                             list.add(image).size(8 * 4).pad(3);
@@ -247,9 +237,10 @@ public class DatabaseDialog extends BaseDialog{
         }
 
         if(!hasResult){
-            all.add("@none.found");
-        }
+        all.add("@none.found");
     }
+}
+
 
     boolean unlocked(UnlockableContent content){
         //return (!Vars.state.isCampaign() && !Vars.state.isMenu()) || content.unlocked();

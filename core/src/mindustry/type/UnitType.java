@@ -800,11 +800,6 @@ public class UnitType extends UnlockableContent implements Senseable{
             }, () -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();
 
-            if(state.rules.unitAmmo){
-                bars.add(new Bar(ammoType.icon() + " " + Core.bundle.get("stat.ammo"), ammoType.barColor(), () -> unit.ammo / ammoCapacity));
-                bars.row();
-            }
-
             for(Ability ability : unit.abilities){
                 ability.displayBars(unit, bars);
             }
@@ -927,7 +922,6 @@ public class UnitType extends UnlockableContent implements Senseable{
             stats.add(Stat.weapons, StatValues.weapons(this, weapons));
         }
         stats.add(Stat.estimateDPS,estimateDps());
-        stats.add(Stat.ammoType, ammoType.icon());
         stats.add(Stat.ammoCapacity, ammoCapacity);
         if (crushDamage > 0) {
             stats.add("碾压伤害(每格)", StatCat.combat, crushDamage * 60f, StatUnit.perSecond);
