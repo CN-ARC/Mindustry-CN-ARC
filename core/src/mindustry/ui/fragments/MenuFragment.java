@@ -116,7 +116,7 @@ public class MenuFragment{
 
         parent.fill(c -> c.bottom().right().button(Icon.discord, new ImageButtonStyle(){{
             up = discordBanner;
-        }}, ui.discord::show).marginTop(9f).marginLeft(10f).tooltip("@discord").size(84, 45).name("discord"));
+        }}, ui.discord::show).visible(() -> !ui.consolefrag.shown()).marginTop(9f).marginLeft(10f).tooltip("@discord").size(84, 45).name("discord"));
 
         parent.fill(c -> {
             c.bottom().right().button("提交反馈", Icon.github, () -> {
@@ -125,12 +125,28 @@ public class MenuFragment{
                     ui.showErrorMessage("@linkfail");
                     Core.app.setClipboardText(link);
                 }
+
+                if(Core.scene.marginBottom > 0){
+                    Tex.paneTop.draw(Core.scene.marginLeft, 0, Core.graphics.getWidth() - Core.scene.marginRight - Core.scene.marginLeft, Core.scene.marginBottom);
+                }
             }).size(200, 60).tooltip("发现了bug/提交功能建议?\n点击这里提交反馈").with(b -> {
                 TextButton.TextButtonStyle s = new TextButton.TextButtonStyle(b.getStyle());
                 s.fontColor = b.color;
                 b.setStyle(s);
             }).update(b -> b.color.fromHsv(Time.time % 360,1,1)).row();
-            c.bottom().right().button("检查更新", Icon.refresh, () -> {
+
+            parent.fill(c -> {
+                c.bottom().left();
+                c.button(Icon.terminal, () -> ui.consolefrag.toggleMobile()).visible(() -> !ui.consolefrag.shown() && Core.settings.getBool("console")).pad(4f).size(60f).left().row();
+
+                c.button("", new TextButtonStyle(){{
+                    font = Fonts.def;
+                    fontColor = Color.white;
+                    up = infoBanner;
+                }}, ui.about::show).size(84, 45).visible(() -> !ui.consolefrag.shown()).name("info");
+            });
+        }else if(becontrol.active()){
+            parent.fill(c -> c.bottom().right().button("@be.check", Icon.refresh, () -> {
                 ui.loadfrag.show();
                 becontrol.checkUpdate(result -> {
                     ui.loadfrag.hide();

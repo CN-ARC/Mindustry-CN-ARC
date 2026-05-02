@@ -55,8 +55,12 @@ public class OverlayRenderer{
 
         Seq<Vec2> pos = new Seq<>();
         Seq<CoreBuild> teams = new Seq<>();
-        for(TeamData team : state.teams.active){
-            for(CoreBuild b : team.cores){
+        for(TeamData data : state.teams.active){
+            if(!data.team.rules().protectCores){
+                continue;
+            }
+
+            for(CoreBuild b : data.cores){
                 teams.add(b);
                 pos.add(new Vec2(b.x, b.y));
             }
@@ -76,10 +80,14 @@ public class OverlayRenderer{
     public void drawBottom(){
         InputHandler input = control.input;
 
+        if(renderer.showOtherBuildPlans){
+            input.drawOtherBuildPlans();
+        }
+
         //if(player.dead()) return;
 
         if(player.isBuilder()){
-            player.unit().drawBuildPlans();
+            input.drawBuildPlans();
         }
 
         input.drawBottom();
@@ -188,7 +196,7 @@ public class OverlayRenderer{
                 state.teams.eachEnemyCore(player.team(), core -> {
                     //it must be clear that there is a core here.
                     float br = state.rules.buildRadius(core.team);
-                    if(/*core.wasVisible && */Core.camera.bounds(Tmp.r1).overlaps(Tmp.r2.setCentered(core.x, core.y, br * 2f))){
+                    if(/*core.wasVisible && */br > 0f && Core.camera.bounds(Tmp.r1).overlaps(Tmp.r2.setCentered(core.x, core.y, br * 2f))){
                         Draw.color(Color.darkGray);
                         Draw.alpha(0.7f);
                         Lines.circle(core.x, core.y - 2, state.rules.enemyCoreBuildRadius);
@@ -307,9 +315,9 @@ public class OverlayRenderer{
 
             Building build = world.buildWorld(v.x, v.y);
             if(input.canDropItem() && build != null && build.interactable(player.team()) && build.acceptStack(player.unit().item(), player.unit().stack.amount, player.unit()) > 0 && player.within(build, itemTransferRange) &&
-                input.itemDepositCooldown <= 0f){
+                input.canDepositItem(build)){
 
-                boolean invalid = (state.rules.onlyDepositCore && !(build instanceof CoreBuild));
+                boolean invalid = !build.allowDeposit();
 
                 Lines.stroke(3f, Pal.gray);
                 Lines.square(build.x, build.y, build.block.size * tilesize / 2f + 3 + Mathf.absin(Time.time, 5f, 1f));

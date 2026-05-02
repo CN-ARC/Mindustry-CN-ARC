@@ -1,6 +1,7 @@
 package mindustry.world.blocks.defense;
 
 import arc.*;
+import arc.audio.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
@@ -30,6 +31,10 @@ public class MendProjector extends Block{
     public float phaseBoost = 12f;
     public float phaseRangeBoost = 50f;
     public float useTime = 400f;
+    public Sound mendSound = Sounds.healWave;
+    public float mendSoundVolume = 0.5f;
+
+    private boolean any = false;
 
     public MendProjector(String name){
         super(name);
@@ -78,7 +83,7 @@ public class MendProjector extends Block{
     @Override
     public void drawPlace(int x, int y, int rotation, boolean valid){
         super.drawPlace(x, y, rotation, valid);
-        
+
         Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, baseColor);
 
         indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range + phaseRangeBoost, other -> true, other -> Drawf.selected(other, Tmp.c1.set(phaseColor).a(Mathf.absin(4f, 1f))));
@@ -106,7 +111,7 @@ public class MendProjector extends Block{
 
             phaseHeat = Mathf.lerpDelta(phaseHeat, optionalEfficiency, 0.1f);
 
-            if(optionalEfficiency > 0 && timer(timerUse, useTime) && canHeal){
+            if(optionalEfficiency > 0 && timer(timerUse, useTime / timeScale) && canHeal){
                 consume();
             }
 
@@ -114,11 +119,18 @@ public class MendProjector extends Block{
                 float realRange = range + phaseHeat * phaseRangeBoost;
                 charge = 0f;
 
+                any = false;
+
                 indexer.eachBlock(this, realRange, b -> b.damaged() && !b.isHealSuppressed(), other -> {
                     other.heal(other.maxHealth() * (healPercent + phaseHeat * phaseBoost) / 100f * efficiency);
                     other.recentlyHealed();
                     Fx.healBlockFull.at(other.x, other.y, other.block.size, baseColor, other.block);
+                    any = true;
                 });
+
+                if(any){
+                    mendSound.at(this, 1f + Mathf.range(0.1f), mendSoundVolume);
+                }
             }
         }
 

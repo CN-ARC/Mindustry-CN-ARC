@@ -10,18 +10,17 @@ import arc.scene.ui.Label;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Table;
 import arc.util.*;
-import arc.util.serialization.Jval;
-import mindustry.Vars;
-import mindustry.arcModule.ARCVars;
-import mindustry.core.Version;
+import arc.util.serialization.*;
+import mindustry.*;
+import mindustry.core.*;
 import mindustry.game.EventType;
-import mindustry.gen.Icon;
-import mindustry.graphics.Pal;
-import mindustry.io.SaveIO;
-import mindustry.net.Administration.Config;
-import mindustry.net.Packets.KickReason;
-import mindustry.ui.Bar;
-import mindustry.ui.dialogs.BaseDialog;
+import mindustry.gen.*;
+import mindustry.graphics.*;
+import mindustry.io.*;
+import mindustry.net.Administration.*;
+import mindustry.net.Packets.*;
+import mindustry.ui.*;
+import mindustry.ui.dialogs.*;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -30,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.arcModule.ARCVars.arcui;
 
 /** Handles control of bleeding edge builds. */
@@ -58,6 +58,10 @@ public class BeControl{
     }
 
     public BeControl(){
+
+    }
+
+    public void init(){
         if(Version.arcBuild != -1) checkUpdate(u -> {
             if(u && Core.settings.getBool("showUpdateDialog", true)) {
                 Events.on(EventType.ClientLoadEvent.class, e -> {
@@ -78,7 +82,7 @@ public class BeControl{
             try{
                 Fi dest = Fi.get(OS.prop("becopy"));
                 Fi self = Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-                
+
                 for(Fi file : self.parent().findAll(f -> !f.equals(self))) file.delete();
 
                 self.copyTo(dest);
@@ -324,14 +328,14 @@ public class BeControl{
         Http.get("https://api.github.com/repos/CN-ARC/Mindustry-CN-ARC/commits").submit(res -> {
             Jval val = Jval.read(res.getResultAsString());
             Jval.JsonArray list =  val.asArray();
-            
+
             // 抛回主线程处理提交
             Core.app.post(() -> {
                 list.each(commit->{
                     String time = commit.get("commit").get("author").getString("date");
                     String author = commit.get("commit").get("author").getString("name");
                     String content = commit.get("commit").getString("message");
-                    
+
                     commits.append("[#008000]").append(time);
                     for(int i=time.length();i<30;i++)
                         commits.append(" ");

@@ -27,6 +27,7 @@ import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.input.*;
+import mindustry.type.Planet;
 import mindustry.ui.*;
 
 import java.io.*;
@@ -48,6 +49,8 @@ public class SettingsMenuDialog extends BaseDialog{
     private Table prefs;
     private Table menu;
     private BaseDialog dataDialog;
+    private BaseDialog planetDataDialog;
+    private Planet planet = Planets.serpulo;
     private Seq<SettingsCategory> categories = new Seq<>();
 
     public SettingsMenuDialog(){
@@ -62,11 +65,16 @@ public class SettingsMenuDialog extends BaseDialog{
             rebuildMenu();
         });
 
+        int[] lastRebuildSize = {Core.graphics.getWidth(), Core.graphics.getHeight()};
         onResize(() -> {
-            graphics.rebuild();
-            sound.rebuild();
-            game.rebuild();
-            updateScrollFocus();
+            if(lastRebuildSize[0] != Core.graphics.getWidth() || lastRebuildSize[1] != Core.graphics.getHeight()){
+                graphics.rebuild();
+                sound.rebuild();
+                game.rebuild();
+                updateScrollFocus();
+                lastRebuildSize[0] = Core.graphics.getWidth();
+                lastRebuildSize[1] = Core.graphics.getHeight();
+            }
         });
 
         cont.clearChildren();
@@ -91,6 +99,83 @@ public class SettingsMenuDialog extends BaseDialog{
 
         prefs.clearChildren();
         prefs.add(menu);
+
+        planetDataDialog = new BaseDialog("@settings.data");
+        planetDataDialog.addCloseButton();
+
+        planetDataDialog.cont.table(Tex.button, t -> {
+            t.defaults().size(280f, 60f).left();
+            TextButtonStyle style = Styles.flatt;
+
+            t.button(bundle.format("settings.planetselect", "[#" + planet.iconColor + "]" + planet.localizedName), Icon.planet, style, () -> {
+                BaseDialog dialog = new BaseDialog("");
+                dialog.cont.pane(p -> {
+                    p.background(Tex.button).margin(1f);
+                    int i = 0;
+
+                    for(var plan : content.planets()){
+                        if(plan.generator == null || plan.sectors.size == 0 || !plan.accessible) continue;
+
+                        p.button(plan.localizedName, Styles.flatTogglet, () -> {
+                            planet = plan;
+                            dialog.hide();
+                        }).size(110f, 45f).checked(planet == plan);
+
+                        if(++i % 4 == 0){
+                            p.row();
+                        }
+                    }
+                });
+                dialog.setFillParent(false);
+                dialog.addCloseButton();
+                dialog.show();
+            }).marginLeft(4).get().getLabel().setText(() -> bundle.format("settings.planetselect", "[#" + planet.iconColor + "]" + planet.localizedName));
+
+            t.row();
+
+            t.button("@settings.clearplanetresearch", Icon.trash, style, () -> {
+                ui.showConfirm("@confirm", bundle.format("settings.clearplanetresearch.confirm", planet.localizedName), () -> {
+                    universe.clearLoadoutInfo();
+                    for(TechNode node : TechTree.all){
+                        if(node.planet == planet) node.reset();
+                    }
+                    content.each(c -> {
+                        if(c instanceof UnlockableContent u && u.databaseTabs.contains(planet)){
+                            u.clearUnlock();
+                        }
+                    });
+                    settings.remove("unlocks");
+                });
+            }).marginLeft(4);
+
+            t.row();
+
+            t.button("@settings.clearplanetcampaignsaves", Icon.trash, style, () -> {
+                ui.showConfirm("@confirm", bundle.format("settings.clearplanetcampaignsaves.confirm", planet.localizedName), () -> {
+                    planet.clearStats();
+                    boolean any = false;
+                    for(var sec : planet.sectors){
+                        sec.clearInfo();
+                        if(sec.save != null){
+                            any = true;
+                            sec.save.delete();
+                            sec.save = null;
+                        }
+                    }
+                    if(any){
+                        planet.reloadMeshAsync();
+                    }
+
+                    for(var slot : control.saves.getSaveSlots().copy()){
+                        if(slot.isSector() && slot.getSector().planet == planet){
+                            slot.delete();
+                        }
+                    }
+                });
+            }).marginLeft(4);
+
+            t.row();
+        });
 
         dataDialog = new BaseDialog("@settings.data");
         dataDialog.addCloseButton();
@@ -117,6 +202,8 @@ public class SettingsMenuDialog extends BaseDialog{
             })).marginLeft(4);
 
             t.row();
+
+            t.button("@settings.clearplanetdata", Icon.trash, style, () -> planetDataDialog.show()).marginLeft(4).row();
 
             t.button("@settings.clearsaves", Icon.trash, style, () -> {
                 ui.showConfirm("@confirm", "@settings.clearsaves.confirm", () -> {
@@ -146,12 +233,18 @@ public class SettingsMenuDialog extends BaseDialog{
             t.button("@settings.clearcampaignsaves", Icon.trash, style, () -> {
                 ui.showConfirm("@confirm", "@settings.clearcampaignsaves.confirm", () -> {
                     for(var planet : content.planets()){
+                        planet.clearStats();
+                        boolean any = false;
                         for(var sec : planet.sectors){
                             sec.clearInfo();
                             if(sec.save != null){
+                                any = true;
                                 sec.save.delete();
                                 sec.save = null;
                             }
+                        }
+                        if(any){
+                            planet.reloadMeshAsync();
                         }
                     }
 
@@ -367,25 +460,20 @@ public class SettingsMenuDialog extends BaseDialog{
                 control.setInput(new MobileInput());
             }
         }*/
-
-            if(!mobile){
-                game.checkPref("crashreport", true);
+        if(!mobile){
+            game.checkPref("crashreport", true);
+        }
+        game.checkPref("communityservers", true, val -> {
+            defaultServers.clear();
+            if(val){
+                JoinDialog.fetchServers();
             }
+        });
 
-            game.checkPref("communityservers", true, val -> {
-                defaultServers.clear();
-                if(val){
-                    JoinDialog.fetchServers();
-                }
-            });
-
-            game.sliderPref("maxSchematicSize", 32, 32, 256, 1, v -> v == 256 ? "无限" : String.valueOf(v));
-            game.checkPref("savecreate", true);
-            game.checkPref("blockreplace", true);
-            game.checkPref("conveyorpathfinding", true);
-            game.checkPref("shiftCopyIcon", true);
-            game.checkPref("hints", true);
-            game.checkPref("logichints", true);
+        game.checkPref("savecreate", true);
+        game.checkPref("blockreplace", true);
+        game.checkPref("conveyorpathfinding", true);
+        game.checkPref("shiftCopyIcon", true);
 
             game.checkPref("backgroundpause", true);
             game.checkPref("buildautopause", false);
@@ -411,10 +499,17 @@ public class SettingsMenuDialog extends BaseDialog{
                 }
             }
 
-            game.addCategory("arcCHint");
-            game.checkPref("hints", true);
-            game.checkPref("logichints", true);
-            game.checkPref("console", false);
+
+        game.addCategory("arcCHint");
+        game.checkPref("console", false);
+        game.checkPref("hints", true);
+        game.checkPref("logichints", true);
+        graphics.sliderPref("uiEdgePadding", 0, 0, 100, s -> s + "px", s -> {
+            if(ui != null){
+                ui.updateMargins();
+                Core.scene.resize(Core.graphics.getWidth(), Core.graphics.getHeight());
+            }
+        });
 
             graphics.addCategory("arcCOverview");
 
@@ -433,7 +528,18 @@ public class SettingsMenuDialog extends BaseDialog{
         graphics.sliderPref("bloomintensity", 6, 0, 16, i -> (int)(i/4f * 100f) + "%");
         graphics.sliderPref("bloomblur", 2, 1, 16, i -> i + "x");
 
-        graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> (s > 240 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s)));
+        graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> {
+            if(ios){
+                Core.graphics.setPreferredFPS(s > 240 ? 0 : s);
+            }
+            return (s > 240 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s));
+        });
+
+        if(ios){
+            int value = Core.settings.getInt("fpscap", 240);
+            Core.graphics.setPreferredFPS(value > 240 ? 0 : value);
+        }
+
         graphics.sliderPref("chatopacity", 100, 0, 100, 5, s -> s + "%");
         graphics.sliderPref("lasersopacity", 100, 0, 100, 5, s -> {
             if(ui.settings != null){
@@ -461,37 +567,12 @@ public class SettingsMenuDialog extends BaseDialog{
 
         if(!mobile){
             graphics.checkPref("vsync", true, b -> Core.graphics.setVSync(b));
-            graphics.checkPref("fullscreen", false, b -> {
-                if(b && settings.getBool("borderlesswindow")){
-                    Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
-                    settings.put("borderlesswindow", false);
-                    graphics.rebuild();
-                }
-
-                if(b){
-                    Core.graphics.setFullscreen();
-                }else{
-                    Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
-                }
-            });
-
-            graphics.checkPref("borderlesswindow", false, b -> {
-                if(b && settings.getBool("fullscreen")){
-                    Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
-                    settings.put("fullscreen", false);
-                    graphics.rebuild();
-                }
-                Core.graphics.setBorderless(b);
-            });
+            graphics.checkPref("fullscreen", false, b -> Core.graphics.setFullscreen(b));
 
             Core.graphics.setVSync(Core.settings.getBool("vsync"));
 
             if(Core.settings.getBool("fullscreen")){
-                Core.app.post(() -> Core.graphics.setFullscreen());
-            }
-
-            if(Core.settings.getBool("borderlesswindow")){
-                Core.app.post(() -> Core.graphics.setBorderless(true));
+                Core.app.post(() -> Core.graphics.setFullscreen(true));
             }
         }else if(!ios){
             graphics.checkPref("landscape", false, b -> {
@@ -513,7 +594,7 @@ public class SettingsMenuDialog extends BaseDialog{
 
             graphics.checkPref("displayselection", true);
         graphics.checkPref("effects", true);
-        graphics.checkPref("atmosphere", !mobile);
+        graphics.checkPref("atmosphere", true);
         graphics.checkPref("drawlight", true);
         graphics.checkPref("destroyedblocks", true);
         graphics.checkPref("blockstatus", false);
@@ -527,6 +608,9 @@ public class SettingsMenuDialog extends BaseDialog{
             if(!mobile){
             graphics.checkPref("detach-camera", false);
         }graphics.checkPref("position", false);
+
+        graphics.checkPref("showpings", true);
+        graphics.checkPref("showotherbuildplans", true);
             graphics.checkPref("mouseposition", false);
             graphics.sliderPref("chatopacity", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
 
@@ -774,8 +858,7 @@ public class SettingsMenuDialog extends BaseDialog{
             forcehide.checkPref("animatedwater", true);
 
         if(Shaders.shield != null){
-            //animated shields are off by default on android (generally lower spec devices)
-            forcehide.checkPref("animatedshields", !mobile);
+            forcehide.checkPref("animatedshields", true);
             forcehide.checkPref("staticShieldsBorder", false);
         }
 
@@ -1070,8 +1153,16 @@ public class SettingsMenuDialog extends BaseDialog{
         }
 
         public SliderSetting sliderPref(String name, int def, int min, int max, int step, StringProcessor s){
+            return sliderPref(name, def, min, max, step, s, null);
+        }
+
+        public SliderSetting sliderPref(String name, int def, int min, int max, StringProcessor s, Intc changed){
+            return sliderPref(name, def, min, max, 1, s, changed);
+        }
+
+        public SliderSetting sliderPref(String name, int def, int min, int max, int step, StringProcessor s, Intc changed){
             SliderSetting res;
-            list.add(res = new SliderSetting(name, def, min, max, step, s));
+            list.add(res = new SliderSetting(name, def, min, max, step, s, changed));
             settings.defaults(name, def);
             rebuild();
             return res;
@@ -1201,14 +1292,16 @@ public class SettingsMenuDialog extends BaseDialog{
         public static class SliderSetting extends Setting{
             int def, min, max, step;
             StringProcessor sp;
+            Intc changed;
 
-            public SliderSetting(String name, int def, int min, int max, int step, StringProcessor s){
+            public SliderSetting(String name, int def, int min, int max, int step, StringProcessor s, Intc changed){
                 super(name);
                 this.def = def;
                 this.min = min;
                 this.max = max;
                 this.step = step;
                 this.sp = s;
+                this.changed = changed;
             }
 
             @Override
@@ -1227,6 +1320,7 @@ public class SettingsMenuDialog extends BaseDialog{
                 slider.changed(() -> {
                     settings.put(name, (int)slider.getValue());
                     value.setText(sp.get((int)slider.getValue()));
+                    if(changed != null) changed.get((int)slider.getValue());
                 });
 
                 slider.change();

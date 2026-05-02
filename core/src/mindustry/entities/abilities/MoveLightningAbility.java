@@ -40,15 +40,15 @@ public class MoveLightningAbility extends Ability{
     public @Nullable BulletType bullet;
     /** Bullet angle parameters */
     public float bulletAngle = 0f, bulletSpread = 0f;
-    
+
     public Effect shootEffect = Fx.sparkShoot;
     public boolean parentizeEffects;
-    public Sound shootSound = Sounds.spark;
+    public Sound shootSound = Sounds.shootArc;
 
     protected float side = 1f;
-    
+
     MoveLightningAbility(){}
-    
+
     public MoveLightningAbility(float damage, int length, float chance, float y, float minSpeed, float maxSpeed, Color color, String heatRegion){
         this.damage = damage;
         this.length = length;
@@ -59,7 +59,7 @@ public class MoveLightningAbility extends Ability{
         this.color = color;
         this.heatRegion = heatRegion;
     }
-    
+
     public MoveLightningAbility(float damage, int length, float chance, float y, float minSpeed, float maxSpeed, Color color){
         this.damage = damage;
         this.length = length;
@@ -107,7 +107,7 @@ public class MoveLightningAbility extends Ability{
             if(alternate) side *= -1f;
         }
     }
-    
+
     @Override
     public void draw(Unit unit){
         float scl = Mathf.clamp((unit.vel().len() - minSpeed) / (maxSpeed - minSpeed));

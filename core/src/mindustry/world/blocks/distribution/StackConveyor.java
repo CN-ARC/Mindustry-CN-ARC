@@ -54,7 +54,7 @@ public class StackConveyor extends Block implements Autotiler{
         underBullets = true;
         priority = TargetPriority.transport;
 
-        ambientSound = Sounds.conveyor;
+        ambientSound = Sounds.loopConveyor;
         ambientSoundVolume = 0.004f;
     }
 
@@ -133,7 +133,7 @@ public class StackConveyor extends Block implements Autotiler{
             //draw inputs
             if(state == stateLoad){
                 for(int i = 0; i < 4; i++){
-                    int dir = rotation - i;
+                    int dir = Mathf.mod(rotation - i, 4);
                     var near = nearby(dir);
                     if((blendprox & (1 << i)) != 0 && i != 0 && near != null && !near.block.squareSprite){
                         Draw.rect(sliced(regions[0], SliceMode.bottom), x + Geometry.d4x(dir) * tilesize*0.75f, y + Geometry.d4y(dir) * tilesize*0.75f, (float)(dir*90));
@@ -141,7 +141,7 @@ public class StackConveyor extends Block implements Autotiler{
                 }
             }else if(state == stateUnload){ //front unload
                 //TOOD hacky front check
-                if((blendprox & (1)) != 0 && !front().block.squareSprite){
+                if((blendprox & (1)) != 0 && front() != null && !front().block.squareSprite){
                     Draw.rect(sliced(regions[0], SliceMode.top), x + Geometry.d4x(rotation) * tilesize*0.75f, y + Geometry.d4y(rotation) * tilesize*0.75f, rotation * 90f);
                 }
             }

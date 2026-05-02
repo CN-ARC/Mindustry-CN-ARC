@@ -14,6 +14,7 @@ import arc.scene.ui.ImageButton.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import arc.input.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCVars;
@@ -74,8 +75,13 @@ public class HudFragment{
     private Table lastUnlockTable;
     private Table lastUnlockLayout;
     private long lastToast;
+    private float pauseDisableDur;
 
     private Seq<Block> blocksOut = new Seq<>();
+    private Table hudLabel;
+
+    private static ObjectSet<String> favoriteBlocks = new ObjectSet<>();
+    private static String lastFavorited = null;
 
     private void addBlockSelection(Table cont){
         Table blockSelection = new Table();
@@ -123,12 +129,53 @@ public class HudFragment{
         rebuildBlockSelection(blockSelection, "");
     }
 
+    private static void loadFavorites(){
+        favoriteBlocks = Core.settings.getJson("editor-block-favorites", ObjectSet.class, String.class, ObjectSet::new);
+    }
+
+    private static void saveFavorites(){
+        Core.settings.putJson("editor-block-favorites", String.class, favoriteBlocks);
+    }
+
+    private static boolean isFavorite(Block block){
+        return favoriteBlocks.contains(block.name);
+    }
+
+    private static void toggleFavorite(Block block){
+        boolean isFav = favoriteBlocks.contains(block.name);
+        if(isFav){
+            favoriteBlocks.remove(block.name);
+            Sounds.uiFavorite.play(0.35f, 0.67f, 0f);
+        }else{
+            favoriteBlocks.add(block.name);
+            lastFavorited = block.name;
+            Sounds.uiFavorite.play(0.6f, 2.0f, 0f);
+        }
+        saveFavorites();
+    }
+
     private void rebuildBlockSelection(Table blockSelection, String searchText){
         blockSelection.clear();
 
         blocksOut.clear();
-        blocksOut.addAll(Vars.content.blocks());
+        // Favorites first
+        for(Block block : Vars.content.blocks()){
+            if(isFavorite(block)){
+                blocksOut.add(block);
+            }
+        }
+
+        for(Block block : Vars.content.blocks()){
+            if(!isFavorite(block)){
+                blocksOut.add(block);
+            }
+        }
         blocksOut.sort((b1, b2) -> {
+            // These two block should stay at the top
+            if(b1 == Blocks.removeOre || b1 == Blocks.removeWall) return -1;
+            if(b2 == Blocks.removeOre || b2 == Blocks.removeWall) return 1;
+            int fav = Boolean.compare(isFavorite(b2), isFavorite(b1));
+            if(fav != 0) return fav;
             int synth = Boolean.compare(b1.synthetic(), b2.synthetic());
             if(synth != 0) return synth;
             int ore = Boolean.compare(b1 instanceof OverlayFloor && b1 != Blocks.removeOre, b2 instanceof OverlayFloor && b2 != Blocks.removeOre);
@@ -151,9 +198,54 @@ public class HudFragment{
             ImageButton button = new ImageButton(Tex.whiteui, Styles.clearNoneTogglei);
             button.getStyle().imageUp = new TextureRegionDrawable(region);
             button.clicked(() -> control.input.block = block);
+            // Pc input for favorites
+            button.clicked(KeyCode.mouseRight, () -> {
+                if(block == Blocks.removeOre || block == Blocks.removeWall) return;
+                toggleFavorite(block);
+                rebuildBlockSelection(blockSelection, searchText);
+                control.input.block = block;
+            });
+            // Mobile double-click for favorites
+            button.addListener(new ClickListener(){
+                @Override
+                public void clicked(InputEvent event, float x, float y){
+                    if(mobile && getTapCount() == 2){
+                        if(block == Blocks.removeOre || block == Blocks.removeWall) return;
+                        toggleFavorite(block);
+                        rebuildBlockSelection(blockSelection, searchText);
+                        control.input.block = block;
+                    }
+                }
+            });
             button.resizeImage(8 * 4f);
             button.update(() -> button.setChecked(control.input.block == block));
-            blockSelection.add(button).size(48f).tooltip(block.localizedName);
+
+            Stack stack = new Stack();
+            stack.add(button);
+            if(isFavorite(block)){
+                Image favIcon = new Image(Icon.star);
+                favIcon.setColor(Color.gold);
+                favIcon.setOrigin(Align.center);
+
+                if(block.name.equals(lastFavorited)){
+                    favIcon.color.a = 0f;
+                    favIcon.setScale(0f);
+                    favIcon.addAction(Actions.parallel(
+                        Actions.scaleTo(0.7f, 0.7f, 0.2f),
+                        Actions.alpha(1f, 0.2f),
+                        Actions.run(() -> lastFavorited = null)
+                    ));
+                }else{
+                    favIcon.setScale(0.7f);
+                }
+
+                Table overlay = new Table().align(Align.topRight);
+                overlay.touchable = Touchable.disabled;
+                overlay.add(favIcon).size(2f).pad(12f);
+
+                stack.add(overlay);
+            }
+            blockSelection.add(stack).size(48f).tooltip(block.localizedName);
 
             if(++i % 6 == 0){
                 blockSelection.row();
@@ -168,8 +260,8 @@ public class HudFragment{
     private final Table arcStatus = new Table();
 
     public void build(Group parent){
+        loadFavorites();
         auxilliaryTable = new AuxilliaryTable();
-
         //warn about guardian/boss waves
         Events.on(WaveEvent.class, e -> {
             int max = 10;
@@ -210,6 +302,10 @@ public class HudFragment{
         Events.on(ResetEvent.class, e -> {
             coreItems.resetUsed();
             coreItems.clear();
+            if(hudLabel != null){
+                hudLabel.color.a = 0f;
+            }
+            showHudText = false;
         });
 
         Events.on(WorldLoadEvent.class,e->{
@@ -223,11 +319,28 @@ public class HudFragment{
 
         //paused table
         parent.fill(t -> {
+            float sidePad = dsize * 5 + 4f;
             t.name = "paused";
-            t.top().visible(() -> state.isPaused() && shown && !netServer.isWaitingForPlayers()).touchable = Touchable.disabled;
-            t.table(Styles.black6, top -> top.label(() -> state.gameOver && state.isCampaign() ? "@sector.curlost" : "@paused")
-                .style(Styles.outlineLabel).pad(8f)).height(pauseHeight).growX();
-            //.padLeft(dsize * 5 + 4f) to prevent alpha overlap on left
+            t.top().visible(() -> state.isPaused() && shown && !netServer.isWaitingForPlayers() && !(mobile && Core.graphics.isPortrait())).touchable = Touchable.disabled;
+            t.table(Styles.black6, top -> {
+                top.label(() -> state.gameOver && state.isCampaign() ? "@sector.curlost" : "@paused")
+                .style(Styles.outlineLabel).pad(8f);
+                top.spacerX(() -> sidePad + Core.scene.marginLeft - Core.scene.marginRight);
+            }).height(pauseHeight).growX()
+            .padLeft(sidePad);
+        });
+
+        //pause disabled table
+        parent.fill(t -> {
+            t.name = "pause-disabled";
+            t.top().visible(() -> pauseDisableDur > 0f && shown && !mobile && !netServer.isWaitingForPlayers() && !state.isPaused() && !(state.gameOver && state.isCampaign())).touchable = Touchable.disabled;
+            t.update(() -> {
+                t.color.a = t.color.a > 0f && pauseDisableDur > 0f ? t.color.a - Time.delta / pauseDisableDur : 1f;
+                if(t.color.a <= 0f){
+                    pauseDisableDur = 0f;
+                }
+            });
+            t.table(Styles.black6, top -> top.label(() -> "@pause.disabled").style(Styles.outlineLabel).pad(8f)).height(pauseHeight).growX();
         });
 
         //left/right gutter areas
@@ -236,6 +349,7 @@ public class HudFragment{
             y = 0f;
             w = Core.graphics.getWidth();
             h = Core.graphics.getHeight();
+            Draw.color();
             if(Core.scene.marginLeft > 0){
                 paneRight.draw(x, y, Core.scene.marginLeft, h);
             }
@@ -310,19 +424,43 @@ public class HudFragment{
                 //for better inset visuals
                 cont.rect((x, y, w, h) -> {
                     if(Core.scene.marginTop > 0){
+                        Draw.color();
                         Tex.paneRight.draw(x, y, w, Core.scene.marginTop);
                     }
                 }).fillX().row();
+
+                //paused in portrait mode
+                cont.label(() -> state.gameOver && state.isCampaign() ? "@sector.curlost" : "@paused")
+                .style(Styles.outlineLabel)
+                .labelAlign(Align.center)
+                .visible(() -> state.isPaused() && shown && !netServer.isWaitingForPlayers() && Core.graphics.isPortrait())
+                .touchable(Touchable.disabled).height(20f).padTop(-40f).fillX();
+
+                cont.row();
 
                 cont.table(select -> {
                     select.name = "mobile buttons";
                     select.left();
                     select.defaults().size(dsize).left();
+                    select.background(Styles.black6);
 
-                    ImageButtonStyle style = Styles.cleari;
+                    ImageButtonStyle style = Styles.clearNonei;
 
                     select.button(Icon.menu, style, ui.paused::show).name("menu");
-                    flip = select.button(Icon.upOpen, style, this::toggleMenus).get();
+                    flip = select.button(Icon.upOpen, style, () -> {
+                        if(Core.settings.getBool("console")){
+                            ui.consolefrag.toggleMobile();
+                        }else{
+                            toggleMenus();
+                        }
+                    }).update(i -> {
+                        if(Core.settings.getBool("console")){
+                            i.getStyle().imageUp = Icon.terminal;
+                            shown = true; //force shown when console is enabled, because there is no other way to show/hide
+                        }else{
+                            i.getStyle().imageUp = shown ? Icon.downOpen : Icon.upOpen;
+                        }
+                    }).get();
                     flip.name = "flip";
 
                     select.button(Icon.paste, style, ui.schematics::show)
@@ -331,14 +469,15 @@ public class HudFragment{
                     select.button(Icon.pause, style, () -> {
                         if(net.active()){
                             ui.listfrag.toggle();
-                        }else{
+                        }else if(!state.rules.pauseDisabled){
                             state.set(state.isPaused() ? State.playing : State.paused);
                         }
                     }).name("pause").update(i -> {
                         if(net.active()){
+                            i.setDisabled(false);
                             i.getStyle().imageUp = Icon.players;
                         }else{
-                            i.setDisabled(false);
+                            i.setDisabled(state.rules.pauseDisabled || (state.isCampaign() && state.afterGameOver));
                             i.getStyle().imageUp = state.isPaused() ? Icon.play : Icon.pause;
                         }
                     });
@@ -402,7 +541,7 @@ public class HudFragment{
 
                 @Override
                 public float getPrefHeight(){
-                    return Scl.scl(120f);
+                    return Scl.scl(123f);
                 }
             }).name("waves/editor");
 
@@ -463,7 +602,6 @@ public class HudFragment{
 
             editorMain.table(Tex.buttonEdge4, t -> {
                 t.name = "teams";
-
 
                 t.top().table(teams -> {
                     teams.left();
@@ -632,7 +770,7 @@ public class HudFragment{
 
             t.name = "coreinfo";
 
-            t.collapser(v -> v.add().height(pauseHeight), () -> state.isPaused() && !netServer.isWaitingForPlayers()).row();
+            t.collapser(v -> v.add().height(pauseHeight), () -> !netServer.isWaitingForPlayers() && (state.isPaused() || pauseDisableDur > 0f)).row();
 
             t.table(c -> {
                 //core items
@@ -645,6 +783,14 @@ public class HudFragment{
 
                 //'core is under attack' table
                 c.collapser(top -> top.background(Styles.black6).add("@coreattack").pad(8)
+                .with(co -> {
+                    co.tapped(() -> {
+                        if(control.lastDamagedCore != null){
+                            control.input.panCamera(Tmp.v1.set(control.lastDamagedCore));
+                        }
+                    });
+                    co.addListener(new HandCursorListener());
+                })
                 .update(label -> label.color.set(Color.orange).lerp(Color.scarlet, Mathf.absin(Time.time, 2f, 1f))), true,
                 () -> {
                     if(!shown || state.isPaused()) return false;
@@ -690,15 +836,8 @@ public class HudFragment{
             }
 
 
-            t.table(Styles.black3, p -> p.margin(4).label(() -> hudText).style(Styles.outlineLabel)).touchable(Touchable.disabled).with(p -> p.visible(() -> {
-                p.color.a = Mathf.lerpDelta(p.color.a, Mathf.num(showHudText), 0.2f);
-                if(state.isMenu()){
-                    p.color.a = 0f;
-                    showHudText = false;
-                }
-
-                return p.color.a >= 0.001f;
-            }));
+            t.table(Styles.black3, p -> p.margin(4).label(() -> hudText).style(Styles.outlineLabel)).touchable(Touchable.disabled).with(p -> hudLabel = p)
+                .with(p -> p.visible(() -> (p.color.a = Mathf.lerpDelta(p.color.a, Mathf.num(showHudText), 0.2f)) >= 0.001f));
         });
 
         parent.fill(t -> {
@@ -822,7 +961,7 @@ public class HudFragment{
         if(state.isMenu()) return;
 
         scheduleToast(() -> {
-            Sounds.message.play();
+            Sounds.uiNotify.play();
 
             Table table = new Table(Tex.button);
             table.update(() -> {
@@ -846,13 +985,17 @@ public class HudFragment{
         });
     }
 
+    public void showPauseDisabled(){
+        pauseDisableDur = 60f;
+    }
+
     /** Show unlock notification for a new recipe. */
     public void showUnlock(UnlockableContent content){
         //some content may not have icons... yet
         //also don't play in the tutorial to prevent confusion
         if(state.isMenu()) return;
 
-        Sounds.message.play();
+        Sounds.uiNotify.play();
 
         //if there's currently no unlock notification...
         if(lastUnlockTable == null){
@@ -937,10 +1080,6 @@ public class HudFragment{
     }
 
     private void toggleMenus(){
-        if(flip != null){
-            flip.getStyle().imageUp = shown ? Icon.downOpen : Icon.upOpen;
-        }
-
         shown = !shown;
     }
 
@@ -1086,7 +1225,7 @@ public class HudFragment{
             Floatp playerPayloadCapacityUsed = () -> player.unit() instanceof Payloadc pay ? pay.payloadUsed() / player.unit().type().payloadCapacity : 0f;
 
             t.add(new SideBar(() -> player.dead() ? 0f : player.displayAmmo() ? player.unit().ammof() : playerHasPayloads.get() ? playerPayloadCapacityUsed.get() : player.unit().healthf(), () -> !(player.displayAmmo() || playerHasPayloads.get()), false)).width(bw).growY().padLeft(pad).update(b -> {
-                b.color.set(player.displayAmmo() ? player.dead() || player.unit() instanceof BlockUnitc ? Pal.ammo : player.unit().type.ammoType.color() : playerHasPayloads.get() ? Pal.items : Pal.health);
+                b.color.set(player.displayAmmo() ? Pal.ammo : playerHasPayloads.get() ? Pal.items : Pal.health);
             });
 
             t.getChildren().get(1).toFront();
@@ -1127,7 +1266,7 @@ public class HudFragment{
                     String text = obj.text();
                     if(text != null && !text.isEmpty()){
                         if(!first) builder.append("\n[white]");
-                        builder.append(text);
+                        builder.append(UI.formatIcons(text));
 
                         first = false;
                     }
@@ -1384,7 +1523,7 @@ public class HudFragment{
                 if(applied != null){
                     for(StatusEffect effect : content.statusEffects()){
                         if(applied.get(effect.id) && !effect.isHidden()){
-                            t.image(effect.uiIcon).size(iconMed).get()
+                            t.image(effect.uiIcon).scaling(Scaling.fit).size(iconMed).get()
                             .addListener(new Tooltip(l -> l.label(() ->
                                 player.dead() ? "" : effect.localizedName + " [lightgray]" + UI.formatTime(player.unit().getDuration(effect))).style(Styles.outlineLabel)));
                         }

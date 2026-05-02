@@ -14,6 +14,7 @@ import mindustry.entities.*;
 import mindustry.entities.units.*;
 import mindustry.gen.*;
 import mindustry.logic.*;
+import mindustry.mod.*;
 import mindustry.type.*;
 import mindustry.graphics.*;
 import mindustry.ui.*;
@@ -48,6 +49,7 @@ public class GenericCrafter extends Block{
     public float updateEffectSpread = 4f;
     public float warmupSpeed = 0.019f;
     /** Only used for legacy cultivator blocks. */
+    @NoPatch
     public boolean legacyReadWarmup = false;
 
     public DrawBlock drawer = new DrawDefault();
@@ -57,7 +59,7 @@ public class GenericCrafter extends Block{
         update = true;
         solid = true;
         hasItems = true;
-        ambientSound = Sounds.machine;
+        ambientSound = Sounds.loopMachine;
         sync = true;
         ambientSoundVolume = 0.03f;
         flags = EnumSet.of(BlockFlag.factory);
@@ -139,6 +141,16 @@ public class GenericCrafter extends Block{
     }
 
     @Override
+    public void afterPatch(){
+        super.afterPatch();
+
+        outputsLiquid = outputLiquids != null;
+
+        if(outputItems != null) hasItems = true;
+        if(outputLiquids != null) hasLiquids = true;
+    }
+
+    @Override
     public void drawPlanRegion(BuildPlan plan, Eachable<BuildPlan> list){
         drawer.drawPlan(this, plan, list);
     }
@@ -201,6 +213,7 @@ public class GenericCrafter extends Block{
                     }
                 }
             }
+
             if(outputLiquids != null && !ignoreLiquidFullness){
                 boolean allFull = true;
                 for(var output : outputLiquids){

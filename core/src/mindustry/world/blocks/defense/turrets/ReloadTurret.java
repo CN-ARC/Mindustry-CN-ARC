@@ -30,7 +30,7 @@ public class ReloadTurret extends BaseTurret{
         public float reloadCounter;
 
         protected void updateCooling(){
-            if(reloadCounter < reload && coolant != null && coolant.efficiency(this) > 0 && efficiency > 0){
+            if(canReload() && coolant != null && coolant.efficiency(this) > 0 && efficiency > 0){
                 float capacity = coolant instanceof ConsumeLiquidFilter filter ? filter.getConsumed(this).heatCapacity : (coolant.consumes(liquids.current()) ? liquids.current().heatCapacity : 0.4f);
                 float amount = coolant.amount * coolant.efficiency(this);
                 coolant.update(this);
@@ -50,6 +50,10 @@ public class ReloadTurret extends BaseTurret{
             return efficiency;
         }
 
+        protected boolean canReload(){
+            return reloadCounter < reload;
+        }
+
         @Override
         public void displayBars(Table bars){
             super.displayBars(bars);
@@ -57,6 +61,5 @@ public class ReloadTurret extends BaseTurret{
             bars.add(new Bar(() -> Core.bundle.format("stat.reloadDetail", (int)(reloadCounter * 100 / reload)), () -> Pal.ammo, () -> (float)(reloadCounter / reload)));
             bars.row();
         }
-
     }
 }
