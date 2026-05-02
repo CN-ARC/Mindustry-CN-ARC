@@ -54,8 +54,10 @@ public class PowerTurret extends Turret{
     public class PowerTurretBuild extends TurretBuild{
 
         @Override
-        public float getAmmoFraction(){
-            return power == null ? 0f : power.status;
+        public void updateTile(){
+            unit.ammo(power == null ? 0f : power.status * unit.type().ammoCapacity);
+
+            super.updateTile();
         }
 
         @Override

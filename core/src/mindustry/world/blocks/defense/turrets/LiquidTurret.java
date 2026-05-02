@@ -99,8 +99,10 @@ public class LiquidTurret extends Turret{
         }
 
         @Override
-        public float getAmmoFraction(){
-            return liquids.currentAmount() / liquidCapacity;
+        public void updateTile(){
+            unit.ammo(unit.type().ammoCapacity * liquids.currentAmount() / liquidCapacity);
+
+            super.updateTile();
         }
 
         @Override

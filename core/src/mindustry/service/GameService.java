@@ -116,7 +116,7 @@ public class GameService{
             installMod.complete();
         }
 
-        if(Core.bundle.get("ok").equals(Blocks.router.emoji()+Blocks.router.emoji())){
+        if(Core.bundle.get("yes").equals("router")){
             routerLanguage.complete();
         }
 
@@ -204,7 +204,7 @@ public class GameService{
         });
 
         Events.on(BlockBuildEndEvent.class, e -> {
-            if(campaign() && e.unit != null && e.unit.team == state.rules.defaultTeam && !e.breaking){
+            if(campaign() && e.unit != null && e.unit.isLocal() && !e.breaking){
                 SStat.blocksBuilt.add();
 
                 if(e.tile.block() == Blocks.router && e.tile.build.proximity.contains(t -> t.block == Blocks.router)){

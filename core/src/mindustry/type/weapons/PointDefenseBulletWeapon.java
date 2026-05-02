@@ -19,6 +19,7 @@ public class PointDefenseBulletWeapon extends Weapon{
         autoTarget = true;
         controllable = false;
         rotate = true;
+        useAmmo = false;
         useAttackRange = false;
         targetInterval = targetSwitchInterval = 5f;
     }

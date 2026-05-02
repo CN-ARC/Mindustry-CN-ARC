@@ -241,9 +241,7 @@ public class JsonIO{
 
             @Override
             public UnitType read(Json json, JsonValue jsonData, Class type){
-                if(jsonData.asString() == null) return UnitTypes.dagger;
-                UnitType u = Vars.content.getByName(ContentType.unit, jsonData.asString());
-                return u == null ? UnitTypes.dagger : u;
+                return Vars.content.getByName(ContentType.unit, jsonData.asString());
             }
         });
 

@@ -37,7 +37,7 @@ import static mindustry.Vars.*;
 @SuppressWarnings("unused")
 @TypeIOHandler
 public class TypeIO{
-    private static final int maxArraySize = 1000, maxByteArraySize = 40_000, maxSyncedPlans = 20;
+    private static final int maxArraySize = 1000, maxByteArraySize = 40_000;
 
     public static void writeObject(Writes write, Object object){
         if(object == null){
@@ -188,8 +188,8 @@ public class TypeIO{
             case 4 -> {
                 byte exists = read.b();
                 if(exists != 0){
-                    //in a safe context, strings can only be 1200 chars
-                    yield read.str(safe ? 1200 : 0);
+                    //in a safe context, strings can only be 1000 chars
+                    yield read.str(safe ? 1000 : 0);
                 }else{
                     yield null;
                 }
@@ -468,7 +468,7 @@ public class TypeIO{
     /** @return the maximum acceptable amount of plans to send over the network */
     public static int getMaxPlans(Queue<BuildPlan> plans){
         //limit to prevent buffer overflows
-        int used = Math.min(plans.size, maxSyncedPlans);
+        int used = Math.min(plans.size, 20);
         int totalLength = 0;
 
         //prevent buffer overflow by checking config length
@@ -506,21 +506,10 @@ public class TypeIO{
         }
     }
 
-    public static Queue<BuildPlan> readPlansQueueNet(Reads read){
-        int used = read.i();
-        if(used == -1) return null;
-        if(used > maxSyncedPlans) throw new RuntimeException("Queue too long: " + used);
-        var out = new Queue<BuildPlan>();
-        for(int i = 0; i < used; i++){
-            out.add(readPlan(read));
-        }
-        return out;
-    }
-
     public static Queue<BuildPlan> readPlansQueue(Reads read){
         int used = read.i();
         if(used == -1) return null;
-        if(used >= maxArraySize) throw new RuntimeException("Queue too long: " + used);
+        if(used >= maxArraySize) throw new RuntimeException("Queue too long: "+ used);
         var out = new Queue<BuildPlan>();
         for(int i = 0; i < used; i++){
             out.add(readPlan(read));

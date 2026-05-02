@@ -6914,7 +6914,6 @@ public class Blocks{
         reinforcedMessage = new MessageBlock("reinforced-message"){{
             requirements(Category.logic, with(Items.graphite, 10, Items.beryllium, 5));
             health = 100;
-            crushFragile = true;
         }};
 
         worldProcessor = new LogicBlock("world-processor"){{
