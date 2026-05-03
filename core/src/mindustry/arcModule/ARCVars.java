@@ -46,6 +46,9 @@ public class ARCVars implements Loadable {
 
     public static ARCTeam arcTeam = new ARCTeam();
 
+    public static String arcFolderName = "arcCustom";
+    public static String arcCustomBackgroundName = "background";
+
     static {
         // 减少性能开销
         Events.run(EventType.Trigger.update, () -> {

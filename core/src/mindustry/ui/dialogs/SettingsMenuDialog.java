@@ -18,6 +18,7 @@ import arc.util.*;
 import arc.util.io.*;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.RFuncs;
+import mindustry.arcModule.media.ArcSounds;
 import mindustry.arcModule.ui.AdvanceToolTable;
 import mindustry.content.*;
 import mindustry.content.TechTree.*;
@@ -297,23 +298,59 @@ public class SettingsMenuDialog extends BaseDialog{
         float marg = 8f, isize = iconMed;
 
         menu.defaults().size(300f, 60f);
-        menu.button("@settings.game", Icon.settings, style, isize, () -> visible(0)).marginLeft(marg).row();
+        menu.button("@settings.game", Icon.settings, style, isize, () -> {
+            visible(0);
+            ArcSounds.play("settingTabGame");
+        }).marginLeft(marg).row();
+
         menu.row();
-        menu.button("@settings.graphics", Icon.image, style, isize, () -> visible(1)).marginLeft(marg).row();
+
+        menu.button("@settings.graphics", Icon.image, style, isize, () -> {
+            visible(1);
+            ArcSounds.play("settingTabGraphics");
+        }).marginLeft(marg).row();
+
         menu.row();
-        menu.button("@settings.sound", Icon.filters, style, isize, () -> visible(2)).marginLeft(marg).row();
+
+        menu.button("@settings.sound", Icon.filters, style, isize, () -> {
+            visible(2);
+            ArcSounds.play("settingTabSound");
+        }).marginLeft(marg).row();
+
         menu.row();
-        menu.button("@settings.arc", Icon.star,style,isize, () -> visible(3)).marginLeft(marg).row();
+
+        menu.button("@settings.arc", Icon.star, style, isize, () -> {
+            visible(3);
+            ArcSounds.play("settingTabArc");
+        }).marginLeft(marg).row();
+
         menu.row();
-        menu.button("@settings.forcehide", Icon.eyeSmall,style,isize, () -> visible(4)).marginLeft(marg).row();
+
+        menu.button("@settings.forcehide", Icon.eyeSmall, style, isize, () -> {
+            visible(4);
+            ArcSounds.play("settingTabForcehide");
+        }).marginLeft(marg).row();
+
         menu.row();
-        menu.button("@settings.specmode", Icon.info,style,isize, () -> visible(5)).marginLeft(marg).row();
+
+        menu.button("@settings.specmode", Icon.info, style, isize, () -> {
+            visible(5);
+            ArcSounds.play("settingTabSpecmode");
+        }).marginLeft(marg).row();
+
         menu.row();
-        menu.button("@settings.cheating", Icon.lock,style,isize, () -> visible(6)).marginLeft(marg).row();
+
+        menu.button("@settings.cheating", Icon.lock, style, isize, () -> {
+            visible(6);
+            ArcSounds.play("settingTabCheating");
+        }).marginLeft(marg).row();
+
         menu.row();
+
         menu.button("@settings.language", Icon.chat, style, isize, ui.language::show).marginLeft(marg).row();
+
         if(!mobile || Core.settings.getBool("keyboard")){
-        menu.button("@settings.controls", Icon.move, style, isize, ui.controls::show).marginLeft(marg).row();
+            menu.button("@settings.controls", Icon.move, style, isize, ui.controls::show).marginLeft(marg).row();
         }
 
         menu.button("@settings.data", Icon.save, style, isize, () -> dataDialog.show()).marginLeft(marg).row();
@@ -332,11 +369,15 @@ public class SettingsMenuDialog extends BaseDialog{
     }
 
     void addSettings(){
+        sound.addCategory("SoundSetting");
         sound.checkPref("alwaysmusic", false);
         sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
         sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
         sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
         sound.sliderPref("arcvol", settings.getInt("musicvol"), 0, 100, 1, i -> i + "%");
+        sound.addCategory("arcCustomSound");
+        sound.checkPref("enableArcCustomSound", false);
+        sound.sliderPref("ArcCustomSoundvol", 100, 0, 100, 1, i -> i + "%");
 
         game.addCategory("arcCNet");
         game.stringInput("arcNetProxy", "");
@@ -835,7 +876,7 @@ public class SettingsMenuDialog extends BaseDialog{
             });
             specmode.sliderPref("fontSize", 10, 5, 25, 1, i -> "x " + Strings.fixed(i * 0.1f, 1));
             specmode.stringInput("themeColor", "ffd37f");
-            specmode.stringInput("arcBackgroundPath", "");
+            //specmode.stringInput("arcBackgroundPath", ""); 使用默认路径
             if (!OS.isAndroid && !OS.isIos) {
                 specmode.stringInput("arcCursorPath", "");
                 specmode.buttonInput("[cyan]查看当前指针样式", () -> new BaseDialog("指针样式") {{

@@ -38,7 +38,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.ARCVars.arcui;
+import static mindustry.arcModule.ARCVars.*;
 import static mindustry.gen.Tex.*;
 import static mindustry.ui.Styles.cleart;
 
@@ -58,7 +58,7 @@ public class MenuFragment{
     static boolean haveNewerNews = false;
 
     Fi arcBackground;
-    String arcBackgroundPath = Core.settings.getString("arcBackgroundPath");
+    Fi arcBackgroundPath = Vars.dataDirectory.child(arcFolderName).child(arcCustomBackgroundName);
     Seq<Fi> arcBGList;
 
     Image img = new Image();
@@ -83,8 +83,9 @@ public class MenuFragment{
 
         parent = group;
 
-        if (arcBackgroundPath != null && Core.files.absolute(arcBackgroundPath).exists() && Core.files.absolute(arcBackgroundPath).list().length >=1){
-            arcBackgroundIndex = (int) (Math.random() * Core.files.absolute(arcBackgroundPath).list().length);
+        arcBackgroundPath = Vars.dataDirectory.child(arcFolderName).child(arcCustomBackgroundName);
+        if (Vars.dataDirectory != null && arcBackgroundPath.exists() && arcBackgroundPath.list().length >=1){
+            arcBackgroundIndex = (int) (Math.random() * arcBackgroundPath.list().length);
             nextBackGroundImg();
             if (arcBGList.size == 0) {
                 parent.fill((x, y, w, h) -> renderer.render());
@@ -160,10 +161,11 @@ public class MenuFragment{
             }));
         }
 
+
         parent.fill(c -> c.bottom().left().table(t -> {
             t.background(Tex.buttonEdge3);
             t.button("\uE83D", cleart, this::nextBackGroundImg).width(50f);
-        }).visible(() -> Core.settings.getString("arcBackgroundPath", "").length() != 0).left().width(100));
+        }).visible(() -> arcBackgroundPath.list().length >=1).left().width(100));
 
         String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[cyan]") + Version.combined();
         String arcversionText = "\n[cyan]ARC version:" + Version.arcBuild;
@@ -259,9 +261,9 @@ public class MenuFragment{
     }
 
     private void nextBackGroundImg(){
-        arcBGList = Core.files.absolute(arcBackgroundPath).findAll(f -> !f.isDirectory() && (f.extEquals("png") || f.extEquals("jpg") || f.extEquals("jpeg")));
+        arcBGList = arcBackgroundPath.findAll(f -> !f.isDirectory() && (f.extEquals("png") || f.extEquals("jpg") || f.extEquals("jpeg")));
         if (arcBGList.size == 0) return;
-        arcBackgroundPath = Core.settings.getString("arcBackgroundPath");
+        arcBackgroundPath = Vars.dataDirectory.child(arcFolderName).child(arcCustomBackgroundName);
         arcBackgroundIndex += 1;
         arcBackgroundIndex = arcBackgroundIndex % arcBGList.size;
         new Thread(() -> {
