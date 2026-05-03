@@ -3,6 +3,7 @@ package mindustry.ui.dialogs;
 import arc.*;
 import arc.scene.ui.*;
 import arc.util.*;
+import mindustry.arcModule.media.ArcSounds;
 import mindustry.game.Saves.*;
 import mindustry.gen.*;
 
@@ -12,7 +13,7 @@ public class SaveDialog extends LoadDialog{
 
     public SaveDialog(){
         super("@savegame");
-
+        shown(()-> ArcSounds.play("saveDialog"));
         update(() -> {
             if(state.isMenu() && isShown()){
                 hide();
@@ -26,6 +27,7 @@ public class SaveDialog extends LoadDialog{
         buttons.button("@save.new", Icon.add, () ->
             ui.showTextInput("@save", "@save.newslot", 30, "",
             text -> ui.loadAnd("@saving", () -> {
+            ArcSounds.play("saveComfirm");
             control.saves.addSave(text);
             Core.app.post(() -> Core.app.post(this::setup));
         }))).fillX().margin(10f);
@@ -35,7 +37,7 @@ public class SaveDialog extends LoadDialog{
     public void modifyButton(TextButton button, SaveSlot slot){
         button.clicked(() -> {
             if(button.childrenPressed()) return;
-
+            ArcSounds.play("saveComfirm");
             ui.showConfirm("@overwrite", "@save.overwrite", () -> save(slot));
         });
     }
@@ -48,6 +50,7 @@ public class SaveDialog extends LoadDialog{
             hide();
             ui.loadfrag.hide();
             try{
+                ArcSounds.play("saveComplete");
                 slot.save();
             }catch(Throwable e){
                 e.printStackTrace();

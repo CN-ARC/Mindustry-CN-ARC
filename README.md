@@ -5,7 +5,8 @@
 
 The automation tower defense RTS, written in Java.  
 
-# 目前无人维护，可使用[MDTX](https://github.com/TinyLake/MindustryX)
+~~目前无人维护，可使用[MDTX](https://github.com/TinyLake/MindustryX)~~
+# LC：我说随便玩玩，现在重新开始更新，主要是我要把cw3完整做出来玩玩
 
 _[资料导航站](https://docs.qq.com/sheet/DVEVob2xrcVBzQk5R)_  
 _[地图档案馆](https://docs.qq.com/sheet/DVGpmQ3lIR25rdnZo)_  

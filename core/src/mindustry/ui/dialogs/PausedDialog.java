@@ -5,6 +5,7 @@ import arc.scene.ui.*;
 import mindustry.arcModule.ARCVars;
 import arc.scene.ui.layout.*;
 import mindustry.*;
+import mindustry.arcModule.media.ArcSounds;
 import mindustry.editor.*;
 import mindustry.game.*;
 import mindustry.gen.*;
@@ -159,6 +160,7 @@ public class PausedDialog extends BaseDialog{
         };
 
         if(confirmExit){
+            ArcSounds.play("endGame");
             ui.showConfirm("@confirm", "@quit.confirm", quit);
         }else{
             quit.run();

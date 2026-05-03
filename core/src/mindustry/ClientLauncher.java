@@ -314,9 +314,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         return "Mindustry-CN-ARC | 版本号 " +
                 (Version.arcBuild <= 0 ? "dev" : Version.arcBuild) +
                 " | mod启用" + enabled + "/" +
-                (mods == null ? 0 : mods.mods.size) +
-                " | " +
-                (Core.graphics != null ? Core.graphics.getWidth() + "x" + Core.graphics.getHeight() : "");
+                (mods == null ? 0 : mods.mods.size);
     }
 
     @Override

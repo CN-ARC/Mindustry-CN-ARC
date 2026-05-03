@@ -94,7 +94,7 @@ public class AboutCN_ARCDialog extends BaseDialog {
             if (!log.startsWith("[cyan]请仔细阅读学术端")) {
                 about.add(log).left();
             } else {
-                about.add(log + ARCVars.changeLogRead).left();
+                about.add(log).left();
             }
             about.row();
         }

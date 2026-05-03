@@ -18,6 +18,7 @@ import arc.util.*;
 import arc.util.io.*;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.RFuncs;
+import mindustry.arcModule.media.ArcSounds;
 import mindustry.arcModule.ui.AdvanceToolTable;
 import mindustry.content.*;
 import mindustry.content.TechTree.*;
@@ -53,6 +54,7 @@ public class SettingsMenuDialog extends BaseDialog{
     public SettingsMenuDialog(){
         super(bundle.get("settings", "Settings"));
         addCloseButton();
+
 
         cont.add(main = new SettingsTable());
         shouldPause = true;
@@ -255,6 +257,12 @@ public class SettingsMenuDialog extends BaseDialog{
         addSettings();
     }
 
+    @Override
+    public void closeOnBack() {
+        ArcSounds.play("returnTitle");
+        super.closeOnBack();
+    }
+
     String getLogs(){
         Fi log = settings.getDataDirectory().child("last_log.txt");
 
@@ -297,29 +305,70 @@ public class SettingsMenuDialog extends BaseDialog{
         float marg = 8f, isize = iconMed;
 
         menu.defaults().size(300f, 60f);
-        if(Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead){
-            menu.button("@settings.game", Icon.settings, style, isize, () -> visible(0)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.graphics", Icon.image, style, isize, () -> visible(1)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.sound", Icon.filters, style, isize, () -> visible(2)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.arc", Icon.star,style,isize, () -> visible(3)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.forcehide", Icon.eyeSmall,style,isize, () -> visible(4)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.specmode", Icon.info,style,isize, () -> visible(5)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.cheating", Icon.lock,style,isize, () -> visible(6)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.language", Icon.chat, style, isize, ui.language::show).marginLeft(marg).row();
-            if(!mobile || Core.settings.getBool("keyboard")){
-            menu.button("@settings.controls", Icon.move, style, isize, ui.controls::show).marginLeft(marg).row();
-            }
+        menu.button("@settings.game", Icon.settings, style, isize, () -> {
+            visible(0);
+            ArcSounds.play("settingTabGame");
+        }).marginLeft(marg).row();
 
-        menu.button("@settings.data", Icon.save, style, isize, () -> dataDialog.show()).marginLeft(marg).row();
+        menu.row();
 
-        int i = Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead ? 7 : 1;
+        menu.button("@settings.graphics", Icon.image, style, isize, () -> {
+            visible(1);
+            ArcSounds.play("settingTabGraphics");
+        }).marginLeft(marg).row();
+
+        menu.row();
+
+        menu.button("@settings.sound", Icon.filters, style, isize, () -> {
+            visible(2);
+            ArcSounds.play("settingTabSound");
+        }).marginLeft(marg).row();
+
+        menu.row();
+
+        menu.button("@settings.arc", Icon.star, style, isize, () -> {
+            visible(3);
+            ArcSounds.play("settingTabArc");
+        }).marginLeft(marg).row();
+
+        menu.row();
+
+        menu.button("@settings.forcehide", Icon.eyeSmall, style, isize, () -> {
+            visible(4);
+            ArcSounds.play("settingTabForcehide");
+        }).marginLeft(marg).row();
+
+        menu.row();
+
+        menu.button("@settings.specmode", Icon.info, style, isize, () -> {
+            visible(5);
+            ArcSounds.play("settingTabSpecmode");
+        }).marginLeft(marg).row();
+
+        menu.row();
+
+        menu.button("@settings.cheating", Icon.lock, style, isize, () -> {
+            visible(6);
+            ArcSounds.play("settingTabCheating");
+        }).marginLeft(marg).row();
+
+        menu.row();
+
+        menu.button("@settings.language", Icon.chat, style, isize, ui.language::show).marginLeft(marg).row();
+
+        if(!mobile || Core.settings.getBool("keyboard")){
+            menu.button("@settings.controls", Icon.move, style, isize, () -> {
+                ui.controls.show();
+                ArcSounds.play("settingTabControl");
+            }).marginLeft(marg).row();
+        }
+        menu.button("@settings.data", Icon.save, style, isize, () -> {
+            dataDialog.show();
+            ArcSounds.play("attention");
+        }).marginLeft(marg).row();
+
+
+        int i =  7;
         for(var cat : categories){
             int index = i;
             if(cat.icon == null){
@@ -329,46 +378,38 @@ public class SettingsMenuDialog extends BaseDialog{
             }
             i++;
         }
-        }
-        else{
-            menu.button("@settings.arc", style, () -> visible(0));
-            menu.row();
-            menu.button("@settings.language", style, ui.language::show);
-        }
 
     }
 
     void addSettings(){
+        sound.addCategory("SoundSetting");
+        sound.checkPref("alwaysmusic", false);
+        sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
+        sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
+        sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
+        sound.sliderPref("arcvol", settings.getInt("musicvol"), 0, 100, 1, i -> i + "%");
+        sound.addCategory("arcCustomSound");
+        sound.checkPref("enableArcCustomSound", false);
+        sound.sliderPref("ArcCustomSoundvol", 100, 0, 100, 1, i -> i + "%");
 
-        if(Core.settings.getInt("changelogreaded") != ARCVars.changeLogRead){
-            arc.sliderPref("changelogreaded", 0, 0, 150, 1, i -> i + "");
-            arc.checkPref("changelogexplain", false);
-        }else {
-            sound.checkPref("alwaysmusic", false);
-            sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
-            sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
-            sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
-            sound.sliderPref("arcvol", settings.getInt("musicvol"), 0, 100, 1, i -> i + "%");
+        game.addCategory("arcCNet");
+        game.stringInput("arcNetProxy", "");
+        game.addCategory("arcCSave");
+        game.checkPref("savecreate", true);
+        game.checkPref("save_more_map", false);
+        game.sliderPref("saveinterval", 60, 10, 5 * 120, 10, i -> Core.bundle.format("setting.seconds", i));
 
-            game.addCategory("arcCNet");
-            game.stringInput("arcNetProxy", "");
-            game.addCategory("arcCSave");
-            game.checkPref("savecreate", true);
-            game.checkPref("save_more_map", false);
-            game.sliderPref("saveinterval", 60, 10, 5 * 120, 10, i -> Core.bundle.format("setting.seconds", i));
-
-            game.addCategory("arcCAssist");
-            game.checkPref("autotarget", true);
-            game.checkPref("keyboard", false, val -> {
-                control.setInput(val ? new DesktopInput() : new MobileInput());
-                input.setUseKeyboard(val);
-            });
-            if(Core.settings.getBool("keyboard")){
-                control.setInput(new DesktopInput());
-                input.setUseKeyboard(true);
-            }
-
+        game.addCategory("arcCAssist");
+        game.checkPref("autotarget", true);
+        game.checkPref("keyboard", false, val -> {
+            control.setInput(val ? new DesktopInput() : new MobileInput());
+            input.setUseKeyboard(val);
+        });
+        if(Core.settings.getBool("keyboard")){
+            control.setInput(new DesktopInput());
+            input.setUseKeyboard(true);
         }
+
         //the issue with touchscreen support on desktop is that:
         //1) I can't test it
         //2) the SDL backend doesn't support multitouch
@@ -848,12 +889,13 @@ public class SettingsMenuDialog extends BaseDialog{
             });
             specmode.sliderPref("fontSize", 10, 5, 25, 1, i -> "x " + Strings.fixed(i * 0.1f, 1));
             specmode.stringInput("themeColor", "ffd37f");
-            specmode.stringInput("arcBackgroundPath", "");
+            //specmode.stringInput("arcBackgroundPath", ""); 使用默认路径
             if (!OS.isAndroid && !OS.isIos) {
                 specmode.stringInput("arcCursorPath", "");
                 specmode.buttonInput("[cyan]查看当前指针样式", () -> new BaseDialog("指针样式") {{
                     shown(() -> {
                         addCloseButton();
+
                         cont.add("[orange]将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
                         cont.add("[cyan]图片中心是指针中心").row();
                         cont.button("[orange]重载指针", () -> {
@@ -996,12 +1038,8 @@ public class SettingsMenuDialog extends BaseDialog{
 
         Seq<Table> tables = new Seq<>();
 
-        if(Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead){
-            tables.addAll(game, graphics, sound, arc,forcehide,specmode, cheating);
-        }
-        else{
-            tables.addAll(arc);
-        }
+        tables.addAll(game, graphics, sound, arc,forcehide,specmode, cheating);
+
         for(var custom : categories){
             tables.add(custom.table);
         }
@@ -1015,6 +1053,7 @@ public class SettingsMenuDialog extends BaseDialog{
             if(prefs.getChildren().first() != menu){
                 back();
             }else{
+                ArcSounds.play("confirmSetting");
                 hide();
             }
         }).size(210f, 64f);

@@ -19,6 +19,7 @@ import arc.util.serialization.JsonReader;
 import arc.util.serialization.JsonValue;
 import mindustry.Vars;
 import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.media.ArcSounds;
 import mindustry.arcModule.ui.RStyles;
 import mindustry.arcModule.ui.window.Window;
 import mindustry.core.Version;
@@ -38,7 +39,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.ARCVars.arcui;
+import static mindustry.arcModule.ARCVars.*;
 import static mindustry.gen.Tex.*;
 import static mindustry.ui.Styles.cleart;
 
@@ -58,7 +59,7 @@ public class MenuFragment{
     static boolean haveNewerNews = false;
 
     Fi arcBackground;
-    String arcBackgroundPath = Core.settings.getString("arcBackgroundPath");
+    Fi arcBackgroundPath = Vars.dataDirectory.child(arcFolderName).child(arcCustomBackgroundName);
     Seq<Fi> arcBGList;
 
     Image img = new Image();
@@ -83,8 +84,9 @@ public class MenuFragment{
 
         parent = group;
 
-        if (arcBackgroundPath != null && Core.files.absolute(arcBackgroundPath).exists() && Core.files.absolute(arcBackgroundPath).list().length >=1){
-            arcBackgroundIndex = (int) (Math.random() * Core.files.absolute(arcBackgroundPath).list().length);
+        arcBackgroundPath = Vars.dataDirectory.child(arcFolderName).child(arcCustomBackgroundName);
+        if (Vars.dataDirectory != null && arcBackgroundPath.exists() && arcBackgroundPath.list().length >=1){
+            arcBackgroundIndex = (int) (Math.random() * arcBackgroundPath.list().length);
             nextBackGroundImg();
             if (arcBGList.size == 0) {
                 parent.fill((x, y, w, h) -> renderer.render());
@@ -160,10 +162,11 @@ public class MenuFragment{
             }));
         }
 
+
         parent.fill(c -> c.bottom().left().table(t -> {
             t.background(Tex.buttonEdge3);
             t.button("\uE83D", cleart, this::nextBackGroundImg).width(50f);
-        }).visible(() -> Core.settings.getString("arcBackgroundPath", "").length() != 0).left().width(100));
+        }).visible(() -> arcBackgroundPath.list().length >=1).left().width(100));
 
         String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[cyan]") + Version.combined();
         String arcversionText = "\n[cyan]ARC version:" + Version.arcBuild;
@@ -256,12 +259,14 @@ public class MenuFragment{
                 Log.err(e);
             }
         }));
+
+        ArcSounds.play("gameTitle");
     }
 
     private void nextBackGroundImg(){
-        arcBGList = Core.files.absolute(arcBackgroundPath).findAll(f -> !f.isDirectory() && (f.extEquals("png") || f.extEquals("jpg") || f.extEquals("jpeg")));
+        arcBGList = arcBackgroundPath.findAll(f -> !f.isDirectory() && (f.extEquals("png") || f.extEquals("jpg") || f.extEquals("jpeg")));
         if (arcBGList.size == 0) return;
-        arcBackgroundPath = Core.settings.getString("arcBackgroundPath");
+        arcBackgroundPath = Vars.dataDirectory.child(arcFolderName).child(arcCustomBackgroundName);
         arcBackgroundIndex += 1;
         arcBackgroundIndex = arcBackgroundIndex % arcBGList.size;
         new Thread(() -> {
@@ -455,12 +460,12 @@ public class MenuFragment{
         MobileButton
                 play = new MobileButton(Icon.play, "@campaign", () -> checkPlay(ui.planet::show)),
                 custom = new MobileButton(Icon.rightOpenOut, "@customgame", () -> checkPlay(ui.custom::show)),
-                maps = new MobileButton(Icon.download, "@loadgame", () -> checkPlay(ui.load::show)),
+                maps = new MobileButton(Icon.download, "@loadgame", () -> {ArcSounds.play("loadSaveDialog");checkPlay(ui.load::show);}),
                 join = new MobileButton(Icon.add, "@joingame", () -> checkPlay(ui.join::show)),
                 editor = new MobileButton(Icon.terrain, "@editor", () -> checkPlay(ui.maps::show)),
                 tools = new MobileButton(Icon.settings, "@settings", ui.settings::show),
                 mods = new MobileButton(Icon.book, "@mods", ui.mods::show),
-                exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit()),
+                exit = new MobileButton(Icon.exit, "@quit", () -> {ArcSounds.play("endGame");Core.app.exit();}),
                 cn_arc = new MobileButton(Icon.info,"@aboutcn_arc.button",  arcui.aboutcn_arc::show),
                 //mindustrywiki = new MobileButton(Icon.book, "@mindustrywiki.button", ui.mindustrywiki::show),
                 updatedialog = new MobileButton(Icon.info,"@updatedialog.button",  arcui.updatedialog::show),
@@ -483,19 +488,17 @@ public class MenuFragment{
 
         if(!Core.graphics.isPortrait()){
             container.marginTop(60f);
-            if(Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead){
-                container.add(play);
-                container.add(join);
-                container.add(custom);
-                container.add(maps);
-                // add odd custom buttons
-                for(int i = 1; i < customs.size; i += 2){
-                    customs.get(i).clicked(this::randomLabel);
-                    container.add(customs.get(i));
-                }
-                container.row();
-                container.add(editor);
+            container.add(play);
+            container.add(join);
+            container.add(custom);
+            container.add(maps);
+            // add odd custom buttons
+            for(int i = 1; i < customs.size; i += 2){
+                customs.get(i).clicked(this::randomLabel);
+                container.add(customs.get(i));
             }
+            container.row();
+            container.add(editor);
             container.add(tools);
             container.add(mods);
             container.add(achievements);
@@ -511,15 +514,13 @@ public class MenuFragment{
             if(!ios) container.add(exit);
         }else{
             container.marginTop(0f);
-            if(Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead){
-                container.add(play);
-                container.add(maps);
-                container.row();
-                container.add(custom);
-                container.add(join);
-                container.row();
-                container.add(editor);
-            }
+            container.add(play);
+            container.add(maps);
+            container.row();
+            container.add(custom);
+            container.add(join);
+            container.row();
+            container.add(editor);
             container.add(tools);
             container.row();
             container.add(mods);
@@ -584,40 +585,28 @@ public class MenuFragment{
             t.name = "buttons";
 
             if(desktopButtons == null){
-                if(Core.settings.getInt("changelogreaded") != ARCVars.changeLogRead) {
-                    desktopButtons = Seq.with(
-                            new MenuButton("@database.button", Icon.menu,
-                                    new MenuButton("@schematics", Icon.paste, ui.schematics::show),
-                                    new MenuButton("@database", Icon.book, ui.database::show),
-                                    new MenuButton("@about.button", Icon.info, ui.about::show),
-                                    new MenuButton("@updatedialog.button", Icon.distribution, arcui.updatedialog::show)
-                            ),
-                            new MenuButton("@settings", Icon.settings, ui.settings::show),
-                            new MenuButton("@aboutcn_arc.button", Icon.info, arcui.aboutcn_arc::show)
-                    );
-                } else {
-                    desktopButtons = Seq.with(
-                            new MenuButton("@play", Icon.play,
-                                    new MenuButton("@campaign", Icon.play, () -> checkPlay(ui.planet::show)),
-                                    new MenuButton("@joingame", Icon.add, () -> checkPlay(ui.join::show)),
-                                    new MenuButton("@customgame", Icon.terrain, () -> checkPlay(ui.custom::show)),
-                                    new MenuButton("@loadgame", Icon.download, () -> checkPlay(ui.load::show))
-                            ),
-                            new MenuButton("@database.button", Icon.menu,
-                                    new MenuButton("@schematics", Icon.paste, ui.schematics::show),
-                                    new MenuButton("@database", Icon.book, ui.database::show),
-                                    new MenuButton("@about.button", Icon.info, ui.about::show)
-                            ),
-                            new MenuButton("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new MenuButton("@workshop", Icon.steam, platform::openWorkshop) : null,
-                            new MenuButton("@mods", Icon.book, ui.mods::show),
-                            new MenuButton("@settings", Icon.settings, ui.settings::show)
-                    );
-                }
+                desktopButtons = Seq.with(
+                        new MenuButton("@play", Icon.play,
+                                new MenuButton("@campaign", Icon.play, () -> checkPlay(ui.planet::show)),
+                                new MenuButton("@joingame", Icon.add, () -> checkPlay(ui.join::show)),
+                                new MenuButton("@customgame", Icon.terrain, () -> checkPlay(ui.custom::show)),
+                                new MenuButton("@loadgame", Icon.download, () -> {ArcSounds.play("loadSaveDialog");checkPlay(ui.load::show);})
+                        ),
+                        new MenuButton("@database.button", Icon.menu,
+                                new MenuButton("@schematics", Icon.paste, ui.schematics::show),
+                                new MenuButton("@database", Icon.book, ui.database::show),
+                                new MenuButton("@about.button", Icon.info, ui.about::show)
+                        ),
+                        new MenuButton("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new MenuButton("@workshop", Icon.steam, platform::openWorkshop) : null,
+                        new MenuButton("@mods", Icon.book, ui.mods::show),
+                        new MenuButton("@settings", Icon.settings, ui.settings::show)
+                );
+
             }
 
             buttons(t, desktopButtons.toArray(MenuButton.class));
             buttons(t, customButtons.toArray(MenuButton.class));
-            buttons(t, new MenuButton("@quit", Icon.exit, Core.app::exit));
+            buttons(t, new MenuButton("@quit", Icon.exit, ()->{ArcSounds.play("endGame");Core.app.exit();}));
         }).width(width).growY();
 
         container.table(background, t -> {

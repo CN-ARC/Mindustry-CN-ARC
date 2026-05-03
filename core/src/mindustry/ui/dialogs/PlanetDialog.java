@@ -258,6 +258,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             state.planet = Planets.serpulo;
         }
 
+
         rebuildButtons();
         mode = look;
         state.otherCamPos = null;

@@ -26,7 +26,7 @@ public class ARCVars implements Loadable {
     /** ARC */
     public static String arcVersion = Version.arcBuild <= 0 ? "dev" : String.valueOf(Version.arcBuild);
     public static String arcVersionPrefix = "<ARC~" + arcVersion + ">";
-    public static int changeLogRead = 18;
+
     public static Seq<District.advDistrict> districtList = new Seq<>();
     /** 服务器远程控制允许或移除作弊功能 */
     public static boolean arcCheatServer = false;
@@ -47,9 +47,10 @@ public class ARCVars implements Loadable {
 
     public static ARCTeam arcTeam = new ARCTeam();
 
+    public static String arcFolderName = "arcCustom";
+    public static String arcCustomBackgroundName = "background";
     /** Arcreeper */
     public static CreeperCore creeperCore;
-
     static {
         // 减少性能开销
         Events.run(EventType.Trigger.update, () -> {
