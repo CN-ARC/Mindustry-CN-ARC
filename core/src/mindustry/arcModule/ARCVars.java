@@ -8,6 +8,7 @@ import arc.struct.Seq;
 import mindustry.Vars;
 import mindustry.arcModule.toolpack.ARCTeam;
 import mindustry.arcModule.ui.ARCUI;
+import mindustry.arcreeper.CreeperCore;
 import mindustry.core.Version;
 import mindustry.game.EventType;
 import mindustry.game.Gamemode;
@@ -45,6 +46,9 @@ public class ARCVars implements Loadable {
     public static final int maxBuildPlans = 100;
 
     public static ARCTeam arcTeam = new ARCTeam();
+
+    /** Arcreeper */
+    public static CreeperCore creeperCore;
 
     static {
         // 减少性能开销

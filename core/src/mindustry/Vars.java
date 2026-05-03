@@ -12,6 +12,7 @@ import arc.util.Log.*;
 import arc.util.io.*;
 import mindustry.ai.*;
 import mindustry.arcModule.*;
+import mindustry.arcreeper.CreeperCore;
 import mindustry.async.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -393,6 +394,8 @@ public class Vars implements Loadable{
         ARCVars.changeLogRead = Math.abs(Integer.parseInt(("" + uuid.hashCode()).substring(0, 2)));
 
         ARCVars.replayController = new ReplayController();
+        ARCVars.creeperCore = new CreeperCore();
+        CreeperCore.init();
     }
 
     /** Checks if a launch failure occurred.
