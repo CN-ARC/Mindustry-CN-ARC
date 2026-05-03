@@ -297,29 +297,28 @@ public class SettingsMenuDialog extends BaseDialog{
         float marg = 8f, isize = iconMed;
 
         menu.defaults().size(300f, 60f);
-        if(Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead){
-            menu.button("@settings.game", Icon.settings, style, isize, () -> visible(0)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.graphics", Icon.image, style, isize, () -> visible(1)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.sound", Icon.filters, style, isize, () -> visible(2)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.arc", Icon.star,style,isize, () -> visible(3)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.forcehide", Icon.eyeSmall,style,isize, () -> visible(4)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.specmode", Icon.info,style,isize, () -> visible(5)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.cheating", Icon.lock,style,isize, () -> visible(6)).marginLeft(marg).row();
-            menu.row();
-            menu.button("@settings.language", Icon.chat, style, isize, ui.language::show).marginLeft(marg).row();
-            if(!mobile || Core.settings.getBool("keyboard")){
-            menu.button("@settings.controls", Icon.move, style, isize, ui.controls::show).marginLeft(marg).row();
-            }
+        menu.button("@settings.game", Icon.settings, style, isize, () -> visible(0)).marginLeft(marg).row();
+        menu.row();
+        menu.button("@settings.graphics", Icon.image, style, isize, () -> visible(1)).marginLeft(marg).row();
+        menu.row();
+        menu.button("@settings.sound", Icon.filters, style, isize, () -> visible(2)).marginLeft(marg).row();
+        menu.row();
+        menu.button("@settings.arc", Icon.star,style,isize, () -> visible(3)).marginLeft(marg).row();
+        menu.row();
+        menu.button("@settings.forcehide", Icon.eyeSmall,style,isize, () -> visible(4)).marginLeft(marg).row();
+        menu.row();
+        menu.button("@settings.specmode", Icon.info,style,isize, () -> visible(5)).marginLeft(marg).row();
+        menu.row();
+        menu.button("@settings.cheating", Icon.lock,style,isize, () -> visible(6)).marginLeft(marg).row();
+        menu.row();
+        menu.button("@settings.language", Icon.chat, style, isize, ui.language::show).marginLeft(marg).row();
+        if(!mobile || Core.settings.getBool("keyboard")){
+        menu.button("@settings.controls", Icon.move, style, isize, ui.controls::show).marginLeft(marg).row();
+        }
 
         menu.button("@settings.data", Icon.save, style, isize, () -> dataDialog.show()).marginLeft(marg).row();
 
-        int i = Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead ? 7 : 1;
+        int i =  7;
         for(var cat : categories){
             int index = i;
             if(cat.icon == null){
@@ -329,46 +328,34 @@ public class SettingsMenuDialog extends BaseDialog{
             }
             i++;
         }
-        }
-        else{
-            menu.button("@settings.arc", style, () -> visible(0));
-            menu.row();
-            menu.button("@settings.language", style, ui.language::show);
-        }
 
     }
 
     void addSettings(){
+        sound.checkPref("alwaysmusic", false);
+        sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
+        sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
+        sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
+        sound.sliderPref("arcvol", settings.getInt("musicvol"), 0, 100, 1, i -> i + "%");
 
-        if(Core.settings.getInt("changelogreaded") != ARCVars.changeLogRead){
-            arc.sliderPref("changelogreaded", 0, 0, 150, 1, i -> i + "");
-            arc.checkPref("changelogexplain", false);
-        }else {
-            sound.checkPref("alwaysmusic", false);
-            sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
-            sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
-            sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
-            sound.sliderPref("arcvol", settings.getInt("musicvol"), 0, 100, 1, i -> i + "%");
+        game.addCategory("arcCNet");
+        game.stringInput("arcNetProxy", "");
+        game.addCategory("arcCSave");
+        game.checkPref("savecreate", true);
+        game.checkPref("save_more_map", false);
+        game.sliderPref("saveinterval", 60, 10, 5 * 120, 10, i -> Core.bundle.format("setting.seconds", i));
 
-            game.addCategory("arcCNet");
-            game.stringInput("arcNetProxy", "");
-            game.addCategory("arcCSave");
-            game.checkPref("savecreate", true);
-            game.checkPref("save_more_map", false);
-            game.sliderPref("saveinterval", 60, 10, 5 * 120, 10, i -> Core.bundle.format("setting.seconds", i));
-
-            game.addCategory("arcCAssist");
-            game.checkPref("autotarget", true);
-            game.checkPref("keyboard", false, val -> {
-                control.setInput(val ? new DesktopInput() : new MobileInput());
-                input.setUseKeyboard(val);
-            });
-            if(Core.settings.getBool("keyboard")){
-                control.setInput(new DesktopInput());
-                input.setUseKeyboard(true);
-            }
-
+        game.addCategory("arcCAssist");
+        game.checkPref("autotarget", true);
+        game.checkPref("keyboard", false, val -> {
+            control.setInput(val ? new DesktopInput() : new MobileInput());
+            input.setUseKeyboard(val);
+        });
+        if(Core.settings.getBool("keyboard")){
+            control.setInput(new DesktopInput());
+            input.setUseKeyboard(true);
         }
+
         //the issue with touchscreen support on desktop is that:
         //1) I can't test it
         //2) the SDL backend doesn't support multitouch
@@ -996,12 +983,8 @@ public class SettingsMenuDialog extends BaseDialog{
 
         Seq<Table> tables = new Seq<>();
 
-        if(Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead){
-            tables.addAll(game, graphics, sound, arc,forcehide,specmode, cheating);
-        }
-        else{
-            tables.addAll(arc);
-        }
+        tables.addAll(game, graphics, sound, arc,forcehide,specmode, cheating);
+
         for(var custom : categories){
             tables.add(custom.table);
         }

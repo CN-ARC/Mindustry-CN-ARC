@@ -390,7 +390,6 @@ public class Vars implements Loadable{
         maps.load();
 
         String uuid = Core.settings.getString("uuid", "o");
-        ARCVars.changeLogRead = Math.abs(Integer.parseInt(("" + uuid.hashCode()).substring(0, 2)));
 
         ARCVars.replayController = new ReplayController();
     }

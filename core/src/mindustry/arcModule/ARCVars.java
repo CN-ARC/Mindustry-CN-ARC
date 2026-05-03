@@ -25,7 +25,7 @@ public class ARCVars implements Loadable {
     /** ARC */
     public static String arcVersion = Version.arcBuild <= 0 ? "dev" : String.valueOf(Version.arcBuild);
     public static String arcVersionPrefix = "<ARC~" + arcVersion + ">";
-    public static int changeLogRead = 18;
+
     public static Seq<District.advDistrict> districtList = new Seq<>();
     /** 服务器远程控制允许或移除作弊功能 */
     public static boolean arcCheatServer = false;
