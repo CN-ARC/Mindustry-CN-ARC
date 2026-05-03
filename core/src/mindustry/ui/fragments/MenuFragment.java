@@ -19,6 +19,7 @@ import arc.util.serialization.JsonReader;
 import arc.util.serialization.JsonValue;
 import mindustry.Vars;
 import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.media.ArcSounds;
 import mindustry.arcModule.ui.RStyles;
 import mindustry.arcModule.ui.window.Window;
 import mindustry.core.Version;
@@ -258,6 +259,8 @@ public class MenuFragment{
                 Log.err(e);
             }
         }));
+
+        ArcSounds.play("gameTitle");
     }
 
     private void nextBackGroundImg(){

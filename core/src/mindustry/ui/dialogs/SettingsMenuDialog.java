@@ -54,6 +54,7 @@ public class SettingsMenuDialog extends BaseDialog{
     public SettingsMenuDialog(){
         super(bundle.get("settings", "Settings"));
         addCloseButton();
+        closeOnBack(() -> ArcSounds.play("confirmSetting"));
 
         cont.add(main = new SettingsTable());
         shouldPause = true;
@@ -256,6 +257,12 @@ public class SettingsMenuDialog extends BaseDialog{
         addSettings();
     }
 
+    @Override
+    public void closeOnBack() {
+        ArcSounds.play("returnTitle");
+        super.closeOnBack();
+    }
+
     String getLogs(){
         Fi log = settings.getDataDirectory().child("last_log.txt");
 
@@ -350,10 +357,16 @@ public class SettingsMenuDialog extends BaseDialog{
         menu.button("@settings.language", Icon.chat, style, isize, ui.language::show).marginLeft(marg).row();
 
         if(!mobile || Core.settings.getBool("keyboard")){
-            menu.button("@settings.controls", Icon.move, style, isize, ui.controls::show).marginLeft(marg).row();
+            menu.button("@settings.controls", Icon.move, style, isize, () -> {
+                ui.controls.show();
+                ArcSounds.play("settingTabControl");
+            }).marginLeft(marg).row();
         }
+        menu.button("@settings.data", Icon.save, style, isize, () -> {
+            dataDialog.show();
+            ArcSounds.play("attention");
+        }).marginLeft(marg).row();
 
-        menu.button("@settings.data", Icon.save, style, isize, () -> dataDialog.show()).marginLeft(marg).row();
 
         int i =  7;
         for(var cat : categories){
@@ -882,6 +895,7 @@ public class SettingsMenuDialog extends BaseDialog{
                 specmode.buttonInput("[cyan]查看当前指针样式", () -> new BaseDialog("指针样式") {{
                     shown(() -> {
                         addCloseButton();
+
                         cont.add("[orange]将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
                         cont.add("[cyan]图片中心是指针中心").row();
                         cont.button("[orange]重载指针", () -> {
