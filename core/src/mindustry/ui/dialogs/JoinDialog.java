@@ -15,6 +15,7 @@ import arc.util.serialization.*;
 import mindustry.*;
 import mindustry.arcModule.ARCEvents;
 import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.media.ArcSounds;
 import mindustry.arcModule.ui.dialogs.USIDDialog;
 import mindustry.core.*;
 import mindustry.game.EventType.*;
@@ -120,6 +121,7 @@ public class JoinDialog extends BaseDialog{
         shown(() -> {
             setup();
             refreshAll();
+            ArcSounds.play("welcomeTo.ogg");
 
             if(!steam){
                 Core.app.post(() -> Core.settings.getBoolOnce("joininfo", () -> ui.showInfo("@join.info")));

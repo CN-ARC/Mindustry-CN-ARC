@@ -139,7 +139,9 @@ public class ArcSound extends Sound{
     }
 
     private void configure(Sound sound){
-        sound.setBus(bus);
+        // 使用独立 bus 播放，避免游戏暂停时 Core.audio.soundBus 被暂停/静音导致新音效无法发声。
+        AudioBus customBus = ArcSounds.customSoundBus();
+        sound.setBus(customBus == null ? bus : customBus);
         sound.setMinInterval(minInterval);
         sound.setFalloffOffset(falloffOffset);
     }

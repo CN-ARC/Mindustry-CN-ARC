@@ -460,12 +460,12 @@ public class MenuFragment{
         MobileButton
                 play = new MobileButton(Icon.play, "@campaign", () -> checkPlay(ui.planet::show)),
                 custom = new MobileButton(Icon.rightOpenOut, "@customgame", () -> checkPlay(ui.custom::show)),
-                maps = new MobileButton(Icon.download, "@loadgame", () -> checkPlay(ui.load::show)),
+                maps = new MobileButton(Icon.download, "@loadgame", () -> {ArcSounds.play("loadSaveDialog");checkPlay(ui.load::show);}),
                 join = new MobileButton(Icon.add, "@joingame", () -> checkPlay(ui.join::show)),
                 editor = new MobileButton(Icon.terrain, "@editor", () -> checkPlay(ui.maps::show)),
                 tools = new MobileButton(Icon.settings, "@settings", ui.settings::show),
                 mods = new MobileButton(Icon.book, "@mods", ui.mods::show),
-                exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit()),
+                exit = new MobileButton(Icon.exit, "@quit", () -> {ArcSounds.play("endGame");Core.app.exit();}),
                 cn_arc = new MobileButton(Icon.info,"@aboutcn_arc.button",  arcui.aboutcn_arc::show),
                 //mindustrywiki = new MobileButton(Icon.book, "@mindustrywiki.button", ui.mindustrywiki::show),
                 updatedialog = new MobileButton(Icon.info,"@updatedialog.button",  arcui.updatedialog::show),
@@ -590,7 +590,7 @@ public class MenuFragment{
                                 new MenuButton("@campaign", Icon.play, () -> checkPlay(ui.planet::show)),
                                 new MenuButton("@joingame", Icon.add, () -> checkPlay(ui.join::show)),
                                 new MenuButton("@customgame", Icon.terrain, () -> checkPlay(ui.custom::show)),
-                                new MenuButton("@loadgame", Icon.download, () -> checkPlay(ui.load::show))
+                                new MenuButton("@loadgame", Icon.download, () -> {ArcSounds.play("loadSaveDialog");checkPlay(ui.load::show);})
                         ),
                         new MenuButton("@database.button", Icon.menu,
                                 new MenuButton("@schematics", Icon.paste, ui.schematics::show),
@@ -606,7 +606,7 @@ public class MenuFragment{
 
             buttons(t, desktopButtons.toArray(MenuButton.class));
             buttons(t, customButtons.toArray(MenuButton.class));
-            buttons(t, new MenuButton("@quit", Icon.exit, Core.app::exit));
+            buttons(t, new MenuButton("@quit", Icon.exit, ()->{ArcSounds.play("endGame");Core.app.exit();}));
         }).width(width).growY();
 
         container.table(background, t -> {

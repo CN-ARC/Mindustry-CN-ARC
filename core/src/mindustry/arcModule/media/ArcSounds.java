@@ -1,8 +1,10 @@
 package mindustry.arcModule.media;
 
 import arc.Core;
+import arc.audio.AudioBus;
 import arc.files.Fi;
 import arc.struct.Seq;
+import arc.util.Log;
 import mindustry.Vars;
 
 import java.util.HashMap;
@@ -24,9 +26,31 @@ public class ArcSounds{
     private static final Map<String, ArcSound> sounds = new HashMap<>();
     private static final Map<String, Seq<Fi>> indexedFiles = new HashMap<>();
 
+    /**
+     * customSound 专用 bus。不要挂到 Core.audio.soundBus，否则游戏暂停时 soundBus 被暂停/静音，
+     * Sound.play() 虽然被调用了，但声音会随 soundBus 一起停住。
+     */
+    private static AudioBus customSoundBus;
+
     private static long lastScanTime = -1L;
 
     private ArcSounds(){
+    }
+
+    static AudioBus customSoundBus(){
+        if(Core.audio == null || !Core.audio.initialized()){
+            return null;
+        }
+
+        if(customSoundBus == null){
+            customSoundBus = new AudioBus();
+        }
+
+        // 如果该 bus 曾被 pause/stop，下一次播放前确保它处于可播放状态。
+        customSoundBus.play();
+        Core.audio.setPaused(customSoundBus.id, false);
+
+        return customSoundBus;
     }
 
     public static ArcSound sound(String name){
@@ -69,8 +93,10 @@ public class ArcSounds{
         if(!Core.settings.getBool("enableArcCustomSound")){
             return -1;
         }
-
-        return sound(name).playCustom(Core.settings.getInt("ArcCustomSoundvol")/100f, pitch, pan, loop, checkFrame);
+        int value = sound(name).playCustom(Core.settings.getInt("ArcCustomSoundvol")/100f, pitch, pan, loop, false);
+        if (value == -1) Log.info("Failed to play sound " + name);
+        else Log.info("playing "+ name);
+        return value;
     }
 
     public static int loop(String name){
@@ -104,6 +130,12 @@ public class ArcSounds{
         stopAll();
         sounds.clear();
         indexedFiles.clear();
+
+        if(customSoundBus != null && Core.audio != null && Core.audio.initialized()){
+            customSoundBus.stop();
+        }
+        customSoundBus = null;
+
         lastScanTime = -1L;
     }
 

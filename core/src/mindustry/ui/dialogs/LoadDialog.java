@@ -9,6 +9,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.media.ArcSounds;
 import mindustry.core.GameState.*;
 import mindustry.game.*;
 import mindustry.game.Saves.*;
@@ -122,6 +123,7 @@ public class LoadDialog extends BaseDialog{
                     }).checked(slot.isAutosave()).right();
 
                     t.button(Icon.trash, Styles.emptyi, () -> {
+                        ArcSounds.play("attention");
                         ui.showConfirm("@confirm", "@save.delete.confirm", () -> {
                             slot.delete();
                             rebuild();
@@ -129,6 +131,7 @@ public class LoadDialog extends BaseDialog{
                     }).right();
 
                     t.button(Icon.pencil, Styles.emptyi, () -> {
+                        ArcSounds.play("loadConfirm");
                         ui.showTextInput("@save.rename", "@save.rename.text", slot.getName(), text -> {
                             slot.setName(text);
                             rebuild();
@@ -223,6 +226,7 @@ public class LoadDialog extends BaseDialog{
                     state.rules.editor = false;
                     state.rules.sector = null;
                     state.set(State.playing);
+                    ArcSounds.play("loadCompleted");
                 }catch(SaveException e){
                     Log.err(e);
                     logic.reset();

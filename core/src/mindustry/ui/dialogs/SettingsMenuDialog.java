@@ -54,7 +54,7 @@ public class SettingsMenuDialog extends BaseDialog{
     public SettingsMenuDialog(){
         super(bundle.get("settings", "Settings"));
         addCloseButton();
-        closeOnBack(() -> ArcSounds.play("confirmSetting"));
+
 
         cont.add(main = new SettingsTable());
         shouldPause = true;
@@ -1053,6 +1053,7 @@ public class SettingsMenuDialog extends BaseDialog{
             if(prefs.getChildren().first() != menu){
                 back();
             }else{
+                ArcSounds.play("confirmSetting");
                 hide();
             }
         }).size(210f, 64f);
