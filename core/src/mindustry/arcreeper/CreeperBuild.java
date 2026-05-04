@@ -41,7 +41,7 @@ import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
  *     <li>Each tracked emitter owns a WorldLabel, and label.text is rebuilt with StringBuilder.</li>
  * </ul>
  */
-public final class CreeperBuilding {
+public final class CreeperBuild {
     private static final ObjectMap<Block, Entry> buildingFactories = new ObjectMap<>();
     private static final ObjectMap<Building, BuildingLogic> activeBuildings = new ObjectMap<>();
     private static boolean initialized = false;
@@ -58,7 +58,7 @@ public final class CreeperBuilding {
     /** Impact reactor nullify distance. KTS: 16f * tilesize. */
     public static float impactRange = 16f * Vars.tilesize;
 
-    private CreeperBuilding() {
+    private CreeperBuild() {
     }
 
     public static void init() {
@@ -196,8 +196,8 @@ public final class CreeperBuilding {
     private static void scanWorldBuildings() {
         //if (Vars.world == null || Vars.world.tiles == null) return;
         Log.info("scanWorldBuildings");
-        creepTeam.cores().forEach(CreeperBuilding::addCoreEmitterIfNeeded);
-        Team.sharded.cores().forEach(CreeperBuilding::addCoreEmitterIfNeeded);
+        creepTeam.cores().forEach(CreeperBuild::addCoreEmitterIfNeeded);
+        Team.sharded.cores().forEach(CreeperBuild::addCoreEmitterIfNeeded);
         /*
         Vars.world.tiles.eachTile(tile -> {
             Building build = tile.build;

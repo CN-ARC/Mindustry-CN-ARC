@@ -18,7 +18,7 @@ public final class CreeperCore {
         if(eventsLoaded) return;
         eventsLoaded = true;
         Log.info("init ArcCreeper");
-        CreeperBuilding.init();
+        CreeperBuild.init();
 
         Events.on(EventType.WorldLoadEvent.class, e -> {
             if(isFloodMap()){
@@ -45,7 +45,7 @@ public final class CreeperCore {
         //if(enabled) return;
         enabled = true;
         creeperTile.init();
-        CreeperBuilding.load();
+        CreeperBuild.load();
     }
 
     /** 退出模式 */
@@ -54,7 +54,7 @@ public final class CreeperCore {
         enabled = false;
 
         creeperTile.reset();
-        CreeperBuilding.reset(true);
+        CreeperBuild.reset(true);
 
     }
 
@@ -62,7 +62,7 @@ public final class CreeperCore {
     public static void update(){
         if(!enabled) return;
         creeperTile.update();
-        CreeperBuilding.update();
+        CreeperBuild.update();
     }
 
     public static boolean enabled() {

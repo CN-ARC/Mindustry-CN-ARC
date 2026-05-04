@@ -1,12 +1,13 @@
 package mindustry.arcreeper;
 
+import arc.Events;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.math.Mathf;
 import arc.util.Time;
 import mindustry.Vars;
-import mindustry.content.Blocks;
+import mindustry.game.EventType;
 import mindustry.world.Tile;
 
 public class CreeperTile {
@@ -34,11 +35,19 @@ public class CreeperTile {
     public void init() {
         reset();
         initTileHeight();
+
+        Events.on(EventType.TileChangeEvent.class, t -> {
+            if (!CreeperCore.enabled()) return;
+            updateTileHeight(t.tile);
+        });
     }
 
-    public void initTileHeight(){
-        Vars.world.tiles.eachTile(tile -> {
-                tile.height = tile.block().creeperHeight + tile.floor().creeperHeight;});
+    public void initTileHeight() {
+        Vars.world.tiles.eachTile(this::updateTileHeight);
+    }
+
+    void updateTileHeight(Tile tile) {
+        tile.height = tile.block().creeperHeight + tile.floor().creeperHeight;
     }
 
     public void reset() {
@@ -52,28 +61,28 @@ public class CreeperTile {
 
     public void set(int x, int y, float value) {
         Tile tile = Vars.world.tile(x, y);
-        if(tile != null){
+        if (tile != null) {
             tile.creeper = value;
         }
     }
 
     public void add(Tile tile, float value) {
-        if(tile == null) return;
+        if (tile == null) return;
         tile.creeper += value;
     }
 
-    public void add(int x, int y, float value){
-        add(Vars.world.tile(x, y),value);
+    public void add(int x, int y, float value) {
+        add(Vars.world.tile(x, y), value);
     }
 
     public void addArea(Tile tile, int size, float value) {
-        if(tile == null || size <= 0) return;
+        if (tile == null || size <= 0) return;
 
         int offset = -(size - 1) / 2;
         float each = value / Math.max(1, size * size);
 
-        for(int dx = 0; dx < size; dx++){
-            for(int dy = 0; dy < size; dy++){
+        for (int dx = 0; dx < size; dx++) {
+            for (int dy = 0; dy < size; dy++) {
                 add(tile.x + offset + dx, tile.y + offset + dy, each);
             }
         }
@@ -84,7 +93,7 @@ public class CreeperTile {
      */
     public void update() {
         updateTimer += Time.delta / 60f;
-        if(updateTimer < timeInterval) return;
+        if (updateTimer < timeInterval) return;
         updateTimer -= timeInterval;
 
         clearTmp();
@@ -94,7 +103,7 @@ public class CreeperTile {
         Vars.world.tiles.eachTile(tile -> {
             tile.creeper += tile.creeperTmp;
 
-            if(Math.abs(tile.creeper) < minCreeper){
+            if (Math.abs(tile.creeper) < minCreeper) {
                 tile.creeper = 0f;
             }
         });
@@ -118,8 +127,8 @@ public class CreeperTile {
      * 获取 creeper 的极性。
      */
     int signOf(float value) {
-        if(value > minCreeper) return 1;
-        if(value < -minCreeper) return -1;
+        if (value > minCreeper) return 1;
+        if (value < -minCreeper) return -1;
         return 0;
     }
 
@@ -132,36 +141,36 @@ public class CreeperTile {
     }
 
     void flowBetween(Tile a, Tile b, float rate) {
-        if(a == null || b == null) return;
+        if (a == null || b == null) return;
 
         int signA = signOf(a.creeper);
         int signB = signOf(b.creeper);
 
-        if(signA == 0 && signB == 0) return;
+        if (signA == 0 && signB == 0) return;
 
-        if(signA == signB || signA == 0 || signB == 0){
+        if (signA == signB || signA == 0 || signB == 0) {
             flowSameSign(a, b, signA, signB, rate);
-        }else{
+        } else {
             flowOppositeSign(a, b, signA, signB, rate);
         }
     }
 
     /**
      * 处理同号传播，或者一边为空的传播。
-     *
+     * <p>
      * 适用情况：
-     *  + creeper      对 creeper
-     *  - antiCreeper  对 antiCreeper
-     *  + creeper      对空 tile
-     *  - antiCreeper  对空 tile
-     *
+     * + creeper      对 creeper
+     * - antiCreeper  对 antiCreeper
+     * + creeper      对空 tile
+     * - antiCreeper  对空 tile
+     * <p>
      * 传播规则：
-     *
-     *     depth   = abs(creeper)
-     *     surface = height + depth
-     *
+     * <p>
+     * depth   = abs(creeper)
+     * surface = height + depth
+     * <p>
      * 只有 surface 较高的一侧会向 surface 较低的一侧传播。
-     *
+     * <p>
      * 对于 antiCreeper，sign = -1，
      * 但 depth 仍然是正数，因此它和 creeper 的流动规则完全一致。
      */
@@ -176,14 +185,14 @@ public class CreeperTile {
 
         float diff = surfaceA - surfaceB;
 
-        if(diff > minFlow){
+        if (diff > minFlow) {
             float amount = Math.min(diff, depthA) * rate;
-            if(amount < minFlow) return;
+            if (amount < minFlow) return;
 
             transfer(a, b, sign, amount);
-        }else if(diff < -minFlow){
+        } else if (diff < -minFlow) {
             float amount = Math.min(-diff, depthB) * rate;
-            if(amount < minFlow) return;
+            if (amount < minFlow) return;
 
             transfer(b, a, sign, amount);
         }
@@ -191,21 +200,21 @@ public class CreeperTile {
 
     /**
      * 处理 creeper 与 antiCreeper 相邻时的传播与抵消。
-     *
+     * <p>
      * 这里不能使用：
-     *
-     *     a.creeper - b.creeper
-     *
+     * <p>
+     * a.creeper - b.creeper
+     * <p>
      * 因为当 a = +10, b = -10 时，
      * signed diff 会得到 20，导致传播速度变成正常值的两倍。
-     *
+     * <p>
      * 正确做法：
-     *
+     * <p>
      * 1. 对双方都使用 abs(creeper) 作为水深；
      * 2. 使用 height + depth 判断是否能越过对方地形；
      * 3. 分别计算双方的推进能力；
      * 4. 只选择推进能力更强的一侧进行传播，而不是把两侧能力相加。
-     *
+     * <p>
      * 这样可以保证：
      * - creeper 与 antiCreeper 完全对称；
      * - antiCreeper 也必须拥有足够深度才能越过地形；
@@ -224,16 +233,16 @@ public class CreeperTile {
         float capA = Math.min(depthA, reachA);
         float capB = Math.min(depthB, reachB);
 
-        if(capA <= minFlow && capB <= minFlow) return;
+        if (capA <= minFlow && capB <= minFlow) return;
 
-        if(capA >= capB){
+        if (capA >= capB) {
             float amount = capA * rate;
-            if(amount < minFlow) return;
+            if (amount < minFlow) return;
 
             transfer(a, b, signA, amount);
-        }else{
+        } else {
             float amount = capB * rate;
-            if(amount < minFlow) return;
+            if (amount < minFlow) return;
 
             transfer(b, a, signB, amount);
         }
@@ -246,7 +255,7 @@ public class CreeperTile {
             float raw = tile.creeper;
 
             // creeper = 0 时不绘制
-            if(raw == 0f) return;
+            if (raw == 0f) return;
 
             // 负数表示 Anti-Creeper
             boolean anti = raw < 0f;
@@ -255,7 +264,7 @@ public class CreeperTile {
             float value = Math.abs(raw);
 
             // 绝对值低于阈值则不显示
-            if(value < minCreeper) return;
+            if (value < minCreeper) return;
 
             float v = Mathf.clamp(value, minCreeper, maxCreeper);
 
