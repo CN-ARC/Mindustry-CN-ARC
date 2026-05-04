@@ -6,6 +6,7 @@ import arc.graphics.g2d.Fill;
 import arc.math.Mathf;
 import arc.util.Time;
 import mindustry.Vars;
+import mindustry.content.Blocks;
 import mindustry.world.Tile;
 
 public class CreeperTile {
@@ -32,6 +33,12 @@ public class CreeperTile {
 
     public void init() {
         reset();
+        initTileHeight();
+    }
+
+    public void initTileHeight(){
+        Vars.world.tiles.eachTile(tile -> {
+                tile.height = tile.block().creeperHeight + tile.floor().creeperHeight;});
     }
 
     public void reset() {

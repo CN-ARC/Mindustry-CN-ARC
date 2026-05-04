@@ -199,6 +199,7 @@ public class Blocks{
         cliff = new Cliff("cliff"){{
             inEditor = false;
             saveData = true;
+            creeperHeight = 50f;
         }};
 
         //Registers build blocks
@@ -219,6 +220,7 @@ public class Blocks{
             cacheLayer = CacheLayer.water;
             albedo = 0.9f;
             supportsOverlay = true;
+            creeperHeight = -50f;
         }};
 
         water = new Floor("shallow-water"){{
@@ -231,6 +233,7 @@ public class Blocks{
             cacheLayer = CacheLayer.water;
             albedo = 0.9f;
             supportsOverlay = true;
+            creeperHeight = -20f;
         }};
 
         taintedWater = new Floor("tainted-water"){{
@@ -244,6 +247,7 @@ public class Blocks{
             albedo = 0.9f;
             attributes.set(Attribute.spores, 0.15f);
             supportsOverlay = true;
+            creeperHeight = -20f;
         }};
 
         deepTaintedWater = new Floor("deep-tainted-water"){{
@@ -259,6 +263,7 @@ public class Blocks{
             albedo = 0.9f;
             attributes.set(Attribute.spores, 0.15f);
             supportsOverlay = true;
+            creeperHeight = -50f;
         }};
 
         darksandTaintedWater = new ShallowLiquid("darksand-tainted-water"){{
@@ -267,6 +272,7 @@ public class Blocks{
             albedo = 0.9f;
             attributes.set(Attribute.spores, 0.1f);
             supportsOverlay = true;
+            creeperHeight = -20f;
         }};
 
         sandWater = new ShallowLiquid("sand-water"){{
@@ -274,6 +280,7 @@ public class Blocks{
             statusDuration = 50f;
             albedo = 0.9f;
             supportsOverlay = true;
+            creeperHeight = -20f;
         }};
 
         darksandWater = new ShallowLiquid("darksand-water"){{
@@ -281,6 +288,7 @@ public class Blocks{
             statusDuration = 50f;
             albedo = 0.9f;
             supportsOverlay = true;
+            creeperHeight = -20f;
         }};
 
         tar = new Floor("tar"){{
@@ -293,6 +301,7 @@ public class Blocks{
             isLiquid = true;
             cacheLayer = CacheLayer.tar;
             obstructsLight = true;
+            creeperHeight = -20f;
         }};
 
         cryofluid = new Floor("pooled-cryofluid"){{
@@ -313,6 +322,7 @@ public class Blocks{
             lightColor = Color.cyan.cpy().a(0.19f);
             obstructsLight = true;
             forceDrawLight = true;
+            creeperHeight = -20f;
         }};
 
         slag = new Floor("molten-slag"){{
@@ -331,6 +341,7 @@ public class Blocks{
             lightColor = Color.orange.cpy().a(0.38f);
             obstructsLight = true;
             forceDrawLight = true;
+            creeperHeight = -20f;
         }};
 
         space = new Floor("space"){{
@@ -340,9 +351,12 @@ public class Blocks{
             variants = 0;
             canShadow = false;
             drawEdgeOut = false;
+            creeperHeight = 500f;
         }};
 
-        empty = new EmptyFloor("empty");
+        empty = new EmptyFloor("empty"){{
+            creeperHeight = 99999f;
+        }};
 
         stone = new Floor("stone");
 

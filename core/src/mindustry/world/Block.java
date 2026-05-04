@@ -418,6 +418,8 @@ public class Block extends UnlockableContent implements Senseable{
     @NoPatch
     public Seq<Consume> consumeBuilder = new Seq<>();
 
+    public float creeperHeight = 0f;
+
     protected TextureRegion[] generatedIcons;
 
     /** Regions indexes from icons() that are rotated. If either of these is not -1, other regions won't be rotated in ConstructBlocks. */
