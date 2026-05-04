@@ -68,14 +68,24 @@ public final class CreeperBuilding {
 
         Events.on(EventType.TilePreChangeEvent.class, e -> {
             if (!CreeperCore.enabled()) return;
+
             Building build = e.tile.build;
-            if (build != null && build.tile == e.tile) removeTracker(build);
+
+            if (build != null && build.tile == e.tile) {
+                removeTracker(build);
+                Emitters.removeEmitter(build);
+            }
         });
 
         Events.on(EventType.TileChangeEvent.class, e -> {
             if (!CreeperCore.enabled()) return;
+
             Building build = e.tile.build;
-            if (build != null && build.tile == e.tile) addTracker(build);
+
+            if (build != null && build.tile == e.tile) {
+                addTracker(build);
+                //addCoreEmitterIfNeeded(build);
+            }
         });
 
         Events.on(EventType.BlockDestroyEvent.class, e -> {
@@ -95,18 +105,25 @@ public final class CreeperBuilding {
     }
 
     public static void update() {
+        // Emitter 独立更新，不再依赖普通 BuildingLogic。
+        Emitters.update();
+        /*
         Seq<Building> invalid = new Seq<>();
 
         for (ObjectMap.Entry<Building, BuildingLogic> entry : activeBuildings) {
             Building build = entry.key;
+
             if (build == null || build.tile == null || build.tile.build != build || !build.isValid()) {
                 invalid.add(build);
                 continue;
             }
+
             entry.value.update();
         }
 
-        for (Building build : invalid) removeTracker(build);
+        for (Building build : invalid) {
+            removeTracker(build);
+        }*/
     }
 
     public static void reset() {
@@ -114,9 +131,12 @@ public final class CreeperBuilding {
     }
 
     public static void reset(boolean resetEvent) {
+        Emitters.reset();
+
         for (BuildingLogic logic : activeBuildings.values()) {
             logic.removed(resetEvent);
         }
+
         activeBuildings.clear();
     }
 
@@ -140,8 +160,8 @@ public final class CreeperBuilding {
     }
 
     private static void registerDefaultFactories() {
+        /*
         buildingFactories.clear();
-
         // KTS emitterCore.kts
         registerEmitter(Blocks.coreShard, b -> new CoreEmitterLogic(b, 4f, 0.5f, 5f, 20f * 30f, Blocks.coreFoundation, 3000f, 3f * 60f, true));
         registerEmitter(Blocks.coreFoundation, b -> new CoreEmitterLogic(b, 10f, 0.4f, 10f, 100f * 30f, Blocks.coreNucleus, 6000f, 5f * 60f, true));
@@ -163,15 +183,112 @@ public final class CreeperBuilding {
         register(Blocks.impactReactor, b -> b.team != creepTeam, ImpactReactorLogic::new);
 
         // KTS nuclearReactor.kts: creepTeam thorium reactor.
-        register(Blocks.thoriumReactor, b -> b.team == creepTeam, NuclearReactorLogic::new);
+        register(Blocks.thoriumReactor, b -> b.team == creepTeam, NuclearReactorLogic::new);*/
     }
 
+    /**
+     * 扫描整个世界。
+     *
+     * 游戏开始或世界加载时调用。
+     * 普通建筑逻辑交给 addTracker；
+     * 核心 Emitter 逻辑交给 addCoreEmitterIfNeeded。
+     */
     private static void scanWorldBuildings() {
-        if (Vars.world == null || Vars.world.tiles == null) return;
+        //if (Vars.world == null || Vars.world.tiles == null) return;
+        Log.info("scanWorldBuildings");
+        creepTeam.cores().forEach(CreeperBuilding::addCoreEmitterIfNeeded);
+        Team.sharded.cores().forEach(CreeperBuilding::addCoreEmitterIfNeeded);
+        /*
         Vars.world.tiles.eachTile(tile -> {
             Building build = tile.build;
-            if (build != null && build.tile == tile) addTracker(build);
-        });
+
+            if (build != null && build.tile == tile) {
+                addTracker(build);
+                addCoreEmitterIfNeeded(build);
+            }
+        });*/
+    }
+
+    /**
+     * 如果建筑是核心，则根据队伍添加 Emitter。
+     *
+     * creepTeam 核心：
+     *   添加正 amt，产生 Creeper。
+     *
+     * Team.sharded 核心：
+     *   添加负 amt，产生 Anti-Creeper。
+     */
+    private static void addCoreEmitterIfNeeded(Building build) {
+        if (build == null || build.block == null) return;
+        if (!isCoreEmitterBlock(build.block)) return;
+
+        float amt = coreEmitterAmount(build.block);
+        float intervals = coreEmitterIntervals(build.block);
+        float maxLayer = coreEmitterMaxLayer(build.block);
+
+        if (build.team == creepTeam) {
+            Emitters.addEmitter(build, amt, intervals, maxLayer);
+        } else if (build.team == Team.sharded) {
+            Emitters.addEmitter(build, -amt, intervals, maxLayer);
+        }
+    }
+
+    /**
+     * 判断该 Block 是否应该作为核心 Emitter。
+     */
+    private static boolean isCoreEmitterBlock(Block block) {
+        return block == Blocks.coreShard
+                || block == Blocks.coreFoundation
+                || block == Blocks.coreNucleus
+                || block == Blocks.coreBastion
+                || block == Blocks.coreCitadel
+                || block == Blocks.coreAcropolis;
+    }
+
+    /**
+     * 每次触发时的总出水量。
+     *
+     * 注意：
+     * 这里不是每秒出水量。
+     * 真正的平均出水速度约为 amt / intervals。
+     */
+    private static float coreEmitterAmount(Block block) {
+        if (block == Blocks.coreShard) return 4f;
+        if (block == Blocks.coreFoundation) return 10f;
+        if (block == Blocks.coreNucleus) return 20f;
+
+        if (block == Blocks.coreBastion) return 13f;
+        if (block == Blocks.coreCitadel) return 25f;
+        if (block == Blocks.coreAcropolis) return 50f;
+
+        return 4f;
+    }
+
+    /**
+     * 核心 Emitter 触发间隔，单位：秒。
+     */
+    private static float coreEmitterIntervals(Block block) {
+        if (block == Blocks.coreShard) return 0.5f;
+        if (block == Blocks.coreFoundation) return 0.4f;
+        if (block == Blocks.coreNucleus) return 0.2f;
+
+        if (block == Blocks.coreBastion) return 0.4f;
+        if (block == Blocks.coreCitadel) return 0.2f;
+        if (block == Blocks.coreAcropolis) return 0.2f;
+
+        return 1f;
+    }
+
+    /**
+     * 核心 Emitter 的单格最大层数。
+     *
+     * <= 0 表示不限制。
+     */
+    private static float coreEmitterMaxLayer(Block block) {
+        if (block == Blocks.coreShard) return 5f;
+        if (block == Blocks.coreFoundation) return 10f;
+
+        return -1f;
     }
 
     private static void addTracker(Building build) {
@@ -326,6 +443,102 @@ public final class CreeperBuilding {
             }
         }
     }
+
+    /**
+     * 管理所有 Emitter。
+     *
+     * CreeperBuilding 仍然负责普通建筑逻辑；
+     * Emitters 只负责简单的出水/吸水源。
+     */
+    public static final class Emitters {
+        /**
+         * 当前所有 Emitter。
+         *
+         * key 使用 Building，方便：
+         * 1. 同一个建筑不会重复添加 Emitter；
+         * 2. 建筑被替换/拆除时可以直接 remove；
+         * 3. update 时可以检查 Building 是否仍然有效。
+         */
+        private static final ObjectMap<Building, Emitter> emitters = new ObjectMap<>();
+
+        private Emitters() {
+        }
+
+        /**
+         * 添加或更新一个 Emitter。
+         *
+         * @param build 绑定的建筑
+         * @param amt 每次触发的总出水量；正数出水，负数吸水/出 Anti-Creeper
+         * @param intervals 每隔多少秒触发一次
+         * @param maxLayer 单格最大层数；<= 0 表示不限制
+         */
+        public static void addEmitter(Building build, float amt, float intervals, float maxLayer) {
+            if (build == null) return;
+            if (amt == 0f) return;
+
+            Emitter old = emitters.get(build);
+
+            // 已经存在就更新参数，避免重复添加。
+            if (old != null) {
+                old.set(amt, intervals, maxLayer);
+                return;
+            }
+
+            emitters.put(build, new Emitter(build, amt, intervals, maxLayer));
+        }
+
+        /**
+         * 移除某个建筑对应的 Emitter。
+         *
+         * 建筑被拆除、替换、换队伍时调用。
+         */
+        public static void removeEmitter(Building build) {
+            if (build == null) return;
+            emitters.remove(build);
+        }
+
+        /**
+         * 每帧更新所有 Emitter。
+         *
+         * 无效 Emitter 不会立刻在遍历时删除，
+         * 而是先放入 invalid，再统一删除。
+         *
+         * 这样可以避免遍历 ObjectMap 时修改 ObjectMap。
+         */
+        public static void update() {
+            Seq<Building> invalid = new Seq<>();
+
+            for (ObjectMap.Entry<Building, Emitter> entry : emitters) {
+                Building build = entry.key;
+                Emitter emitter = entry.value;
+
+                if (emitter == null || !emitter.valid()) {
+                    invalid.add(build);
+                    continue;
+                }
+
+                emitter.update();
+            }
+
+            for (Building build : invalid) {
+                removeEmitter(build);
+            }
+        }
+
+        /**
+         * 清空所有 Emitter。
+         *
+         * 世界切换、游戏结束、Creeper 模式关闭时调用。
+         */
+        public static void reset() {
+            emitters.clear();
+        }
+
+        public static int size() {
+            return emitters.size;
+        }
+    }
+
 
     public static class CoreEmitterLogic extends BaseBuildingLogic {
         private final float amountPerSecond;

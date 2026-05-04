@@ -23,7 +23,6 @@ public final class CreeperCore {
         Events.on(EventType.WorldLoadEvent.class, e -> {
             if(isFloodMap()){
                 enable();
-                creeperTile.init();
             }else{
                 disable();
             }
@@ -43,11 +42,10 @@ public final class CreeperCore {
 
     /** 进入模式 */
     public static void enable(){
-        if(enabled) return;
+        //if(enabled) return;
         enabled = true;
         creeperTile.init();
         CreeperBuilding.load();
-
     }
 
     /** 退出模式 */
