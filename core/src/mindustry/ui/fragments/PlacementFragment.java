@@ -21,6 +21,7 @@ import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.AdvanceToolTable;
 import mindustry.arcModule.ui.dialogs.BlockSelectDialog;
+import mindustry.arcreeper.CreeperCore;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.entities.*;
@@ -41,6 +42,7 @@ import java.util.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
+import static mindustry.arcModule.NumberFormat.formatFloat;
 
 public class PlacementFragment{
     private int rowWidth = Math.max(Core.settings.getInt("itemSelectionWidth"),4);
@@ -479,10 +481,18 @@ public class PlacementFragment{
                                 topTable.row();
                                 hovered2.display(topTable);
                             }}
-
-                        //只要可行便绘制地板|建筑，移除了其他重复绘制
-                        if (Core.settings.getBool("hoveredTileInfo") && hoveredTile != null) {
+                        if (hoveredTile == null){
+                            return;
+                        }
+                        if (CreeperCore.enabled()){
                             topTable.row();
+                            topTable.table(t -> {
+                                t.left();
+                                t.label(() -> Items.sporePod.emoji() + " " + formatFloat(hoverTile.creeper,4)).left();
+                            }).growX().left();
+                        }
+                        //只要可行便绘制地板|建筑，移除了其他重复绘制
+                        if (Core.settings.getBool("hoveredTileInfo") ) {
                             topTable.row();
                             topTable.table(t -> {
                                 t.left();

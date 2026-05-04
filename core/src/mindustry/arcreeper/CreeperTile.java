@@ -1,5 +1,6 @@
 package mindustry.arcreeper;
 
+import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.math.Mathf;
@@ -15,7 +16,13 @@ public class CreeperTile {
     public float flowRate = 0.18f;
 
     private float updateTimer = 0f;
-    public float timeInterval = 0.1f;
+    public float timeInterval = 0.02f;
+
+    float log2Min = Mathf.log2(minCreeper);
+    float log2Max = Mathf.log2(maxCreeper);
+
+    public Color creeperColor = new Color(0.1f, 0.35f, 1f, 1f);
+    public Color anticreeperColor = new Color(0.45f, 0.85f, 1f, 1f);
 
     public void init() {
         reset();
@@ -23,8 +30,9 @@ public class CreeperTile {
     }
 
     public void randomTest() {
-        Tile tile = Vars.world.tile(100, 100);
-        if(tile != null) tile.creeper = maxCreeper;
+        Vars.world.tile(100, 100).creeper = maxCreeper;
+        Vars.world.tile(80, 100).creeper = -maxCreeper;
+
         clearTmp();
     }
 
@@ -40,18 +48,17 @@ public class CreeperTile {
     public void set(int x, int y, float value) {
         Tile tile = Vars.world.tile(x, y);
         if(tile != null){
-            tile.creeper = Mathf.clamp(value, 0f, maxCreeper);
+            tile.creeper = value;
         }
-    }
-
-    public void add(int x, int y, float value) {
-        Tile tile = Vars.world.tile(x, y);
-        if(tile != null) add(tile, value);
     }
 
     public void add(Tile tile, float value) {
         if(tile == null) return;
-        tile.creeper = Mathf.clamp(tile.creeper + value, 0f, maxCreeper);
+        tile.creeper += value;
+    }
+
+    public void add(int x, int y, float value){
+        add(Vars.world.tile(x, y),value);
     }
 
     public void addArea(Tile tile, int size, float value) {
@@ -75,14 +82,18 @@ public class CreeperTile {
         float rate = Math.min(flowRate, 0.25f);
 
         Vars.world.tiles.eachTile(tile -> {
-            tile.creeper = Mathf.clamp(tile.creeper, 0f, maxCreeper);
             tile.creeperTmp = 0f; // 只作为 delta 使用
         });
 
         updateFlow(rate);
 
         Vars.world.tiles.eachTile(tile -> {
-            tile.creeper = Mathf.clamp(tile.creeper + tile.creeperTmp, 0f, maxCreeper);
+            tile.creeper += tile.creeperTmp;
+
+            // 可选：清除极小残留，避免浮点噪声
+            if(Math.abs(tile.creeper) < 0.0001f){
+                tile.creeper = 0f;
+            }
         });
     }
 
@@ -114,23 +125,32 @@ public class CreeperTile {
         final float log2Max = ((Float.floatToIntBits(max) >>> 23) & 0xFF) - 127;
 
         Vars.world.tiles.eachTile(tile -> {
-            float value = tile.creeper;
+            float raw = tile.creeper;
+
+            // creeper = 0 时不绘制
+            if(raw == 0f) return;
+
+            // 负数表示 Anti-Creeper
+            boolean anti = raw < 0f;
+
+            // 强度按绝对值计算
+            float value = Math.abs(raw);
+
+            // 绝对值低于阈值则不显示
             if(value < min) return;
 
             float v = Mathf.clamp(value, min, max);
 
             int bits = Float.floatToIntBits(v);
             int exp = ((bits >>> 23) & 0xFF) - 127;
-            int mantissa = bits & 0x7FFFFF;
 
-            // 近似 log2(v)，比单纯指数位更平滑
-            float fine = mantissa / (float)0x7FFFFF;
-            float log2Approx = exp + fine;
-
-            float normalized = Mathf.clamp(log2Approx / log2Max, 0f, 1f);
+            float normalized = Mathf.clamp((exp - log2Min) / (log2Max - log2Min), 0f, 1f);
             float alpha = 0.3f + normalized * 0.7f;
 
-            Draw.color(0.1f, 0.35f, 1f, alpha);
+            Color color = anti ? anticreeperColor : creeperColor;
+            Draw.color(color);
+            Draw.alpha(alpha);
+            //Draw.color(color.r, color.g, color.b, alpha);
 
             Fill.square(
                     tile.worldx(),
