@@ -5,6 +5,7 @@ import arc.graphics.*;
 import arc.scene.style.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.content.Items;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 
@@ -19,7 +20,8 @@ public class LCategory implements Comparable<LCategory>{
     operation = new LCategory("operation", Pal.logicOperations, Icon.settingsSmall),
     control = new LCategory("control", Pal.logicControl, Icon.rotateSmall),
     unit = new LCategory("unit", Pal.logicUnits, Icon.unitsSmall),
-    world = new LCategory("world", Pal.logicWorld, Icon.terrainSmall);
+    world = new LCategory("world", Pal.logicWorld, Icon.terrainSmall),
+    arCreeper = new LCategory("arCreeper", Pal.accent, Icon.waves);
 
     public final String name;
     public final int id;

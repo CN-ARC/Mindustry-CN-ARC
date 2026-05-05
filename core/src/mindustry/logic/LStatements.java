@@ -2593,4 +2593,153 @@ public class LStatements{
             return LCategory.world;
         }
     }
+
+    public enum ARCreeperData{
+        creeper,
+        height;
+
+        public static final ARCreeperData[] all = values();
+    }
+
+    public static class GetARCreeperI implements LInstruction{
+        public final LVar x, y, result;
+        public final ARCreeperData type;
+
+        public GetARCreeperI(LVar x, LVar y, LVar result, ARCreeperData type){
+            this.x = x;
+            this.y = y;
+            this.result = result;
+            this.type = type;
+        }
+
+        @Override
+        public void run(LExecutor exec){
+            Tile tile = world.tile((int)x.num(), (int)y.num());
+
+            if(tile == null){
+                result.setnum(0);
+                return;
+            }
+
+            result.setnum(switch(type){
+                case creeper -> tile.creeper;
+                case height -> tile.height;
+            });
+        }
+    }
+
+    public static class SetARCreeperI implements LInstruction{
+        public final LVar x, y, value;
+        public final ARCreeperData type;
+
+        public SetARCreeperI(LVar x, LVar y, LVar value, ARCreeperData type){
+            this.x = x;
+            this.y = y;
+            this.value = value;
+            this.type = type;
+        }
+
+        @Override
+        public void run(LExecutor exec){
+            Tile tile = world.tile((int)x.num(), (int)y.num());
+
+            if(tile == null) return;
+
+            float v = (float)value.num();
+
+            switch(type){
+                case creeper -> tile.creeper = v;
+                case height -> tile.height = v;
+            }
+
+        }
+    }
+
+    @RegisterStatement("getARCreeper")
+    public static class GetARCreeperStatement extends LStatement{
+        public ARCreeperData type = ARCreeperData.creeper;
+        public String result = "result", x = "0", y = "0";
+
+        @Override
+        public void build(Table table){
+            fields(table, result, str -> result = str);
+
+            table.add(" = get ");
+
+            row(table);
+
+            table.button(b -> {
+                b.label(() -> type.name());
+                b.clicked(() -> showSelect(b, ARCreeperData.all, type, t -> type = t));
+            }, Styles.logict, () -> {}).size(100f, 40f).pad(4f).color(table.color);
+
+            table.add(" at ");
+
+            fields(table, x, str -> x = str);
+            table.add(", ");
+            fields(table, y, str -> y = str);
+        }
+
+        @Override
+        public boolean privileged(){
+            return true;
+        }
+
+        @Override
+        public LInstruction build(LAssembler builder){
+            return new GetARCreeperI(builder.var(x), builder.var(y), builder.var(result), type);
+        }
+
+        @Override
+        public LCategory category(){
+            return LCategory.arCreeper;
+        }
+    }
+
+    @RegisterStatement("setARCreeper")
+    public static class SetARCreeperStatement extends LStatement{
+        public ARCreeperData type = ARCreeperData.creeper;
+        public String value = "0", x = "0", y = "0";
+
+        @Override
+        public void build(Table table){
+            table.add("set ");
+
+            table.button(b -> {
+                b.label(() -> type.name());
+                b.clicked(() -> showSelect(b, ARCreeperData.all, type, t -> type = t));
+            }, Styles.logict, () -> {}).size(100f, 40f).pad(4f).color(table.color);
+
+            row(table);
+
+            table.add(" at ");
+
+            fields(table, x, str -> x = str);
+            table.add(", ");
+            fields(table, y, str -> y = str);
+
+            row(table);
+
+            table.add(" to ");
+
+            fields(table, value, str -> value = str);
+        }
+
+        @Override
+        public boolean privileged(){
+            return true;
+        }
+
+        @Override
+        public LInstruction build(LAssembler builder){
+            return new SetARCreeperI(builder.var(x), builder.var(y), builder.var(value), type);
+        }
+
+        @Override
+        public LCategory category(){
+            return LCategory.arCreeper;
+        }
+    }
+
+
 }

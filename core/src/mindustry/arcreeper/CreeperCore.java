@@ -2,6 +2,7 @@ package mindustry.arcreeper;
 
 import arc.Events;
 import arc.util.Log;
+import mindustry.Vars;
 import mindustry.game.EventType;
 import mindustry.game.Team;
 
@@ -65,6 +66,7 @@ public final class CreeperCore {
     /** 每帧只调用一次 */
     public static void update(){
         if(!enabled) return;
+        if(Vars.state.isPaused()) return;
         creeperTile.update();
         CreeperBuild.update();
     }
