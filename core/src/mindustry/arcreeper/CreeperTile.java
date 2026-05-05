@@ -383,13 +383,13 @@ public class CreeperTile {
             if (amount < minFlow) return;
 
             transfer(a, b, signA, amount);
-            setCreeperFx(a, Fx.creeperCancel);
+            setCreeperFx(b, Fx.creeperCancel);
         } else {
             float amount = capB * rate;
             if (amount < minFlow) return;
 
             transfer(b, a, signB, amount);
-            setCreeperFx(b, Fx.creeperCancel);
+            setCreeperFx(a, Fx.creeperCancel);
         }
     }
 
