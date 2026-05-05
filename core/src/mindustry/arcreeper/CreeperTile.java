@@ -5,13 +5,20 @@ import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.math.Mathf;
+import arc.struct.Seq;
 import arc.util.Time;
 import mindustry.Vars;
+import mindustry.content.Fx;
+import mindustry.entities.Effect;
 import mindustry.game.EventType;
+import mindustry.game.Team;
 import mindustry.world.Tile;
 
 public class CreeperTile {
     private float[][] creeperData; // for later multiplayer sync
+
+    /** 每单元creeper等效于的伤害，用于产生和消耗上 */
+    public float creeperDamage = 5f;
 
     public float minCreeper = 0.01f;
     public float maxCreeper = 1000f;
@@ -23,14 +30,42 @@ public class CreeperTile {
     float log2Min = Mathf.log2(minCreeper);
     float log2Max = Mathf.log2(maxCreeper);
 
-    public Color creeperColor = new Color(0.1f, 0.35f, 1f, 1f);
-    public Color anticreeperColor = new Color(0.45f, 0.85f, 1f, 1f);
+    public static Color creeperColor = new Color(0.1f, 0.35f, 1f, 1f);
+    public static Color antiCreeperColor = new Color(0.45f, 0.85f, 1f, 1f);
 
     // 地形高度到 creeper 深度的换算倍率。
     public float heightScale = 1f;
 
     // 最小流动阈值。
     public float minFlow = 0.001f;
+
+    /**
+     * 是否播放 creeper 相关 FX。
+     * false 时不会添加新的 FX，并会清理已经等待播放的 FX 队列。
+     */
+    public boolean playCreeperFx = true;
+
+    /**
+     * FX 播放间隔。
+     * Mindustry 中 Time.delta 以 tick 为单位，60 tick 约等于 1 秒。
+     */
+    public float fxInterval = 60f;
+
+    private float fxTimer = 0f;
+
+    /**
+     * 只记录需要播放 FX 的 tile。
+     * 不每秒扫描全图，降低性能消耗。
+     */
+    private final Seq<Tile> fxTiles = new Seq<>(false);
+
+    /**
+     * 敌方建筑是否吸收流动量。
+     * <p>
+     * true：流动量会从来源格扣除，并转换为建筑伤害，不进入目标格。
+     * false：只对建筑造成流动伤害，不改变两侧 creeper 数值。
+     */
+    public boolean buildingAbsorb = false;
 
     public void init() {
         reset();
@@ -51,12 +86,77 @@ public class CreeperTile {
     }
 
     public void reset() {
-        Vars.world.tiles.eachTile(tile -> tile.creeper = 0f);
+        Vars.world.tiles.eachTile(tile -> {
+            tile.creeper = 0f;
+            tile.creeperFx = null;
+        });
+
         clearTmp();
+        clearFxQueue();
     }
 
     private void clearTmp() {
         Vars.world.tiles.eachTile(tile -> tile.creeperTmp = 0f);
+    }
+
+    private void clearFxQueue() {
+        fxTimer = 0f;
+
+        for (int i = 0; i < fxTiles.size; i++) {
+            Tile tile = fxTiles.get(i);
+            if (tile != null) {
+                tile.creeperFx = null;
+            }
+        }
+
+        fxTiles.clear();
+    }
+
+    private void setCreeperFx(Tile tile, Effect fx) {
+        if (!playCreeperFx || Vars.headless || tile == null || fx == null) return;
+
+        // 已经在队列里：只更新效果，不重复添加。
+        if (tile.creeperFx != null) {
+            tile.creeperFx = fx;
+            return;
+        }
+
+        tile.creeperFx = fx;
+        fxTiles.add(tile);
+    }
+
+    private Effect strongerFx(Effect oldFx, Effect newFx) {
+        // 建筑受伤 bubbles 优先级高于正负水抵消 smoke。
+        if (oldFx == Fx.bubble || newFx == Fx.smoke) return Fx.smoke;
+        return newFx;
+    }
+
+    private void updateFx() {
+        if (Vars.headless || fxTiles.isEmpty()) return;
+
+        if (!playCreeperFx) {
+            clearFxQueue();
+            return;
+        }
+
+        fxTimer += Time.delta;
+        if (fxTimer < fxInterval) return;
+        fxTimer %= fxInterval;
+
+        for (int i = fxTiles.size - 1; i >= 0; i--) {
+            Tile tile = fxTiles.get(i);
+
+            if (tile == null || tile.creeperFx == null) {
+                fxTiles.remove(i);
+                continue;
+            }
+
+            tile.creeperFx.at(tile.worldx(), tile.worldy());
+
+            // 一次性播放。播放后清理，允许下次事件再次加入队列。
+            tile.creeperFx = null;
+            fxTiles.remove(i);
+        }
     }
 
     public void set(int x, int y, float value) {
@@ -92,6 +192,8 @@ public class CreeperTile {
      * 推进 creeper 模拟。
      */
     public void update() {
+        updateFx();
+
         updateTimer += Time.delta / 60f;
         if (updateTimer < timeInterval) return;
         updateTimer -= timeInterval;
@@ -134,10 +236,51 @@ public class CreeperTile {
 
     /**
      * 将指定极性的流体从 from 转移到 to。
+     * <p>
+     * 如果目标格存在敌方建筑，则先结算建筑交互：
+     * - buildingAbsorb = true：本次流动量从来源格扣除，并转换为伤害；
+     * - buildingAbsorb = false：只造成伤害，不改变 from/to 的 creeper 数值。
      */
     void transfer(Tile from, Tile to, int sign, float amount) {
+        if (amount <= 0f) return;
+
+        if (damageBuildingOnFlow(to, sign, amount)) {
+            if (buildingAbsorb) {
+                from.creeperTmp -= sign * amount;
+            }
+            return;
+        }
+
         from.creeperTmp -= sign * amount;
         to.creeperTmp += sign * amount;
+    }
+
+    /**
+     * 流动进入目标格时，对敌方建筑造成伤害。
+     * <p>
+     * creeper 使用 CreeperCore.creeperTeam；antiCreeper 使用 CreeperCore.antiCreeperTeam。
+     * 只有 building.team 与对应队伍不同时，才视为敌方建筑。
+     *
+     * @return 是否命中了敌方建筑。
+     */
+    boolean damageBuildingOnFlow(Tile tile, int sign, float amount) {
+        if (tile == null || tile.build == null) return false;
+
+        Team team = teamOf(sign);
+        if (tile.build.team == team) return false;
+
+        tile.build.damage(amount * creeperDamage);
+        if (sign > 0) setCreeperFx(tile, Fx.creeperDamage);
+        else setCreeperFx(tile, Fx.antiCreeperDamage);
+
+        return true;
+    }
+
+    /**
+     * 获取指定极性对应的控制队伍。
+     */
+    Team teamOf(int sign) {
+        return sign > 0 ? CreeperCore.creeperTeam : CreeperCore.antiCreeperTeam;
     }
 
     void flowBetween(Tile a, Tile b, float rate) {
@@ -240,11 +383,13 @@ public class CreeperTile {
             if (amount < minFlow) return;
 
             transfer(a, b, signA, amount);
+            setCreeperFx(a, Fx.creeperCancel);
         } else {
             float amount = capB * rate;
             if (amount < minFlow) return;
 
             transfer(b, a, signB, amount);
+            setCreeperFx(b, Fx.creeperCancel);
         }
     }
 
@@ -274,10 +419,9 @@ public class CreeperTile {
             float normalized = Mathf.clamp((exp - log2Min) / (log2Max - log2Min), 0f, 1f);
             float alpha = 0.2f + normalized * 0.7f;
 
-            Color color = anti ? anticreeperColor : creeperColor;
+            Color color = anti ? antiCreeperColor : creeperColor;
             Draw.color(color);
             Draw.alpha(alpha);
-            //Draw.color(color.r, color.g, color.b, alpha);
 
             Fill.square(
                     tile.worldx(),

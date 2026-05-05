@@ -12,6 +12,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.content.*;
+import mindustry.entities.Effect;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
@@ -47,8 +48,9 @@ public class Tile implements Position, QuadTreeObject, Displayable{
     public float buildEff = 0f;
 
     /** floodUtils */
-    public float creeper, creeperTmp, creeperOutTmp;
+    public float creeper, creeperTmp;
     public float height;
+    public Effect creeperFx;
 
     public Tile(int x, int y){
         this.x = (short)x;

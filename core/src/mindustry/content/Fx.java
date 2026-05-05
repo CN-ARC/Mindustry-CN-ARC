@@ -8,6 +8,8 @@ import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.arcModule.ARCVars;
+import mindustry.arcreeper.CreeperCore;
+import mindustry.arcreeper.CreeperTile;
 import mindustry.entities.*;
 import mindustry.entities.abilities.*;
 import mindustry.gen.*;
@@ -3067,5 +3069,28 @@ public class Fx{
             float rot = i * 120f + 90f;
             Drawf.simpleArrow(e.x, e.y,e.x  + Angles.trnsx(rot, 120f),e.y +  + Angles.trnsy(rot, 120f),100f - 80f * e.fin(),-4f, ARCVars.getThemeColor());
         }
+    }),
+
+    creeperDamage = new Effect(60f, e -> {
+        color(CreeperTile.creeperColor);
+        alpha(0.3f);
+        Fill.square(e.x,e.y,4f * e.fout());
+    }),
+
+    antiCreeperDamage = new Effect(60f, e -> {
+        color(CreeperTile.antiCreeperColor);
+        stroke(e.fout() + 0.2f);
+        randLenVectors(e.id, 2, e.rotation * 0.9f, (x, y) -> {
+            Lines.circle(e.x + x, e.y + y, 1f + e.fin() * 3f);
+        });
+    }),
+
+    creeperCancel = new Effect(60f, e -> {
+        color(Color.white);
+        alpha(0.3f);
+        Fill.square(e.x,e.y,4f * e.fout());
+
     });
+
+
 }

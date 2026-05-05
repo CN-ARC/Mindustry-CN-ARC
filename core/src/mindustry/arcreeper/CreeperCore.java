@@ -3,6 +3,7 @@ package mindustry.arcreeper;
 import arc.Events;
 import arc.util.Log;
 import mindustry.game.EventType;
+import mindustry.game.Team;
 
 public final class CreeperCore {
     public static final String tag = "@Arcreeper";
@@ -12,6 +13,9 @@ public final class CreeperCore {
 
     public static CreeperTile creeperTile = new CreeperTile();
     public CreeperCore(){}
+
+    public static Team creeperTeam = Team.blue;
+    public static Team antiCreeperTeam = Team.sharded;
 
     /** 在 Mod.init() 或游戏包初始化阶段调用一次 */
     public static void init(){
