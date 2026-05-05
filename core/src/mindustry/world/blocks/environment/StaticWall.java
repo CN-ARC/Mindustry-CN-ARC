@@ -34,6 +34,7 @@ public class StaticWall extends Prop{
         instantBuild = true;
         ignoreBuildDarkness = true;
         placeableLiquid = true;
+        creeperHeight = 20f;
     }
 
     @Override

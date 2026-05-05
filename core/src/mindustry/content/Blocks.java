@@ -355,7 +355,7 @@ public class Blocks{
         }};
 
         empty = new EmptyFloor("empty"){{
-            creeperHeight = 99999f;
+            creeperHeight = 500f;
         }};
 
         stone = new Floor("stone");
@@ -508,6 +508,7 @@ public class Blocks{
             cacheLayer = CacheLayer.arkycite;
             albedo = 0.9f;
             obstructsLight = true;
+            creeperHeight = -20f;
         }};
 
         arkyicStone = new Floor("arkyic-stone"){{
