@@ -9,6 +9,7 @@ public class QuickToolTable extends ElementUtils.ToolTable {
 
     public HudSettingsTable hudSettingsTable = new HudSettingsTable();
     public AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
+    public FloodTable floodTable = new FloodTable();
 
     public QuickToolTable() {
         icon = String.valueOf(Iconc.list);
@@ -35,7 +36,8 @@ public class QuickToolTable extends ElementUtils.ToolTable {
     protected void buildTable(){
         table(t -> {
             t.add(hudSettingsTable).growX().row();
-            t.add(advanceBuildTool).growX();
+            t.add(advanceBuildTool).growX().row();
+            t.add(floodTable).growX();
         });
     }
 }

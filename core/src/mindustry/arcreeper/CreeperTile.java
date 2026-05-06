@@ -27,23 +27,14 @@ public class CreeperTile {
     private float updateTimer = 0f;
     public float timeInterval = 0.02f;
 
-    float log2Min = Mathf.log2(minCreeper);
-    float log2Max = Mathf.log2(maxCreeper);
-
-    public static Color creeperColor = new Color(0.1f, 0.35f, 1f, 1f);
-    public static Color antiCreeperColor = new Color(0.45f, 0.85f, 1f, 1f);
+    int log2Min = (int) Mathf.log2(minCreeper);
+    int log2Max = (int) Mathf.log2(maxCreeper);
 
     // 地形高度到 creeper 深度的换算倍率。
     public float heightScale = 1f;
 
     // 最小流动阈值。
     public float minFlow = 0.001f;
-
-    /**
-     * 是否播放 creeper 相关 FX。
-     * false 时不会添加新的 FX，并会清理已经等待播放的 FX 队列。
-     */
-    public boolean playCreeperFx = true;
 
     /**
      * FX 播放间隔。
@@ -66,6 +57,29 @@ public class CreeperTile {
      * false：只对建筑造成流动伤害，不改变两侧 creeper 数值。
      */
     public boolean buildingAbsorb = false;
+
+    /**
+     * 是否播放 creeper 相关 FX。
+     * false 时不会添加新的 FX，并会清理已经等待播放的 FX 队列。
+     */
+    public static boolean playCreeperFx = true;
+    /**
+     * 绘制creeper的模式
+     */
+    public static int creeperDrawType = 2;
+
+    public static Color creeperColor = new Color(0.1f, 0.35f, 1f, 1f);
+    public static Color antiCreeperColor = new Color(0.45f, 0.85f, 1f, 1f);
+    // 可调参数
+    private static final float EDGE_RATIO = 0.12f;        // 边界厚度占 tileSize 的比例
+    private static final float EDGE_ALPHA_BOOST = 0.15f;  // 边界额外透明度增强
+
+    private static final float TOP_LIGHT_MIX = 0.55f;     // 上边界向白色混合
+    private static final float SIDE_GRAY_MIX = 0.45f;     // 左右边界向灰色混合
+    private static final float BOTTOM_DARK_MIX = 0.55f;   // 下边界向黑色混合
+
+    private final Color tmpDrawColor = new Color();
+    private static final Color sideGray = new Color(0.55f, 0.55f, 0.55f, 1f);
 
     public void init() {
         reset();
@@ -394,6 +408,15 @@ public class CreeperTile {
     }
 
     public void draw() {
+        switch (creeperDrawType){
+            case 0: return;
+            case 1: draw2d();return;
+            case 2: draw3d();
+        }
+    }
+
+    void draw2d(){
+
         Draw.z(120f);
 
         Vars.world.tiles.eachTile(tile -> {
@@ -416,7 +439,7 @@ public class CreeperTile {
             int bits = Float.floatToIntBits(v);
             int exp = ((bits >>> 23) & 0xFF) - 127;
 
-            float normalized = Mathf.clamp((exp - log2Min) / (log2Max - log2Min), 0f, 1f);
+            float normalized = Mathf.clamp((float) (exp - log2Min) / (log2Max - log2Min), 0f, 1f);
             float alpha = 0.2f + normalized * 0.7f;
 
             Color color = anti ? antiCreeperColor : creeperColor;
@@ -432,4 +455,216 @@ public class CreeperTile {
 
         Draw.color();
     }
+
+    public void draw3d() {
+        Draw.z(120f);
+
+        final float tileSize = Vars.tilesize;
+        final float half = tileSize / 2f;
+        final float edge = Mathf.clamp(tileSize * EDGE_RATIO, 0.75f, half * 0.5f);
+
+        Vars.world.tiles.eachTile(tile -> {
+            float raw = tile.creeper;
+
+            int layer = creeperLayer(raw);
+            if (layer < 0) return;
+
+            boolean anti = raw < 0f;
+
+            float value = Math.abs(raw);
+            float v = Mathf.clamp(value, minCreeper, maxCreeper);
+
+            int bits = Float.floatToIntBits(v);
+            int exp = ((bits >>> 23) & 0xFF) - 127;
+
+            float normalized = Mathf.clamp((float) (exp - log2Min) / (log2Max - log2Min), 0f, 1f);
+            float alpha = 0.2f + normalized * 0.7f;
+
+            Color base = anti ? antiCreeperColor : creeperColor;
+
+            float x = tile.worldx();
+            float y = tile.worldy();
+
+            // 主体填充
+            Draw.color(base);
+            Draw.alpha(alpha);
+
+            Fill.square(
+                    x,
+                    y,
+                    half
+            );
+
+            /*
+             * 单向分界：
+             * 只由当前 tile 高于相邻 tile 时绘制。
+             *
+             * 这样相邻两层之间不会出现：
+             * - 低层画一次
+             * - 高层再画一次
+             *
+             * 最终只保留高层 tile 的那一侧边界。
+             */
+            boolean top = shouldDrawCreeperEdge(tile.x, tile.y + 1, anti, layer);
+            boolean bottom = shouldDrawCreeperEdge(tile.x, tile.y - 1, anti, layer);
+            boolean left = shouldDrawCreeperEdge(tile.x - 1, tile.y, anti, layer);
+            boolean right = shouldDrawCreeperEdge(tile.x + 1, tile.y, anti, layer);
+
+            if (!top && !bottom && !left && !right) return;
+
+            float edgeAlpha = Mathf.clamp(alpha + EDGE_ALPHA_BOOST, 0f, 1f);
+
+            // 左右边界：偏灰
+            if (left || right) {
+                setMixedColor(base, sideGray, SIDE_GRAY_MIX, edgeAlpha);
+
+                if (left) {
+                    Fill.rect(
+                            x - half + edge / 2f,
+                            y,
+                            edge,
+                            tileSize
+                    );
+                }
+
+                if (right) {
+                    Fill.rect(
+                            x + half - edge / 2f,
+                            y,
+                            edge,
+                            tileSize
+                    );
+                }
+            }
+
+            // 下边界：偏深
+            if (bottom) {
+                setMixedColor(base, Color.black, BOTTOM_DARK_MIX, edgeAlpha);
+
+                Fill.rect(
+                        x,
+                        y - half + edge / 2f,
+                        tileSize,
+                        edge
+                );
+            }
+
+            // 上边界：偏白
+            if (top) {
+                setMixedColor(base, Color.white, TOP_LIGHT_MIX, edgeAlpha);
+
+                Fill.rect(
+                        x,
+                        y + half - edge / 2f,
+                        tileSize,
+                        edge
+                );
+            }
+        });
+
+        Draw.color();
+        Draw.alpha(1f);
+    }
+    /**
+     * 返回 creeper 所在的强度层级。
+     *
+     * -1 表示不显示。
+     *
+     * 当前实现按 log2 指数层级划分，
+     * 也就是原 draw() 里用于 alpha 计算的 exp 层。
+     * 因此 2、4、8、16、32 这类数量级变化都会形成分界。
+     */
+    private int creeperLayer(float raw) {
+        if (raw == 0f) return -1;
+
+        float value = Math.abs(raw);
+        if (value < minCreeper) return -1;
+
+        float v = Mathf.clamp(value, minCreeper, maxCreeper);
+
+        int bits = Float.floatToIntBits(v);
+        int exp = ((bits >>> 23) & 0xFF) - 127;
+
+        int layer = (exp - log2Min);
+        int maxLayer = (log2Max - log2Min);
+
+        if (layer < 0) return 0;
+        if (layer > maxLayer) return maxLayer;
+        return layer;
+    }
+
+    /**
+     * 判断当前 tile 是否应该在指向 neighbor 的方向绘制边界。
+     *
+     * 单向规则：
+     *
+     * 1. neighbor 不存在：绘制
+     * 2. neighbor 不显示：绘制
+     * 3. currentLayer > neighborLayer：绘制
+     * 4. currentLayer < neighborLayer：不绘制
+     * 5. currentLayer == neighborLayer 且正负不同：
+     *      为避免双绘制，只让正 Creeper 一侧绘制
+     * 6. 其他情况：不绘制
+     */
+    private boolean shouldDrawCreeperEdge(int neighborX, int neighborY, boolean currentAnti, int currentLayer) {
+        Tile other = Vars.world.tile(neighborX, neighborY);
+
+        // 地图边缘：当前 tile 必须明确绘制外边界
+        if (other == null) return true;
+
+        float otherRaw = other.creeper;
+        int otherLayer = creeperLayer(otherRaw);
+
+        // 相邻 tile 不可见：当前 tile 绘制外边界
+        if (otherLayer < 0) return true;
+
+        // 核心：只允许高层向低层绘制
+        if (currentLayer > otherLayer) return true;
+        if (currentLayer < otherLayer) return false;
+
+        /*
+         * 层级相同但正负不同。
+         *
+         * 这里不是“高低层级”问题，而是类型分界问题。
+         * 为避免两侧都画，使用稳定优先级：
+         *
+         * positive Creeper 优先于 Anti-Creeper。
+         */
+        boolean otherAnti = otherRaw < 0f;
+        if (currentAnti != otherAnti) {
+            return !currentAnti;
+        }
+
+        // 同层级、同类型，不是分界
+        return false;
+    }
+
+    /**
+     * 判断指定邻居位置是否与当前 tile 形成层级分界。
+     */
+    private boolean isCreeperLayerBoundary(int x, int y, boolean anti, int currentLayer) {
+        Tile other = Vars.world.tile(x, y);
+
+        // 地图外边界也要明确绘制
+        if (other == null) return true;
+
+        float raw = other.creeper;
+
+        // 相邻 tile 不显示，则当前 tile 这一侧是边界
+        int otherLayer = creeperLayer(raw);
+        if (otherLayer < 0) return true;
+
+        // Creeper 与 Anti-Creeper 之间也视为边界
+        if ((raw < 0f) != anti) return true;
+
+        // 核心改动：层级不同就画分界线
+        return otherLayer != currentLayer;
+    }
+
+    private void setMixedColor(Color base, Color target, float mix, float alpha) {
+        tmpDrawColor.set(base).lerp(target, mix);
+        Draw.color(tmpDrawColor);
+        Draw.alpha(alpha);
+    }
+
 }
