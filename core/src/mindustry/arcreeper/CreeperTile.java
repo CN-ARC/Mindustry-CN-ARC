@@ -12,6 +12,7 @@ import mindustry.content.Fx;
 import mindustry.entities.Effect;
 import mindustry.game.EventType;
 import mindustry.game.Team;
+import mindustry.graphics.Pal;
 import mindustry.world.Tile;
 
 public class CreeperTile {
@@ -68,11 +69,18 @@ public class CreeperTile {
      */
     public static int creeperDrawType = 2;
 
+    /**
+     * 2D 绘制中是否叠加显示地形高度边界。
+     * 边界判断直接使用 Tile.height，不使用 heightScale。
+     */
+    public static boolean drawTileHeight = false;
+
     public static Color creeperColor = new Color(0.1f, 0.35f, 1f, 1f);
     public static Color antiCreeperColor = new Color(0.45f, 0.85f, 1f, 1f);
     // 可调参数
     private static final float EDGE_RATIO = 0.12f;        // 边界厚度占 tileSize 的比例
     private static final float EDGE_ALPHA_BOOST = 0.15f;  // 边界额外透明度增强
+    private static final float TILE_HEIGHT_EDGE_ALPHA = 0.85f; // 2D 地形高度边界透明度
 
     private static final float TOP_LIGHT_MIX = 0.55f;     // 上边界向白色混合
     private static final float SIDE_GRAY_MIX = 0.45f;     // 左右边界向灰色混合
@@ -408,10 +416,16 @@ public class CreeperTile {
     }
 
     public void draw() {
+        if (drawTileHeight) draw2dTileHeightEdges();
         switch (creeperDrawType){
-            case 0: return;
-            case 1: draw2d();return;
-            case 2: draw3d();
+            case 0:
+                return;
+            case 1:
+                draw2d();
+                return;
+            case 2:
+                draw3d();
+                return;
         }
     }
 
@@ -454,6 +468,59 @@ public class CreeperTile {
         });
 
         Draw.color();
+        Draw.alpha(1f);
+    }
+
+    void draw2dTileHeightEdges() {
+        Draw.z(120f);
+
+        final float tileSize = Vars.tilesize;
+        final float half = tileSize / 2f;
+        final float edge = Mathf.clamp(tileSize * EDGE_RATIO, 0.75f, half * 0.5f);
+
+        Draw.color(Pal.stat);
+        Draw.alpha(TILE_HEIGHT_EDGE_ALPHA);
+
+        Vars.world.tiles.eachTile(tile -> {
+            float x = tile.worldx();
+            float y = tile.worldy();
+
+            if (shouldDrawTileHeightEdge(tile, tile.x, tile.y + 1)) {
+                Fill.rect(x, y + half - edge / 2f, tileSize, edge);
+            }
+
+            if (shouldDrawTileHeightEdge(tile, tile.x, tile.y - 1)) {
+                Fill.rect(x, y - half + edge / 2f, tileSize, edge);
+            }
+
+            if (shouldDrawTileHeightEdge(tile, tile.x - 1, tile.y)) {
+                Fill.rect(x - half + edge / 2f, y, edge, tileSize);
+            }
+
+            if (shouldDrawTileHeightEdge(tile, tile.x + 1, tile.y)) {
+                Fill.rect(x + half - edge / 2f, y, edge, tileSize);
+            }
+        });
+
+        Draw.color();
+        Draw.alpha(1f);
+    }
+
+    /**
+     * 判断当前 tile 是否需要在指向指定邻居的一侧绘制地形高度边界。
+     *
+     * 地形高度边界只使用 tile.height：
+     * - 当前 tile.height 高于邻居 tile.height 时绘制；
+     * - 当前 tile.height 低于或等于邻居 tile.height 时不绘制；
+     * - 因此每条高度分界只会由高的一侧绘制一次。
+     */
+    private boolean shouldDrawTileHeightEdge(Tile current, int neighborX, int neighborY) {
+        if (current == null) return false;
+
+        Tile other = Vars.world.tile(neighborX, neighborY);
+        if (other == null) return false;
+
+        return current.height > other.height;
     }
 
     public void draw3d() {

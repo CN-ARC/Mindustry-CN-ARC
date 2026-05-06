@@ -17,11 +17,8 @@ public class FloodTable extends ElementUtils.ToolTable {
     protected Seq<HudSettingsTable.Setting> list = new Seq<>();
 
     public FloodTable() {
-        icon = String.valueOf(Iconc.settings);
+        icon = String.valueOf(Iconc.itemSporePod);
         rebuild();
-        Events.on(EventType.WorldLoadEvent.class, e -> {
-            Core.settings.put("removeLogicLock", false);
-        });
     }
 
     @Override
@@ -38,6 +35,10 @@ public class FloodTable extends ElementUtils.ToolTable {
                     CreeperTile.playCreeperFx = !CreeperTile.playCreeperFx;
                     rebuild();
                 }).tooltip("[cyan]显示ARCreeper相关特效").size(30f);
+                tt.button("[blue]高", NCtextStyle, () -> {
+                    CreeperTile.drawTileHeight = !CreeperTile.drawTileHeight;
+                    rebuild();
+                }).tooltip("[cyan]显示ARCreeper地形高度").size(30f);
             });
 
         });
