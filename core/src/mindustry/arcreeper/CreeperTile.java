@@ -13,7 +13,12 @@ import mindustry.entities.Effect;
 import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.graphics.Pal;
+import mindustry.logic.LExecutor;
+import mindustry.logic.LStatements;
+import mindustry.logic.LVar;
 import mindustry.world.Tile;
+
+import static mindustry.Vars.world;
 
 public class CreeperTile {
     private float[][] creeperData; // for later multiplayer sync
@@ -788,4 +793,57 @@ public class CreeperTile {
         Draw.alpha(alpha);
     }
 
+    public static class GetARCreeperI implements LExecutor.LInstruction {
+        public final LVar x, y, result;
+        public final LStatements.ARCreeperData type;
+
+        public GetARCreeperI(LVar x, LVar y, LVar result, LStatements.ARCreeperData type){
+            this.x = x;
+            this.y = y;
+            this.result = result;
+            this.type = type;
+        }
+
+        @Override
+        public void run(LExecutor exec){
+            Tile tile = world.tile((int)x.num(), (int)y.num());
+
+            if(tile == null){
+                result.setnum(0);
+                return;
+            }
+
+            result.setnum(switch(type){
+                case creeper -> tile.creeper;
+                case height -> tile.height;
+            });
+        }
+    }
+
+    public static class SetARCreeperI implements LExecutor.LInstruction {
+        public final LVar x, y, value;
+        public final LStatements.ARCreeperData type;
+
+        public SetARCreeperI(LVar x, LVar y, LVar value, LStatements.ARCreeperData type){
+            this.x = x;
+            this.y = y;
+            this.value = value;
+            this.type = type;
+        }
+
+        @Override
+        public void run(LExecutor exec){
+            Tile tile = world.tile((int)x.num(), (int)y.num());
+
+            if(tile == null) return;
+
+            float v = (float)value.num();
+
+            switch(type){
+                case creeper -> tile.creeper = v;
+                case height -> tile.height = v;
+            }
+
+        }
+    }
 }

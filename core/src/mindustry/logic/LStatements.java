@@ -9,6 +9,8 @@ import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcreeper.CreeperTile;
+import mindustry.arcreeper.SporeCore;
 import mindustry.ctype.*;
 import mindustry.game.*;
 import mindustry.gen.*;
@@ -2601,60 +2603,6 @@ public class LStatements{
         public static final ARCreeperData[] all = values();
     }
 
-    public static class GetARCreeperI implements LInstruction{
-        public final LVar x, y, result;
-        public final ARCreeperData type;
-
-        public GetARCreeperI(LVar x, LVar y, LVar result, ARCreeperData type){
-            this.x = x;
-            this.y = y;
-            this.result = result;
-            this.type = type;
-        }
-
-        @Override
-        public void run(LExecutor exec){
-            Tile tile = world.tile((int)x.num(), (int)y.num());
-
-            if(tile == null){
-                result.setnum(0);
-                return;
-            }
-
-            result.setnum(switch(type){
-                case creeper -> tile.creeper;
-                case height -> tile.height;
-            });
-        }
-    }
-
-    public static class SetARCreeperI implements LInstruction{
-        public final LVar x, y, value;
-        public final ARCreeperData type;
-
-        public SetARCreeperI(LVar x, LVar y, LVar value, ARCreeperData type){
-            this.x = x;
-            this.y = y;
-            this.value = value;
-            this.type = type;
-        }
-
-        @Override
-        public void run(LExecutor exec){
-            Tile tile = world.tile((int)x.num(), (int)y.num());
-
-            if(tile == null) return;
-
-            float v = (float)value.num();
-
-            switch(type){
-                case creeper -> tile.creeper = v;
-                case height -> tile.height = v;
-            }
-
-        }
-    }
-
     @RegisterStatement("getARCreeper")
     public static class GetARCreeperStatement extends LStatement{
         public ARCreeperData type = ARCreeperData.creeper;
@@ -2664,15 +2612,15 @@ public class LStatements{
         public void build(Table table){
             fields(table, result, str -> result = str);
 
-            table.add(" = get ");
-
             row(table);
+            table.add(" = get ");
 
             table.button(b -> {
                 b.label(() -> type.name());
                 b.clicked(() -> showSelect(b, ARCreeperData.all, type, t -> type = t));
             }, Styles.logict, () -> {}).size(100f, 40f).pad(4f).color(table.color);
 
+            row(table);
             table.add(" at ");
 
             fields(table, x, str -> x = str);
@@ -2687,7 +2635,7 @@ public class LStatements{
 
         @Override
         public LInstruction build(LAssembler builder){
-            return new GetARCreeperI(builder.var(x), builder.var(y), builder.var(result), type);
+            return new CreeperTile.GetARCreeperI(builder.var(x), builder.var(y), builder.var(result), type);
         }
 
         @Override
@@ -2732,7 +2680,7 @@ public class LStatements{
 
         @Override
         public LInstruction build(LAssembler builder){
-            return new SetARCreeperI(builder.var(x), builder.var(y), builder.var(value), type);
+            return new CreeperTile.SetARCreeperI(builder.var(x), builder.var(y), builder.var(value), type);
         }
 
         @Override
@@ -2741,5 +2689,62 @@ public class LStatements{
         }
     }
 
+    @RegisterStatement("spore")
+    public static class SporeStatement extends LStatement{
+        public String output = "result";
+        public String startX = "0", startY = "0";
+        public String targetX = "0", targetY = "0";
+        public String speed = "60";
+        public String health = "100";
+        public String creeperAmount = "100";
+        public String releaseRadius = "1";
+
+        @Override
+        public void build(Table table){
+            field(table, output, str -> output = str);
+            table.add(" = spore");
+
+
+            fields(table, "startX", startX, str -> startX = str);
+            fields(table, "startY", startY, str -> startY = str);
+
+            table.row();
+            fields(table, "targetX", targetX, str -> targetX = str);
+            fields(table, "targetY", targetY, str -> targetY = str);
+
+            table.row();
+            fields(table, "speed", speed, str -> speed = str);
+            fields(table, "health", health, str -> health = str);
+
+            table.row();
+            fields(table, "amount", creeperAmount, str -> creeperAmount = str);
+            fields(table, "radius", releaseRadius, str -> releaseRadius = str);
+        }
+
+        @Override
+        public LInstruction build(LAssembler builder){
+            return new SporeCore.SporeI(
+                    builder.var(output),
+                    builder.var(startX),
+                    builder.var(startY),
+                    builder.var(targetX),
+                    builder.var(targetY),
+                    builder.var(speed),
+                    builder.var(health),
+                    builder.var(creeperAmount),
+                    builder.var(releaseRadius)
+            );
+        }
+
+        @Override
+        public LCategory category(){
+            return LCategory.arCreeper;
+        }
+
+        @Override
+        public boolean privileged(){
+            return true;
+        }
+    }
 
 }

@@ -67,8 +67,11 @@ public final class CreeperCore {
     public static void update(){
         if(!enabled) return;
         if(Vars.state.isPaused()) return;
-        creeperTile.update();
+
+        SporeCore.update();
+
         CreeperBuild.update();
+        creeperTile.update();
     }
 
     public static boolean enabled() {
