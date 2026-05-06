@@ -486,7 +486,7 @@ public class CreeperTile {
 
     void draw2d(){
 
-        Draw.z(120f);
+        Draw.z(55f);
 
         Vars.world.tiles.eachTile(tile -> {
             float raw = tile.creeper;
@@ -579,7 +579,7 @@ public class CreeperTile {
     }
 
     public void draw3d() {
-        Draw.z(120f);
+        Draw.z(55f);
 
         final float tileSize = Vars.tilesize;
         final float half = tileSize / 2f;

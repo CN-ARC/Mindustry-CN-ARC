@@ -4,6 +4,7 @@ import arc.graphics.*;
 import arc.math.*;
 import arc.struct.*;
 import mindustry.*;
+import mindustry.arcreeper.SporeTurret;
 import mindustry.entities.*;
 import mindustry.entities.abilities.*;
 import mindustry.entities.bullet.*;
@@ -3665,19 +3666,18 @@ public class Blocks{
             coolant = consumeCoolant(0.1f);
         }};
 
-        parallax = new TractorBeamTurret("parallax"){{
+        parallax = new SporeTurret("parallax"){{
             requirements(Category.turret, with(Items.silicon, 160, Items.titanium, 110, Items.graphite, 50));
 
             hasPower = true;
             size = 2;
-            force = 16f;
-            scaledForce = 9f;
             range = 300f;
-            damage = 0.5f;
+            damage = 1f;
+            reload = 6f;
             scaledHealth = 160;
             rotateSpeed = 12;
 
-            consumePower(3.3f);
+            consumePower(150f);
         }};
 
         swarmer = new ItemTurret("swarmer"){{
