@@ -6,12 +6,14 @@ import arc.math.geom.Position;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.Vars;
+import mindustry.entities.Sized;
 import mindustry.entities.Units;
 import mindustry.game.Team;
 import mindustry.gen.*;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.blocks.environment.Floor;
+import mindustry.world.blocks.storage.CoreBlock;
 
 import static mindustry.Vars.tilesize;
 
@@ -26,6 +28,11 @@ public final class CreeperCombat {
     /** creeper 伪目标半径，只在本类内部用于 target validation。 */
     public static float targetHitSize = tilesize;
 
+    /**
+     * 炮塔用目标选择。
+     *
+     * 原版 Turret.target 是 Posc，因此这里保留 Posc 返回值。
+     */
     public static Posc bestTarget(
             Team team,
             float x,
@@ -57,16 +64,68 @@ public final class CreeperCombat {
         return allowBuilding ? Units.findEnemyTile(team, x, y, range, buildingPred) : null;
     }
 
+    /**
+     * 单位/武器用目标选择。
+     *
+     * AIController 与 Weapon 的目标字段是 Teamc；CreeperTarget 实现 Teamc 后可以直接进入单位索敌链路。
+     */
+    public static Teamc closestTarget(
+            Team team,
+            float x,
+            float y,
+            float range,
+            Boolf<Unit> unitPred,
+            Boolf<Building> buildingPred,
+            boolean allowCreeper,
+            boolean allowBuilding
+    ) {
+        if (!CreeperCore.enabled()) {
+            return allowBuilding
+                    ? Units.closestTarget(team, x, y, range, unitPred, buildingPred)
+                    : Units.closestEnemy(team, x, y, range, unitPred);
+        }
+
+        // 1. 单位优先。
+        Unit unit = Units.closestEnemy(team, x, y, range, unitPred);
+        if (unit != null) return unit;
+
+        // 2. creeper 次之。
+        if (allowCreeper && targetCreeper) {
+            CreeperTarget creeper = findCreeperTarget(team, x, y, range);
+            if (creeper != null) return creeper;
+        }
+
+        // 3. 建筑最后。
+        return allowBuilding ? Units.findEnemyTile(team, x, y, range, buildingPred) : null;
+    }
+
     public static boolean invalidateTarget(Posc target, Team team, float x, float y, float range) {
         if (target instanceof CreeperTarget ct) {
             float realRange = range + targetHitSize / 2f;
 
-            return !canAttackCreeper(team)
-                    || !validCreeperTile(ct.tile)
+            return !canAttackCreeper(team, ct.tile)
                     || !within(x, y, ct.x(), ct.y(), realRange);
         }
 
         return Units.invalidateTarget(target, team, x, y, range);
+    }
+
+    public static boolean invalidateTarget(Posc target, Team team, float x, float y) {
+        return invalidateTarget(target, team, x, y, Float.MAX_VALUE);
+    }
+
+    public static boolean invalidateTarget(Teamc target, Unit targeter, float range) {
+        return targeter == null || invalidateTarget(target, targeter.team(), targeter.x(), targeter.y(), range);
+    }
+
+    /**
+     * 单位开火距离判断用。
+     *
+     * 原版会通过 Sized.hitSize() 扩展射程；CreeperTarget 不实现 Sized，因此这里统一处理。
+     */
+    public static float hitSize(Posc target) {
+        if (target instanceof CreeperTarget) return targetHitSize;
+        return target instanceof Sized sized ? sized.hitSize() : 0f;
     }
 
     public static CreeperTarget findCreeperTarget(Team attacker, float wx, float wy, float range) {
@@ -89,7 +148,7 @@ public final class CreeperCombat {
                 }
 
                 Tile tile = Vars.world.tile(tx, ty);
-                if (!validCreeperTile(tile)) continue;
+                if (!canAttackCreeper(attacker, tile)) continue;
 
                 float dx = tile.worldx() - wx;
                 float dy = tile.worldy() - wy;
@@ -99,7 +158,7 @@ public final class CreeperCombat {
 
                 if (best == null
                         || dst2 < bestDst2
-                        || (Mathf.equal(dst2, bestDst2) && tile.creeper > best.creeper)) {
+                        || (Mathf.equal(dst2, bestDst2) && creeperAmount(tile) > creeperAmount(best))) {
                     best = tile;
                     bestDst2 = dst2;
                 }
@@ -117,16 +176,18 @@ public final class CreeperCombat {
     }
 
     public static float damageTile(Team attacker, Tile tile, float damage) {
-        if (!damageCreeper || damage <= 0f || !canAttackCreeper(attacker)) return 0f;
-        if (!validCreeperTile(tile)) return 0f;
+        if (!damageCreeper || damage <= 0f || !canAttackCreeper(attacker, tile)) return 0f;
 
         float damagePerCreeper = Math.max(CreeperCore.creeperTile.creeperDamage, 0.0001f);
         float consume = damage / damagePerCreeper;
 
-        float used = Math.min(tile.creeper, consume);
-        tile.creeper -= used;
+        float amount = creeperAmount(tile);
+        float used = Math.min(amount, consume);
 
-        if (tile.creeper < CreeperCore.creeperTile.minCreeper) {
+        // 正 creeper 归 creeperTeam，负 creeper 归 antiCreeperTeam；伤害总是把绝对值推向 0。
+        tile.creeper -= (tile.creeper > 0f ? 1f : -1f) * used;
+
+        if (creeperAmount(tile) < CreeperCore.creeperTile.minCreeper) {
             tile.creeper = 0f;
         }
 
@@ -149,7 +210,7 @@ public final class CreeperCombat {
                 if (++scanned > maxScanTiles) return;
 
                 Tile tile = Vars.world.tile(tx, ty);
-                if (!validCreeperTile(tile)) continue;
+                if (!canAttackCreeper(attacker, tile)) continue;
 
                 float dx = tile.worldx() - wx;
                 float dy = tile.worldy() - wy;
@@ -163,16 +224,47 @@ public final class CreeperCombat {
         }
     }
 
+    /**
+     * 是否允许该队伍参与 creeper 攻击逻辑。
+     *
+     * 这里只检查全局状态与攻击者合法性；具体 tile 是否敌对由 canAttackCreeper(attacker, tile) 判断。
+     */
     public static boolean canAttackCreeper(Team attacker) {
         return CreeperCore.enabled()
                 && attacker != null
-                && attacker != Team.derelict
-                && attacker != CreeperCore.creeperTeam;
+                && attacker != Team.derelict;
+    }
+
+    /**
+     * 是否可以攻击某个 creeper tile。
+     *
+     * tile.creeper > 0 归 creeperTeam；tile.creeper <= 0 归 antiCreeperTeam。
+     */
+    public static boolean canAttackCreeper(Team attacker, Tile tile) {
+        return canAttackCreeper(attacker)
+                && validCreeperTile(tile)
+                && creeperTeam(tile) != attacker;
     }
 
     public static boolean validCreeperTile(Tile tile) {
         return tile != null
-                && tile.creeper > CreeperCore.creeperTile.minCreeper;
+                && creeperAmount(tile) > CreeperCore.creeperTile.minCreeper;
+    }
+
+    /**
+     * 根据 creeper 数值符号判断 tile 所属队伍。
+     *
+     * 正数属于 creeperTeam；0 或负数属于 antiCreeperTeam。
+     * 注意：0 通常不会被 validCreeperTile() 视为有效目标。
+     */
+    public static Team creeperTeam(Tile tile) {
+        return tile != null && tile.creeper > 0f
+                ? CreeperCore.creeperTeam
+                : CreeperCore.antiCreeperTeam;
+    }
+
+    public static float creeperAmount(Tile tile) {
+        return tile == null ? 0f : Math.abs(tile.creeper);
     }
 
     private static int toTile(float world) {
@@ -180,18 +272,20 @@ public final class CreeperCombat {
     }
 
     private static boolean within(float x, float y, float tx, float ty, float range) {
+        if (range == Float.MAX_VALUE) return true;
+
         float dx = tx - x;
         float dy = ty - y;
         return dx * dx + dy * dy <= range * range;
     }
 
     /**
-     * 不再 implements Sized。
+     * creeper 伪目标。
      *
-     * 它只是一个能被 Turret.target 持有的坐标目标。
-     * hitSize 相关判断由 CreeperCombat.invalidateTarget() 自己处理。
+     * 炮塔只需要 Posc；单位 AI/Weapon 需要 Teamc。
+     * 队伍按 tile.creeper 的符号动态判断，以兼容 creeperTeam 与 antiCreeperTeam。
      */
-    public static final class CreeperTarget implements Posc {
+    public static final class CreeperTarget implements Teamc {
         public final Tile tile;
 
         private float x;
@@ -201,6 +295,41 @@ public final class CreeperCombat {
             this.tile = tile;
             this.x = tile.worldx();
             this.y = tile.worldy();
+        }
+
+        @Override
+        public boolean inFogTo(Team viewer) {
+            return false;
+        }
+
+        @Override
+        public boolean cheating() {
+            return false;
+        }
+
+        @Override
+        public Team team() {
+            return CreeperCombat.creeperTeam(tile);
+        }
+
+        @Override
+        public CoreBlock.CoreBuild closestCore() {
+            return null;
+        }
+
+        @Override
+        public CoreBlock.CoreBuild closestEnemyCore() {
+            return null;
+        }
+
+        @Override
+        public CoreBlock.CoreBuild core() {
+            return null;
+        }
+
+        @Override
+        public void team(Team team) {
+            // pseudo target，不允许外部改队伍。
         }
 
         @Override
@@ -219,43 +348,43 @@ public final class CreeperCombat {
         }
 
         @Override
-        public int tileX() {
-            return 0;
-        }
-
-        @Override
-        public int tileY() {
-            return 0;
-        }
-
-        @Override
-        public Block blockOn() {
-            return null;
-        }
-
-        @Override
-        public Tile tileOn() {
-            return null;
-        }
-
-        @Override
         public void y(float y) {
             this.y = y;
         }
 
         @Override
+        public int tileX() {
+            return tile.x;
+        }
+
+        @Override
+        public int tileY() {
+            return tile.y;
+        }
+
+        @Override
+        public Block blockOn() {
+            return tile.block();
+        }
+
+        @Override
+        public Tile tileOn() {
+            return tile;
+        }
+
+        @Override
         public Floor floorOn() {
-            return null;
+            return tile.floor();
         }
 
         @Override
         public Building buildOn() {
-            return null;
+            return tile.build;
         }
 
         @Override
         public boolean onSolid() {
-            return false;
+            return tile.solid();
         }
 
         @Override
@@ -292,22 +421,24 @@ public final class CreeperCombat {
 
         @Override
         public String toString() {
-            return "CreeperTarget{" + tile.x + "," + tile.y + ", creeper=" + tile.creeper + "}";
+            return "CreeperTarget{" + tile.x + "," + tile.y + ", creeper=" + tile.creeper + ", team=" + team() + "}";
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public <T extends Entityc> T self() {
-            return null;
+            return (T)this;
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public <T> T as() {
-            return null;
+            return (T)this;
         }
 
         @Override
         public boolean isAdded() {
-            return false;
+            return CreeperCombat.validCreeperTile(tile);
         }
 
         @Override
@@ -337,7 +468,13 @@ public final class CreeperCombat {
 
         @Override
         public int id() {
-            return 0;
+            int height = Math.max(Vars.world.height(), 1);
+            return -1 - (tile.x * height + tile.y);
+        }
+
+        @Override
+        public void id(int id) {
+            // pseudo target，无实体 ID 可写。
         }
 
         @Override
@@ -357,11 +494,6 @@ public final class CreeperCombat {
 
         @Override
         public void beforeWrite() {
-
-        }
-
-        @Override
-        public void id(int id) {
 
         }
 

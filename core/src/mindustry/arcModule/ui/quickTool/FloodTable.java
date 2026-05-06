@@ -15,7 +15,6 @@ import static mindustry.arcModule.ElementUtils.NCtextStyle;
 
 public class FloodTable extends ElementUtils.ToolTable {
     protected Seq<HudSettingsTable.Setting> list = new Seq<>();
-    private int unitTransparency = Core.settings.getInt("unitTransparency");
 
     public FloodTable() {
         icon = String.valueOf(Iconc.settings);

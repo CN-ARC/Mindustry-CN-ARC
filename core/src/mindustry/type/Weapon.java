@@ -14,6 +14,7 @@ import mindustry.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCVars;
+import mindustry.arcreeper.CreeperCombat;
 import mindustry.audio.*;
 import mindustry.content.*;
 import mindustry.entities.*;
@@ -388,7 +389,7 @@ float prev = Draw.xscl;
             boolean shoot = false;
 
             if(mount.target != null){
-                shoot = mount.target.within(mountX, mountY, bullet.range + Math.abs(shootY) + (mount.target instanceof Sized s ? s.hitSize()/2f : 0f)) && can;
+                shoot = mount.target.within(mountX, mountY, bullet.range + Math.abs(shootY) + (CreeperCombat.hitSize(mount.target) / 2f)) && can;
 
                 if(predictTarget){
                     Vec2 to = Predict.intercept(unit, mount.target, bullet);
@@ -511,11 +512,20 @@ float prev = Draw.xscl;
     }
 
     protected Teamc findTarget(Unit unit, float x, float y, float range, boolean air, boolean ground){
-        return Units.closestTarget(unit.team, x, y, range + Math.abs(shootY), u -> u.checkTarget(air, ground), t -> ground && (unit.type.targetUnderBlocks || !t.block.underBullets));
+        return CreeperCombat.closestTarget(
+                unit.team,
+                x,
+                y,
+                range + Math.abs(shootY),
+                u -> u.checkTarget(air, ground),
+                t -> ground && (unit.type.targetUnderBlocks || !t.block.underBullets),
+                ground && !bullet.heals(),
+                ground
+        );
     }
 
     protected boolean checkTarget(Unit unit, Teamc target, float x, float y, float range){
-        return Units.invalidateTarget(target, unit.team, x, y, range + Math.abs(shootY));
+        return CreeperCombat.invalidateTarget(target, unit.team, x, y, range + Math.abs(shootY));
     }
 
     protected float bulletRotation(Unit unit, WeaponMount mount, float bulletX, float bulletY){

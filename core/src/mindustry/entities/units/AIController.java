@@ -6,6 +6,7 @@ import arc.util.*;
 import mindustry.*;
 import mindustry.ai.*;
 import mindustry.ai.types.*;
+import mindustry.arcreeper.CreeperCombat;
 import mindustry.async.*;
 import mindustry.entities.*;
 import mindustry.game.*;
@@ -120,7 +121,7 @@ public class AIController implements UnitController{
     /** For ground units: Looks at the target, or the movement position. Does not apply to non-omni units. */
     public void faceTarget(){
         if(unit.type.omniMovement || unit instanceof Mechc){
-            if(!Units.invalidateTarget(target, unit, unit.range()) && unit.type.faceTarget && unit.type.hasWeapons()){
+            if(!CreeperCombat.invalidateTarget(target, unit, unit.range()) && unit.type.faceTarget && unit.type.hasWeapons()){
                 unit.lookAt(Predict.intercept(unit, target, unit.type.weapons.first().bullet));
             }else if(unit.moving()){
                 unit.lookAt(unit.vel().angle());
@@ -135,8 +136,9 @@ public class AIController implements UnitController{
     }
 
     public boolean invalid(Teamc target){
-        return Units.invalidateTarget(target, unit.team, unit.x, unit.y);
+        return CreeperCombat.invalidateTarget(target, unit.team, unit.x, unit.y);
     }
+
 
     public void pathfind(int pathTarget){
         pathfind(pathTarget, true);
@@ -220,7 +222,7 @@ public class AIController implements UnitController{
             boolean shoot = false;
 
             if(mount.target != null){
-                shoot = mount.target.within(mountX, mountY, wrange + (mount.target instanceof Sized s ? s.hitSize()/2f : 0f)) && shouldShoot();
+                shoot = mount.target.within(mountX, mountY, wrange + (CreeperCombat.hitSize(mount.target) / 2f)) && shouldShoot();
 
                 if(unit.type.autoDropBombs && !shoot){
                     if(bomberTarget == null || !bomberTarget.isAdded() || !bomberTarget.within(unit, unit.hitSize/2f + ((Sized)bomberTarget).hitSize()/2f)){
@@ -256,7 +258,7 @@ public class AIController implements UnitController{
     }
 
     public boolean checkTarget(Teamc target, float x, float y, float range){
-        return Units.invalidateTarget(target, unit.team, x, y, range);
+        return CreeperCombat.invalidateTarget(target, unit.team, x, y, range);
     }
 
     /** @return whether the unit should actually fire bullets (as opposed to just targeting something) */
@@ -279,7 +281,16 @@ public class AIController implements UnitController{
     }
 
     public Teamc target(float x, float y, float range, boolean air, boolean ground){
-        return Units.closestTarget(unit.team, x, y, range, u -> u.checkTarget(air, ground), t -> ground && (unit.type.targetUnderBlocks || !t.block.underBullets));
+        return CreeperCombat.closestTarget(
+                unit.team,
+                x,
+                y,
+                range,
+                u -> u.checkTarget(air, ground),
+                t -> ground && (unit.type.targetUnderBlocks || !t.block.underBullets),
+                ground,
+                ground
+        );
     }
 
     public boolean retarget(){
