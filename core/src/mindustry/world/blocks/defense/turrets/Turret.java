@@ -11,6 +11,7 @@ import arc.scene.ui.layout.Table;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
+import mindustry.arcreeper.CreeperCombat;
 import mindustry.audio.*;
 import mindustry.content.*;
 import mindustry.core.*;
@@ -573,7 +574,14 @@ public class Turret extends ReloadTurret{
                         targetPosition(target);
 
                         if(Float.isNaN(rotation)) rotation = 0;
-                        canShoot = within(target, range() + (target instanceof Sized hb ? hb.hitSize()/1.9f : 0f));
+                        canShoot = within(target, range() + (
+                                target instanceof CreeperCombat.CreeperTarget
+                                        ? CreeperCombat.targetHitSize / 1.9f
+                                        : target instanceof Sized hb
+                                        ? hb.hitSize() / 1.9f
+                                        : 0f
+                        ));
+                        //canShoot = within(target, range() + (target instanceof Sized hb ? hb.hitSize()/1.9f : 0f));
                     }
 
                     if(!isControlled()){
@@ -619,8 +627,17 @@ public class Turret extends ReloadTurret{
             return super.canConsume();
         }
 
-        protected boolean validateTarget(){
+        /*protected boolean validateTarget(){
             return !Units.invalidateTarget(target, canHeal() ? Team.derelict : team, x, y) || isControlled() || logicControlled();
+        }*/
+        protected boolean validateTarget(){
+            return !CreeperCombat.invalidateTarget(
+                    target,
+                    canHeal() ? Team.derelict : team,
+                    x,
+                    y,
+                    trackingRange()
+            ) || isControlled() || logicControlled();
         }
 
         protected boolean canHeal(){
@@ -633,9 +650,24 @@ public class Turret extends ReloadTurret{
             }else{
                 var ammo = peekAmmo();
                 boolean buildings = targetGround && targetBlocks && (ammo == null || ammo.targetBlocks), missiles = ammo == null || ammo.targetMissiles;
-                return Units.bestTarget(team, x, y, range,
+                return CreeperCombat.bestTarget(
+                        team,
+                        x,
+                        y,
+                        range,
+                        e -> !e.dead()
+                                && unitFilter.get(e)
+                                && (e.isGrounded() || targetAir)
+                                && (!e.isGrounded() || targetGround)
+                                && (missiles || !(e instanceof TimedKillc)),
+                        b -> buildings && buildingFilter.get(b),
+                        unitSort,
+                        targetGround, // creeper 是地面目标
+                        buildings
+                );
+                /*return Units.bestTarget(team, x, y, range,
                     e -> !e.dead() && unitFilter.get(e) && (e.isGrounded() || targetAir) && (!e.isGrounded() || targetGround) && (missiles || !(e instanceof TimedKillc)),
-                    b -> buildings && buildingFilter.get(b), unitSort);
+                    b -> buildings && buildingFilter.get(b), unitSort);*/
             }
         }
 

@@ -8,6 +8,7 @@ import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.pooling.*;
+import mindustry.arcreeper.CreeperCombat;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.game.EventType.*;
@@ -335,6 +336,31 @@ public class Damage{
      * Only enemies of the specified team are damaged.
      */
     public static void collidePoint(Bullet hitter, Team team, Effect effect, float x, float y){
+        if(hitter.type.collidesGround){
+            Tile tile = world.tileWorld(x, y);
+
+            if(CreeperCombat.validCreeperTile(tile) && hitter.damage > 0f){
+                float absorbed = CreeperCombat.damageTile(team, tile, hitter.damage);
+
+                if(absorbed > 0f){
+                    hitter.type.hit(hitter, x, y);
+
+                    if(!hitter.type.pierce){
+                        hitter.hit = true;
+                        hitter.remove();
+                        return;
+                    }else{
+                        hitter.damage -= absorbed;
+
+                        if(hitter.damage <= 0.001f){
+                            hitter.hit = true;
+                            hitter.remove();
+                            return;
+                        }
+                    }
+                }
+            }
+        }
 
         if(hitter.type.collidesGround){
             Building build = world.build(World.toTile(x), World.toTile(y));
@@ -533,6 +559,12 @@ public class Damage{
         }
 
         if(ground){
+            float tileDamageAmount = damage * (source == null ? 1f : source.type.buildingDamageMultiplier);
+
+            // 新增：范围伤害也消耗 creeper。
+            // 只会处理 creeper > 0 的 tile，具体过滤在 CreeperCombat 内部。
+            CreeperCombat.splashDamage(team, x, y, radius, tileDamageAmount);
+
             if(!complete){
                 tileDamage(team, World.toTile(x), World.toTile(y), radius / tilesize, damage * (source == null ? 1f : source.type.buildingDamageMultiplier), source);
             }else{

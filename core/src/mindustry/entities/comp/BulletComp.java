@@ -9,6 +9,7 @@ import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcreeper.CreeperCombat;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -235,9 +236,9 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
 
         while(x >= 0 && y >= 0 && x < ww && y < wh){
             Building build = world.build(x, y);
+            Tile tile = world.tile(x, y);
 
             if(type.collideFloor || type.collideTerrain){
-                Tile tile = world.tile(x, y);
                 if(
                     type.collideFloor && (tile == null || tile.floor().hasSurface() || tile.block() != Blocks.air) ||
                     type.collideTerrain && tile != null && tile.block() instanceof StaticWall
@@ -245,6 +246,46 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
                     remove();
                     hit = true;
                     return;
+                }
+            }
+
+            // creeper collision: 必须在 building collision 前面。
+            // 这样同一 tile 上 creeper > 0 时，子弹优先打 creeper，而不是建筑。
+            if(isAdded()
+                    && type.collides
+                    && type.collidesGround
+                    && !type.heals()
+                    && CreeperCombat.validCreeperTile(tile)){
+
+                float wx = x * tilesize;
+                float wy = y * tilesize;
+
+                // 对齐原版 building 命中时的位置修正。
+                if(Mathf.dst2(lastX, lastY, wx, wy) < Mathf.dst2(lastX, lastY, this.x, this.y)){
+                    this.x = wx;
+                    this.y = wy;
+                }
+
+                float absorbed = CreeperCombat.damageTile(team, tile, damage);
+
+                if(absorbed > 0f){
+                    type.hit(self(), wx, wy);
+
+                    // 推荐：普通子弹命中 creeper 后直接消失。
+                    // 这样不会出现“打穿 creeper 后继续打建筑”的优先级歧义。
+                    if(!type.pierce){
+                        hit = true;
+                        remove();
+                        return;
+                    }else{
+                        damage -= absorbed;
+
+                        if(damage <= 0.001f){
+                            hit = true;
+                            remove();
+                            return;
+                        }
+                    }
                 }
             }
 
