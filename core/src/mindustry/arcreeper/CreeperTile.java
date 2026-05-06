@@ -18,21 +18,13 @@ import mindustry.world.Tile;
 public class CreeperTile {
     private float[][] creeperData; // for later multiplayer sync
 
-    /** 每单元creeper等效于的伤害，用于产生和消耗上 */
-    public float creeperDamage = 5f;
-
     public float minCreeper = 0.01f;
     public float maxCreeper = 1000f;
-    public float flowRate = 0.18f;
 
     private float updateTimer = 0f;
-    public float timeInterval = 0.02f;
 
     int log2Min = (int) Mathf.log2(minCreeper);
     int log2Max = (int) Mathf.log2(maxCreeper);
-
-    // 地形高度到 creeper 深度的换算倍率。
-    public float heightScale = 1f;
 
     // 最小流动阈值。
     public float minFlow = 0.001f;
@@ -74,9 +66,6 @@ public class CreeperTile {
      * 边界判断直接使用 Tile.height，不使用 heightScale。
      */
     public static boolean drawTileHeight = false;
-
-    public static Color creeperColor = new Color(0.1f, 0.35f, 1f, 1f);
-    public static Color antiCreeperColor = new Color(0.45f, 0.85f, 1f, 1f);
     // 可调参数
     private static final float EDGE_RATIO = 0.12f;        // 边界厚度占 tileSize 的比例
     private static final float EDGE_ALPHA_BOOST = 0.15f;  // 边界额外透明度增强
@@ -217,8 +206,8 @@ public class CreeperTile {
         updateFx();
 
         updateTimer += Time.delta / 60f;
-        if (updateTimer < timeInterval) return;
-        updateTimer -= timeInterval;
+        if (updateTimer < Vars.state.rules.creeperFlowInterval) return;
+        updateTimer -= Vars.state.rules.creeperFlowInterval;
 
         clearTmp();
 
@@ -231,8 +220,8 @@ public class CreeperTile {
 
     void updateFlow() {
         Vars.world.tiles.eachTile(tile -> {
-            flowBetween(tile, Vars.world.tile(tile.x + 1, tile.y), flowRate);
-            flowBetween(tile, Vars.world.tile(tile.x, tile.y + 1), flowRate);
+            flowBetween(tile, Vars.world.tile(tile.x + 1, tile.y), Vars.state.rules.flowRate);
+            flowBetween(tile, Vars.world.tile(tile.x, tile.y + 1), Vars.state.rules.flowRate);
         });
     }
 
@@ -240,7 +229,7 @@ public class CreeperTile {
      * 获取 tile 的地形高度，并转换为 creeper 深度单位。
      */
     float heightOf(Tile tile) {
-        return tile.height * heightScale;
+        return tile.height * Vars.state.rules.heightScale;
     }
 
     /**
@@ -287,7 +276,7 @@ public class CreeperTile {
         Team team = teamOf(sign);
         if (tile.build.team == team) return false;
 
-        tile.build.damage(amount * creeperDamage);
+        tile.build.damage(amount * Vars.state.rules.creeperDamage);
         if (sign > 0) setCreeperFx(tile, Fx.creeperDamage);
         else setCreeperFx(tile, Fx.antiCreeperDamage);
 
@@ -452,7 +441,7 @@ public class CreeperTile {
             float normalized = Mathf.clamp((float) (exp - log2Min) / (log2Max - log2Min), 0f, 1f);
             float alpha = 0.2f + normalized * 0.7f;
 
-            Color color = anti ? antiCreeperColor : creeperColor;
+            Color color = anti ? Vars.state.rules.antiCreeperColor : Vars.state.rules.creeperColor;
             Draw.color(color);
             Draw.alpha(alpha);
 
@@ -543,7 +532,7 @@ public class CreeperTile {
             float normalized = Mathf.clamp((float) (exp - log2Min) / (log2Max - log2Min), 0f, 1f);
             float alpha = 0.2f + normalized * 0.7f;
 
-            Color base = anti ? antiCreeperColor : creeperColor;
+            Color base = anti ? Vars.state.rules.antiCreeperColor : Vars.state.rules.creeperColor;
 
             float x = tile.worldx();
             float y = tile.worldy();

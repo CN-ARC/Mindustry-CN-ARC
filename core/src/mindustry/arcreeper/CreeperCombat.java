@@ -178,7 +178,7 @@ public final class CreeperCombat {
     public static float damageTile(Team attacker, Tile tile, float damage) {
         if (!damageCreeper || damage <= 0f || !canAttackCreeper(attacker, tile)) return 0f;
 
-        float damagePerCreeper = Math.max(CreeperCore.creeperTile.creeperDamage, 0.0001f);
+        float damagePerCreeper = Math.max(Vars.state.rules.creeperDamage, 0.0001f);
         float consume = damage / damagePerCreeper;
 
         float amount = creeperAmount(tile);

@@ -229,6 +229,20 @@ public class Rules{
     /** If the `data` instruction is allowed for world processors */
     public boolean allowLogicData = false;
 
+    /** ARCreeper相关 */
+    /** 高度转换的flood高度 */
+    public float heightScale = 1f;
+    /** Creeper 更新间隔*/
+    public float creeperFlowInterval = 0.02f;
+    /** 每单元creeper等效于的伤害，用于产生和消耗上 */
+    public float creeperDamage = 5f;
+
+    public float flowRate = 0.18f;
+
+    public Color creeperColor = new Color(0.1f, 0.35f, 1f, 1f);
+    public Color antiCreeperColor = new Color(0.45f, 0.85f, 1f, 1f);
+
+
     /** Copies this ruleset exactly. Not efficient at all, do not use often. */
     public Rules copy(){
         return JsonIO.copy(this);

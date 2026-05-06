@@ -7,9 +7,8 @@ import arc.math.*;
 import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.Vars;
 import mindustry.arcModule.ARCVars;
-import mindustry.arcreeper.CreeperCore;
-import mindustry.arcreeper.CreeperTile;
 import mindustry.entities.*;
 import mindustry.entities.abilities.*;
 import mindustry.gen.*;
@@ -3072,13 +3071,13 @@ public class Fx{
     }),
 
     creeperDamage = new Effect(60f, e -> {
-        color(CreeperTile.creeperColor);
+        color(Vars.state.rules.creeperColor);
         alpha(0.3f);
         Fill.square(e.x,e.y,4f * e.fout());
     }),
 
     antiCreeperDamage = new Effect(60f, e -> {
-        color(CreeperTile.antiCreeperColor);
+        color(Vars.state.rules.antiCreeperColor);
         stroke(e.fout() + 0.2f);
         randLenVectors(e.id, 2, e.rotation * 0.9f, (x, y) -> {
             Lines.circle(e.x + x, e.y + y, 1f + e.fin() * 3f);
