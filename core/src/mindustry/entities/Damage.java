@@ -261,6 +261,10 @@ public class Damage{
         collidedBlocks.clear();
         vec.trnsExact(angle, length);
 
+        if(hitter.type.collidesGround && !hitter.type.heals() && hitter.damage > 0f){
+            CreeperCombat.lineDamage(team, x, y, angle, length, hitter.damage, pierceCap);
+        }
+
         if(hitter.type.collidesGround && hitter.type.collidesTiles){
             seg1.set(x, y);
             seg2.set(seg1).add(vec);
@@ -339,7 +343,7 @@ public class Damage{
         if(hitter.type.collidesGround){
             Tile tile = world.tileWorld(x, y);
 
-            if(CreeperCombat.validCreeperTile(tile) && hitter.damage > 0f){
+            if(CreeperCombat.canAttackCreeper(team, tile) && hitter.damage > 0f){
                 float absorbed = CreeperCombat.damageTile(team, tile, hitter.damage);
 
                 if(absorbed > 0f){

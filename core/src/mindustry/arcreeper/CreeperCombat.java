@@ -3,9 +3,11 @@ package mindustry.arcreeper;
 import arc.func.Boolf;
 import arc.math.Mathf;
 import arc.math.geom.Position;
+import arc.util.Tmp;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.Vars;
+import mindustry.core.World;
 import mindustry.entities.Sized;
 import mindustry.entities.Units;
 import mindustry.game.Team;
@@ -23,7 +25,7 @@ public final class CreeperCombat {
     public static boolean targetCreeper = true;
     public static boolean damageCreeper = true;
 
-    public static int maxScanTiles = 4096;
+    public static int maxScanTiles = 10000;
 
     /** creeper 伪目标半径，只在本类内部用于 target validation。 */
     public static float targetHitSize = tilesize;
@@ -277,6 +279,36 @@ public final class CreeperCombat {
         float dx = tx - x;
         float dy = ty - y;
         return dx * dx + dy * dy <= range * range;
+    }
+
+    public static void lineDamage(
+            Team attacker,
+            float x,
+            float y,
+            float angle,
+            float length,
+            float damage,
+            int pierceCap
+    ) {
+        if (!damageCreeper || damage <= 0f || length <= 0f || !canAttackCreeper(attacker)) return;
+
+        Tmp.v1.trnsExact(angle, length);
+
+        final int[] hits = {0};
+
+        World.raycastEachWorld(x, y, x + Tmp.v1.x, y + Tmp.v1.y, (tx, ty) -> {
+            Tile tile = Vars.world.tile(tx, ty);
+
+            if (!canAttackCreeper(attacker, tile)) return false;
+
+            float absorbed = damageTile(attacker, tile, damage);
+            if (absorbed <= 0f) return false;
+
+            hits[0]++;
+
+            return pierceCap > 0 && hits[0] >= pierceCap;
+        });
+
     }
 
     /**

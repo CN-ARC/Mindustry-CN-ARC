@@ -90,15 +90,14 @@ public final class CreeperBuild {
      * <p>This preserves the existing behavior: Creeper-team cores produce
      * positive Creeper, while Sharded cores produce Anti-Creeper.</p>
      */
+// CreeperBuild.java
     private static void scanWorldBuildings() {
         if (Vars.world == null || Vars.world.tiles == null) return;
 
-        Log.info("scanCreeperBuildings");
-        creepTeam.cores().forEach(CreeperBuild::addCoreEmitterIfNeeded);
-        Team.sharded.cores().forEach(CreeperBuild::addCoreEmitterIfNeeded);
+        CreeperCore.creeperTeam.cores().forEach(CreeperBuild::addCoreEmitterIfNeeded);
+        CreeperCore.antiCreeperTeam.cores().forEach(CreeperBuild::addCoreEmitterIfNeeded);
     }
 
-    /** Adds an emitter for supported core blocks, using team to determine polarity. */
     private static void addCoreEmitterIfNeeded(Building build) {
         if (build == null || build.block == null) return;
         if (!isCoreEmitterBlock(build.block)) return;
@@ -107,9 +106,9 @@ public final class CreeperBuild {
         float intervals = coreEmitterIntervals(build.block);
         float maxLayer = coreEmitterMaxLayer(build.block);
 
-        if (build.team == creepTeam) {
+        if (build.team == CreeperCore.creeperTeam) {
             Emitters.addEmitter(build, amt, intervals, maxLayer);
-        } else if (build.team == Team.sharded) {
+        } else if (build.team == CreeperCore.antiCreeperTeam) {
             Emitters.addEmitter(build, -amt, intervals, maxLayer);
         }
     }

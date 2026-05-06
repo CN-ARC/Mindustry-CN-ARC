@@ -251,35 +251,32 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
 
             // creeper collision: 必须在 building collision 前面。
             // 这样同一 tile 上 creeper > 0 时，子弹优先打 creeper，而不是建筑。
+            // creeper collision: only enemy creeper/AC should be a collision candidate.
             if(isAdded()
                     && type.collides
                     && type.collidesGround
                     && !type.heals()
-                    && CreeperCombat.validCreeperTile(tile)){
-
-                float wx = x * tilesize;
-                float wy = y * tilesize;
-
-                // 对齐原版 building 命中时的位置修正。
-                if(Mathf.dst2(lastX, lastY, wx, wy) < Mathf.dst2(lastX, lastY, this.x, this.y)){
-                    this.x = wx;
-                    this.y = wy;
-                }
+                    && CreeperCombat.canAttackCreeper(team, tile)){
 
                 float absorbed = CreeperCombat.damageTile(team, tile, damage);
 
                 if(absorbed > 0f){
+                    float wx = x * tilesize;
+                    float wy = y * tilesize;
+
+                    if(Mathf.dst2(lastX, lastY, wx, wy) < Mathf.dst2(lastX, lastY, this.x, this.y)){
+                        this.x = wx;
+                        this.y = wy;
+                    }
+
                     type.hit(self(), wx, wy);
 
-                    // 推荐：普通子弹命中 creeper 后直接消失。
-                    // 这样不会出现“打穿 creeper 后继续打建筑”的优先级歧义。
                     if(!type.pierce){
                         hit = true;
                         remove();
                         return;
                     }else{
                         damage -= absorbed;
-
                         if(damage <= 0.001f){
                             hit = true;
                             remove();
