@@ -29,6 +29,13 @@ public class CreeperTile {
     // 最小流动阈值。
     public float minFlow = 0.001f;
 
+    // 最小水面差阈值。小于该差值时不产生流动，用于减少微小来回抖动。
+    public float minSurfaceDiff = 0.01f;
+
+    // 单个 tile 每轮最多流出自身深度的比例，用于限制多方向同时出流造成的过抽。
+    // 0.75 在默认 flowRate = 0.18 时通常不会明显降低扩散效率。
+    public float maxDrainFraction = 0.75f;
+
     /**
      * FX 播放间隔。
      * Mindustry 中 Time.delta 以 tick 为单位，60 tick 约等于 1 秒。
@@ -107,7 +114,11 @@ public class CreeperTile {
     }
 
     private void clearTmp() {
-        Vars.world.tiles.eachTile(tile -> tile.creeperTmp = 0f);
+        Vars.world.tiles.eachTile(tile -> {
+            tile.creeperTmp = 0f;
+            tile.creeperOutPos = 0f;
+            tile.creeperOutNeg = 0f;
+        });
     }
 
     private void clearFxQueue() {
@@ -215,13 +226,34 @@ public class CreeperTile {
 
         Vars.world.tiles.eachTile(tile -> {
             tile.creeper += tile.creeperTmp;
+
+            if (Math.abs(tile.creeper) < minCreeper) {
+                tile.creeper = 0f;
+            }
         });
     }
 
     void updateFlow() {
+        float rate = Vars.state.rules.flowRate;
+
+        // 第一遍：统计每个 tile 本轮同号/空格传播想流出的总量。
+        // 只统计来源格出流，不写 creeperTmp。
         Vars.world.tiles.eachTile(tile -> {
-            flowBetween(tile, Vars.world.tile(tile.x + 1, tile.y), Vars.state.rules.flowRate);
-            flowBetween(tile, Vars.world.tile(tile.x, tile.y + 1), Vars.state.rules.flowRate);
+            collectOutflow(tile, Vars.world.tile(tile.x + 1, tile.y), rate);
+            collectOutflow(tile, Vars.world.tile(tile.x, tile.y + 1), rate);
+        });
+
+        // 第二遍：按来源格总出流上限缩放后，实际写入 creeperTmp。
+        Vars.world.tiles.eachTile(tile -> {
+            applyLimitedFlow(tile, Vars.world.tile(tile.x + 1, tile.y), rate);
+            applyLimitedFlow(tile, Vars.world.tile(tile.x, tile.y + 1), rate);
+        });
+
+        // 第三遍：C / AC 相邻时只抵消，不做穿透式 transfer。
+        // 使用 creeper + creeperTmp 作为本轮预测值，避免同一轮多条边过量抵消。
+        Vars.world.tiles.eachTile(tile -> {
+            flowOppositeCancel(tile, Vars.world.tile(tile.x + 1, tile.y), rate);
+            flowOppositeCancel(tile, Vars.world.tile(tile.x, tile.y + 1), rate);
         });
     }
 
@@ -245,8 +277,8 @@ public class CreeperTile {
      * 将指定极性的流体从 from 转移到 to。
      * <p>
      * 如果目标格存在敌方建筑，则先结算建筑交互：
-     * - buildingAbsorb = true：本次流动量从来源格扣除，并转换为伤害；
-     * - buildingAbsorb = false：只造成伤害，不改变 from/to 的 creeper 数值。
+     * - buildingAbsorb = true：本次流动量从来源格扣除，并转换为建筑伤害，不进入目标格；
+     * - buildingAbsorb = false：只对建筑造成流动伤害，不改变 from/to 的 creeper 数值。
      */
     void transfer(Tile from, Tile to, int sign, float amount) {
         if (amount <= 0f) return;
@@ -290,89 +322,131 @@ public class CreeperTile {
         return sign > 0 ? CreeperCore.creeperTeam : CreeperCore.antiCreeperTeam;
     }
 
-    void flowBetween(Tile a, Tile b, float rate) {
+    /**
+     * 第一遍：统计 a-b 这条边上可能发生的同号/空格传播候选出流。
+     * 每条边仍然只由 updateFlow() 传入一次，但这里内部检查两个方向。
+     */
+    private void collectOutflow(Tile a, Tile b, float rate) {
         if (a == null || b == null) return;
 
-        int signA = signOf(a.creeper);
-        int signB = signOf(b.creeper);
+        collectOutflowOneWay(a, b, rate);
+        collectOutflowOneWay(b, a, rate);
+    }
 
-        if (signA == 0 && signB == 0) return;
+    private void collectOutflowOneWay(Tile from, Tile to, float rate) {
+        int signFrom = signOf(from.creeper);
+        if (signFrom == 0) return;
 
-        if (signA == signB || signA == 0 || signB == 0) {
-            flowSameSign(a, b, signA, signB, rate);
-        } else {
-            flowOppositeSign(a, b, signA, signB, rate);
-        }
+        int signTo = signOf(to.creeper);
+
+        // 反号相邻不在这里传播，交给 flowOppositeCancel() 只做抵消，避免一帧内穿透翻色。
+        if (signTo != 0 && signTo != signFrom) return;
+
+        float amount = rawSameSignAmount(from, to, signFrom, rate);
+        if (amount < minFlow) return;
+
+        // buildingAbsorb=false 时，敌方建筑只受伤、不吃水，因此不占用来源出流预算。
+        if (isEnemyBuilding(to, signFrom) && !buildingAbsorb) return;
+
+        addOut(from, signFrom, amount);
     }
 
     /**
-     * 处理同号传播，或者一边为空的传播。
-     * <p>
-     * 适用情况：
-     * + creeper      对 creeper
-     * - antiCreeper  对 antiCreeper
-     * + creeper      对空 tile
-     * - antiCreeper  对空 tile
-     * <p>
-     * 传播规则：
-     * <p>
-     * depth   = abs(creeper)
-     * surface = height + depth
-     * <p>
-     * 只有 surface 较高的一侧会向 surface 较低的一侧传播。
-     * <p>
-     * 对于 antiCreeper，sign = -1，
-     * 但 depth 仍然是正数，因此它和 creeper 的流动规则完全一致。
+     * 第二遍：按来源 tile 的总出流预算缩放后应用同号/空格传播，随后处理 C/AC 抵消。
      */
-    void flowSameSign(Tile a, Tile b, int signA, int signB, float rate) {
-        int sign = signA != 0 ? signA : signB;
+    private void applyLimitedFlow(Tile a, Tile b, float rate) {
+        if (a == null || b == null) return;
 
-        float depthA = Math.max(0f, a.creeper * sign);
-        float depthB = Math.max(0f, b.creeper * sign);
+        applyLimitedFlowOneWay(a, b, rate);
+        applyLimitedFlowOneWay(b, a, rate);
+    }
 
-        float surfaceA = heightOf(a) + depthA;
-        float surfaceB = heightOf(b) + depthB;
+    private void applyLimitedFlowOneWay(Tile from, Tile to, float rate) {
+        int signFrom = signOf(from.creeper);
+        if (signFrom == 0) return;
 
-        float diff = surfaceA - surfaceB;
+        int signTo = signOf(to.creeper);
 
-        if (diff > minFlow) {
-            float amount = Math.min(diff, depthA) * rate;
-            if (amount < minFlow) return;
+        // 反号相邻不做流入穿透，统一交给 flowOppositeCancel() 抵消。
+        if (signTo != 0 && signTo != signFrom) return;
 
-            transfer(a, b, sign, amount);
-        } else if (diff < -minFlow) {
-            float amount = Math.min(-diff, depthB) * rate;
-            if (amount < minFlow) return;
+        float raw = rawSameSignAmount(from, to, signFrom, rate);
+        if (raw < minFlow) return;
 
-            transfer(b, a, sign, amount);
+        float amount = raw;
+
+        if (!isEnemyBuilding(to, signFrom) || buildingAbsorb) {
+            float depth = Math.max(0f, from.creeper * signFrom);
+            float maxOut = depth * maxDrainFraction;
+            float totalOut = outOf(from, signFrom);
+
+            if (totalOut > maxOut && totalOut > 0f) {
+                amount *= maxOut / totalOut;
+            }
         }
+
+        if (amount < minFlow) return;
+
+        transfer(from, to, signFrom, amount);
     }
 
     /**
-     * 处理 creeper 与 antiCreeper 相邻时的传播与抵消。
+     * 原始同号/空格传播量。
      * <p>
-     * 这里不能使用：
-     * <p>
-     * a.creeper - b.creeper
-     * <p>
-     * 因为当 a = +10, b = -10 时，
-     * signed diff 会得到 20，导致传播速度变成正常值的两倍。
-     * <p>
-     * 正确做法：
-     * <p>
-     * 1. 对双方都使用 abs(creeper) 作为水深；
-     * 2. 使用 height + depth 判断是否能越过对方地形；
-     * 3. 分别计算双方的推进能力；
-     * 4. 只选择推进能力更强的一侧进行传播，而不是把两侧能力相加。
-     * <p>
-     * 这样可以保证：
-     * - creeper 与 antiCreeper 完全对称；
-     * - antiCreeper 也必须拥有足够深度才能越过地形；
-     * - 同高度 +x 与 -x 相遇时，传播量是 x * rate，而不是 2x * rate。
+     * 这里仍然保留原来的 surface = height + depth 逻辑，
+     * 只是把“水面差是否足够大”和“实际流量是否足够大”分成两个阈值。
      */
-    void flowOppositeSign(Tile a, Tile b, int signA, int signB, float rate) {
-        float depthA = Math.abs(a.creeper);
-        float depthB = Math.abs(b.creeper);
+    private float rawSameSignAmount(Tile from, Tile to, int sign, float rate) {
+        float depthFrom = Math.max(0f, from.creeper * sign);
+        if (depthFrom <= minCreeper) return 0f;
+
+        float depthTo = Math.max(0f, to.creeper * sign);
+
+        float surfaceFrom = heightOf(from) + depthFrom;
+        float surfaceTo = heightOf(to) + depthTo;
+
+        float diff = surfaceFrom - surfaceTo;
+        if (diff <= minSurfaceDiff) return 0f;
+
+        return Math.min(diff, depthFrom) * rate;
+    }
+
+    private float outOf(Tile tile, int sign) {
+        return sign > 0 ? tile.creeperOutPos : tile.creeperOutNeg;
+    }
+
+    private void addOut(Tile tile, int sign, float amount) {
+        if (sign > 0) tile.creeperOutPos += amount;
+        else tile.creeperOutNeg += amount;
+    }
+
+    private boolean isEnemyBuilding(Tile tile, int sign) {
+        return tile != null
+                && tile.build != null
+                && tile.build.team != teamOf(sign);
+    }
+
+    /**
+     * 处理 creeper 与 antiCreeper 相邻时的抵消。
+     * <p>
+     * 与旧版 flowOppositeSign() 的区别：
+     * - 不再把 C 直接 transfer 到 AC 格，也不把 AC 直接 transfer 到 C 格；
+     * - 只在边界上按推进能力抵消双方；
+     * - 目标格归零后，下一轮再由同号/空格传播逻辑占领，减少前线来回穿透和翻色抖动。
+     */
+    private void flowOppositeCancel(Tile a, Tile b, float rate) {
+        if (a == null || b == null) return;
+
+        float valueA = a.creeper + a.creeperTmp;
+        float valueB = b.creeper + b.creeperTmp;
+
+        int signA = signOf(valueA);
+        int signB = signOf(valueB);
+
+        if (signA == 0 || signB == 0 || signA == signB) return;
+
+        float depthA = Math.abs(valueA);
+        float depthB = Math.abs(valueB);
 
         float heightA = heightOf(a);
         float heightB = heightOf(b);
@@ -385,19 +459,14 @@ public class CreeperTile {
 
         if (capA <= minFlow && capB <= minFlow) return;
 
-        if (capA >= capB) {
-            float amount = capA * rate;
-            if (amount < minFlow) return;
+        float amount = Math.min(Math.min(depthA, depthB), Math.max(capA, capB) * rate);
+        if (amount < minFlow) return;
 
-            transfer(a, b, signA, amount);
-            setCreeperFx(b, Fx.creeperCancel);
-        } else {
-            float amount = capB * rate;
-            if (amount < minFlow) return;
+        a.creeperTmp -= signA * amount;
+        b.creeperTmp -= signB * amount;
 
-            transfer(b, a, signB, amount);
-            setCreeperFx(a, Fx.creeperCancel);
-        }
+        setCreeperFx(a, Fx.creeperCancel);
+        setCreeperFx(b, Fx.creeperCancel);
     }
 
     public void draw() {

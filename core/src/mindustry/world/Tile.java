@@ -47,8 +47,9 @@ public class Tile implements Position, QuadTreeObject, Displayable{
 
     public float buildEff = 0f;
 
-    /** floodUtils */
+    /** ARCreeper */
     public float creeper, creeperTmp;
+    public float creeperOutPos, creeperOutNeg;
     public float height;
     public Effect creeperFx;
 
