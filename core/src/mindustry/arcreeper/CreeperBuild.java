@@ -53,7 +53,7 @@ public final class CreeperBuild {
     /** Re-scans the world and attaches all active Creeper building behaviors. */
     public static void load() {
         reset(false);
-        scanWorldBuildings();
+        if (Vars.state.rules.useDefaultEmitter) scanWorldBuildings();
         Log.info("CreeperBuildings loaded, emitters: @", Emitters.size());
     }
 

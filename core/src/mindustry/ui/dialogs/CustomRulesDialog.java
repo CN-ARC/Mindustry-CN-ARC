@@ -259,6 +259,7 @@ public class CustomRulesDialog extends BaseDialog{
             }).margin(4).size(50f).padRight(10);
             b.add("anticreeper颜色");
         }, () -> ui.picker.show(rules.antiCreeperColor, rules.antiCreeperColor::set)).left().width(250f).row();
+        check("默认Emitter",b -> rules.useDefaultEmitter = b, () -> rules.useDefaultEmitter);
 
         category("波次");
         check("@rules.waves", b -> rules.waves = b, () -> rules.waves);

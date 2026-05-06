@@ -242,6 +242,7 @@ public class Rules{
     public Color creeperColor = new Color(0.1f, 0.35f, 1f, 1f);
     public Color antiCreeperColor = new Color(0.45f, 0.85f, 1f, 1f);
 
+    public boolean useDefaultEmitter = false;
 
     /** Copies this ruleset exactly. Not efficient at all, do not use often. */
     public Rules copy(){

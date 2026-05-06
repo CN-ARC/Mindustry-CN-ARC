@@ -39,7 +39,7 @@ public final class CreeperCore {
 
     /** 判断当前地图/规则是否启用 creeper 模式 调试：直接为true */
     public static boolean isFloodMap(){
-        return true;
+        return !Vars.state.isEditor();
         /* return Vars.state != null
                 && Vars.state.rules != null
                 && Vars.state.rules.tags.containsKey(tag);*/
