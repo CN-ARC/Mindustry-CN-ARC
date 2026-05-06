@@ -226,10 +226,6 @@ public class CreeperTile {
 
         Vars.world.tiles.eachTile(tile -> {
             tile.creeper += tile.creeperTmp;
-
-            if (Math.abs(tile.creeper) < minCreeper) {
-                tile.creeper = 0f;
-            }
         });
     }
 
