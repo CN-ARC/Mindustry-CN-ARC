@@ -24,8 +24,6 @@ public final class CreeperCore {
 
         Log.info("init ArcCreeper");
 
-        CreeperBuild.init();
-
         CreeperSave.init();
         CreeperNet.init();
         SporeCore.init();
@@ -57,7 +55,6 @@ public final class CreeperCore {
         //if(enabled) return;
         enabled = true;
         creeperTile.init();
-        CreeperBuild.load();
     }
 
     /** 退出模式 */
@@ -66,7 +63,6 @@ public final class CreeperCore {
         enabled = false;
 
         creeperTile.reset();
-        CreeperBuild.reset(true);
 
         if(Vars.net.client()){
             SporeCore.resetLocal();
@@ -82,7 +78,6 @@ public final class CreeperCore {
         if(Vars.state.isPaused()) return;
 
         creeperTile.update();
-        CreeperBuild.update();
         SporeCore.update();
     }
 
