@@ -535,7 +535,7 @@ public class UnitType extends UnlockableContent implements Senseable{
     protected @Nullable ItemStack[] totalRequirements, cachedRequirements, firstRequirements;
 
     //ARCreeper
-    public float creeperEvade = 0f;
+    public float creeperEvade = 0.1f;
 
     public UnitType(String name){
         super(name);

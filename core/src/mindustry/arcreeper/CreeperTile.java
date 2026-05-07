@@ -992,8 +992,7 @@ public class CreeperTile {
         // 与 damageBuildingOnFlow() 保持一致：属于对应 C/AC 队伍的不受该液体伤害。
         if(unit.team == team) return;
 
-        float evade = Mathf.clamp(Math.max(unit.type.creeperEvade, unit.isFlying()? 1 : 0 ));
-        float damage = baseDamage * (1f - evade) * Math.abs(tile.creeper);
+        float damage = baseDamage * (1f -  unit.type.creeperEvade) * Math.abs(tile.creeper);
         if(damage <= 0f) return;
 
         unit.damagePierce(damage);
