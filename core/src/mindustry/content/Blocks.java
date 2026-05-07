@@ -1986,7 +1986,7 @@ public class Blocks{
             cooldownNormal = 1.5f;
             cooldownLiquid = 1.2f;
             cooldownBrokenBase = 0.35f;
-            heightEnhance = 1;
+            heightEnhance = 3;
 
             itemConsumer = consumeItem(Items.phaseFabric).boost();
             consumePower(4f);
@@ -5429,7 +5429,7 @@ public class Blocks{
                         interval = 15f;
                     }});
 
-                    abilities.add(new ForceFieldAbility(120f, 0f, 3000f, 999999999f,5f));
+                    abilities.add(new ForceFieldAbility(120f, 0f, 3000f, 999999999f,50f));
 
                 }};
             }},

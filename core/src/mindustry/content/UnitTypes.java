@@ -468,7 +468,7 @@ public class UnitTypes{
             mineSpeed = 4f;
             drawShields = false;
 
-            abilities.add(new ForceFieldAbility(60f, 0.4f, 500f, 60f * 6, 0.2f));
+            abilities.add(new ForceFieldAbility(60f, 0.4f, 500f, 60f * 6, 1f));
 
             weapons.add(new Weapon("beam-weapon"){{
                 top = false;
@@ -1579,7 +1579,7 @@ public class UnitTypes{
 
             loopSound = Sounds.loopHover;
 
-            abilities.add(new ForceFieldAbility(140f, 4f, 7000f, 60f * 8, 8, 0f, 20f){{
+            abilities.add(new ForceFieldAbility(140f, 4f, 7000f, 60f * 8, 8, 0f, 50f){{
                 breakSound = Sounds.shieldBreak;
             }}, new RepairFieldAbility(130f, 60f * 2, 140f));
         }};

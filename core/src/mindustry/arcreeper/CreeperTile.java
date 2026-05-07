@@ -399,9 +399,10 @@ public class CreeperTile {
 
                 float dx = tile.worldx() - wx;
                 float dy = tile.worldy() - wy;
+                float dr = dx * dx + dy * dy;
 
-                if(dx * dx + dy * dy <= radius2){
-                    tile.addHeightTemp(heightEnhance);
+                if(dr <= radius2){
+                    tile.addHeightTemp(heightEnhance * (1-dr/radius2));
                 }
             }
         }
