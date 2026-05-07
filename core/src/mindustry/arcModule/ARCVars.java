@@ -53,18 +53,18 @@ public class ARCVars implements Loadable {
     public static CreeperCore creeperCore;
 
     public static void init(){
-        /** 这部分会导致服务端无法编译，去掉即可 */
+        if(!Vars.headless) {
+            Events.run(EventType.Trigger.update, () -> {
+                arcInfoControl = !arcCheatServer && (Core.settings.getBool("showOtherTeamState") ||
+                        Vars.player.team().id == 255 || Vars.state.rules.mode() != Gamemode.pvp);
+                arcSelfName = settings.getBool("arcSelfName");
+                arcHideName = settings.getBool("arcHideName");
+                payloadPreview = settings.getBool("payloadpreview");
 
-        Events.run(EventType.Trigger.update, () -> {
-            arcInfoControl = !arcCheatServer && (Core.settings.getBool("showOtherTeamState") ||
-                    Vars.player.team().id == 255 || Vars.state.rules.mode() != Gamemode.pvp);
-            arcSelfName = settings.getBool("arcSelfName");
-            arcHideName = settings.getBool("arcHideName");
-            payloadPreview = settings.getBool("payloadpreview");
-
-            quickBelt = settings.getBool("quickBelt");
-        });
-        ARCVars.replayController = new ReplayController();
+                quickBelt = settings.getBool("quickBelt");
+            });
+            ARCVars.replayController = new ReplayController();
+        }
 
         ARCVars.creeperCore = new CreeperCore();
         CreeperCore.init();

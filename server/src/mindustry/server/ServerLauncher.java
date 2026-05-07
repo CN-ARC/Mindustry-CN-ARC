@@ -48,7 +48,6 @@ public class ServerLauncher implements ApplicationListener{
 
         Vars.loadSettings();
         Vars.init();
-        ARCVars.init();
 
         UI.loadColors();
         Fonts.loadContentIconsHeadless();

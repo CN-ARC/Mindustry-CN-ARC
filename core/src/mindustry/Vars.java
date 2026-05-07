@@ -391,6 +391,8 @@ public class Vars implements Loadable{
         maps.load();
 
         String uuid = Core.settings.getString("uuid", "o");
+
+        ARCVars.init();
     }
 
     /** Checks if a launch failure occurred.
