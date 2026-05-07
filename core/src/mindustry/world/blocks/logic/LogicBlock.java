@@ -113,7 +113,7 @@ public class LogicBlock extends Block{
     }
 
     public boolean accessible(){
-        return !privileged || state.rules.editor || state.playtestingMap != null || state.rules.allowEditWorldProcessors || ui.logic.editing;
+        return !privileged || state.rules.editor || state.playtestingMap != null || state.rules.allowEditWorldProcessors || !(headless || !ui.logic.editing);
         //return !privileged || state.rules.editor|| state.playtestingMap != null || ARCVars.arcInfoControl;
     }
 
