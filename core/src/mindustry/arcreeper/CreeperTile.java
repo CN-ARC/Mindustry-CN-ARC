@@ -73,6 +73,8 @@ public class CreeperTile {
      */
     public static int creeperDrawType = 2;
 
+    private static final float DRAW_LAYER = 55f;
+    private static final float TILE_HEIGHT_EDGE_LAYER = DRAW_LAYER + 0.02f;
     /**
      * 2D 绘制中是否叠加显示地形高度边界。
      * 边界判断直接使用 Tile.height，不使用 heightScale。
@@ -471,23 +473,28 @@ public class CreeperTile {
     }
 
     public void draw() {
-        if (drawTileHeight) draw2dTileHeightEdges();
         switch (creeperDrawType){
             case 0:
                 return;
             case 1:
                 draw2d();
-                return;
+                break;
             case 2:
                 draw3d();
+                break;
+            default:
                 return;
         }
+
+        // 高度边界是叠加层：主体先提交，边界再以更高 z 提交。
+        if (drawTileHeight) draw2dTileHeightEdges();
     }
 
     void draw2d(){
+        Draw.draw(DRAW_LAYER, this::draw2dRaw);
+    }
 
-        Draw.z(55f);
-
+    void draw2dRaw(){
         Vars.world.tiles.eachTile(tile -> {
             float raw = tile.creeper;
 
@@ -527,8 +534,10 @@ public class CreeperTile {
     }
 
     void draw2dTileHeightEdges() {
-        Draw.z(120f);
+        Draw.draw(TILE_HEIGHT_EDGE_LAYER, this::draw2dTileHeightEdgesRaw);
+    }
 
+    void draw2dTileHeightEdgesRaw() {
         final float tileSize = Vars.tilesize;
         final float half = tileSize / 2f;
         final float edge = Mathf.clamp(tileSize * EDGE_RATIO, 0.75f, half * 0.5f);
@@ -579,8 +588,10 @@ public class CreeperTile {
     }
 
     public void draw3d() {
-        Draw.z(55f);
+        Draw.draw(DRAW_LAYER, this::draw3dRaw);
+    }
 
+    void draw3dRaw() {
         final float tileSize = Vars.tilesize;
         final float half = tileSize / 2f;
         final float edge = Mathf.clamp(tileSize * EDGE_RATIO, 0.75f, half * 0.5f);
@@ -687,6 +698,7 @@ public class CreeperTile {
         Draw.color();
         Draw.alpha(1f);
     }
+
     /**
      * 返回 creeper 所在的强度层级。
      *

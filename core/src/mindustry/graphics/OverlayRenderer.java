@@ -335,7 +335,6 @@ public class OverlayRenderer{
         drawScanner();
         drawMarker();
         arcScan();
-        ARCVars.creeperCore.draw();
     }
 
     public void checkApplySelection(Unit u){

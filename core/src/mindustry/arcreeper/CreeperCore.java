@@ -35,6 +35,8 @@ public final class CreeperCore {
         Events.on(EventType.GameOverEvent.class, e-> disable());
 
         Events.run(EventType.Trigger.update, CreeperCore::update);
+
+        Events.run(EventType.Trigger.draw, CreeperCore::draw);
     }
 
     /** 判断当前地图/规则是否启用 creeper 模式 调试：直接为true */
@@ -78,7 +80,7 @@ public final class CreeperCore {
         return enabled;
     }
 
-    public void draw(){
+    public static void draw(){
         if(!enabled) return;
         creeperTile.draw();
     }
