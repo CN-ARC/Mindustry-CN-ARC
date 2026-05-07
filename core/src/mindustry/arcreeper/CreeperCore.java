@@ -71,7 +71,6 @@ public final class CreeperCore {
         if(!enabled) return;
         if(Vars.state.isPaused()) return;
 
-
         creeperTile.update();
         CreeperBuild.update();
         SporeCore.update();

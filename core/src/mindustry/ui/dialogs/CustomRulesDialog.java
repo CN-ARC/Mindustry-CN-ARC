@@ -238,6 +238,7 @@ public class CustomRulesDialog extends BaseDialog{
         category("ARCreeper");
         number("更新间隔", b -> rules.creeperFlowInterval = b, () -> rules.creeperFlowInterval);
         number("creeper伤害", b -> rules.creeperDamage = b, () -> rules.creeperDamage);
+        number("creeper对单位伤害", b -> rules.creeperUnitDamage = b, () -> rules.creeperUnitDamage);
         number("地形高度系数", b -> rules.heightScale = b, () -> rules.heightScale);
 
         number("[red]转移率(不许修改)", b -> {}, () -> rules.flowRate);

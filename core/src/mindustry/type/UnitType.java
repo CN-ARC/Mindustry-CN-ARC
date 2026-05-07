@@ -534,6 +534,9 @@ public class UnitType extends UnlockableContent implements Senseable{
     protected float buildTime = -1f;
     protected @Nullable ItemStack[] totalRequirements, cachedRequirements, firstRequirements;
 
+    //ARCreeper
+    public float creeperEvade = 0f;
+
     public UnitType(String name){
         super(name);
 
@@ -548,6 +551,7 @@ public class UnitType extends UnlockableContent implements Senseable{
         if(databaseTag == null || databaseTag.isEmpty()){
             if(flying){
                 databaseTag = "unit-air";
+                creeperEvade = 1f;
             }else if(naval){
                 databaseTag = "unit-naval";
             }else{
@@ -899,6 +903,7 @@ public class UnitType extends UnlockableContent implements Senseable{
 
         stats.add(Stat.health, health);
         stats.add(Stat.armor, armor);
+        stats.add(Stat.creeperEvade, creeperEvade * 100, StatUnit.percent);
         stats.add(Stat.speed, speed * 60f / tilesize, StatUnit.tilesSecond);
         stats.add(Stat.rotateSpeed,rotateSpeed);
         stats.add(Stat.size, StatValues.squared(hitSize / tilesize, StatUnit.blocks));

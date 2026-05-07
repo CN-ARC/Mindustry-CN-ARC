@@ -12,6 +12,8 @@ import mindustry.content.Fx;
 import mindustry.entities.Effect;
 import mindustry.game.EventType;
 import mindustry.game.Team;
+import mindustry.gen.Groups;
+import mindustry.gen.Unit;
 import mindustry.graphics.Pal;
 import mindustry.logic.LExecutor;
 import mindustry.logic.LStatements;
@@ -234,6 +236,8 @@ public class CreeperTile {
         Vars.world.tiles.eachTile(tile -> {
             tile.creeper += tile.creeperTmp;
         });
+
+        damageUnits();
     }
 
     void updateFlow() {
@@ -799,6 +803,43 @@ public class CreeperTile {
         tmpDrawColor.set(base).lerp(target, mix);
         Draw.color(tmpDrawColor);
         Draw.alpha(alpha);
+    }
+
+    /** 对站在 creeper / anti-creeper 上的敌对单位造成伤害。 */
+    private void damageUnits(){
+        float baseDamage = Vars.state.rules.creeperUnitDamage;
+        if(baseDamage <= 0f) return;
+
+        Groups.unit.each(unit -> {
+            damageUnitOnTile(unit, baseDamage);
+        });
+    }
+
+    private void damageUnitOnTile(Unit unit, float baseDamage){
+        if(unit == null || unit.dead() || unit.type == null) return;
+
+        Tile tile = unit.tileOn();
+        if(tile == null || Math.abs(tile.creeper) < minCreeper) return;
+
+        int sign = signOf(tile.creeper);
+        if(sign == 0) return;
+
+        Team team = teamOf(sign);
+
+        // 与 damageBuildingOnFlow() 保持一致：属于对应 C/AC 队伍的不受该液体伤害。
+        if(unit.team == team) return;
+
+        float evade = Mathf.clamp(Math.max(unit.type.creeperEvade, unit.isFlying()? 1 : 0 ));
+        float damage = baseDamage * (1f - evade) * Math.abs(tile.creeper);
+        if(damage <= 0f) return;
+
+        unit.damagePierce(damage);
+
+        if(sign > 0){
+            setCreeperFx(tile, Fx.creeperDamage);
+        }else{
+            setCreeperFx(tile, Fx.antiCreeperDamage);
+        }
     }
 
     public static class GetARCreeperI implements LExecutor.LInstruction {
