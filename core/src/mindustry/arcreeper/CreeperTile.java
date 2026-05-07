@@ -12,6 +12,8 @@ import arc.util.io.Writes;
 import mindustry.Vars;
 import mindustry.content.Fx;
 import mindustry.entities.Effect;
+import mindustry.entities.abilities.Ability;
+import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.gen.Groups;
@@ -21,9 +23,11 @@ import mindustry.logic.LExecutor;
 import mindustry.logic.LStatements;
 import mindustry.logic.LVar;
 import mindustry.world.Tile;
+import mindustry.world.blocks.defense.ForceProjector;
 
 import java.io.*;
 
+import static mindustry.Vars.tilesize;
 import static mindustry.Vars.world;
 
 public class CreeperTile {
@@ -315,15 +319,16 @@ public class CreeperTile {
     /**
      * 推进 creeper 模拟。
      */
-    public void update() {
+    public void update(){
+        updateHeightTemp();
+
         updateFx();
 
         updateTimer += Time.delta / 60f;
-        if (updateTimer < Vars.state.rules.creeperFlowInterval) return;
+        if(updateTimer < Vars.state.rules.creeperFlowInterval) return;
         updateTimer -= Vars.state.rules.creeperFlowInterval;
 
         clearTmp();
-
         updateFlow();
 
         Vars.world.tiles.eachTile(tile -> {
@@ -331,6 +336,75 @@ public class CreeperTile {
         });
 
         damageUnits();
+    }
+
+    /** ARCreeper: 每帧重算所有单位/建筑立场提供的临时高度。 */
+    void updateHeightTemp(){
+        clearHeightTemp();
+        applyUnitProjectorHeight();
+        applyBuildingProjectorHeight();
+    }
+
+    /** ARCreeper: 清除全地图临时高度。 */
+    void clearHeightTemp(){
+        Vars.world.tiles.eachTile(Tile::clearHeightTemp);
+    }
+
+    /** ARCreeper: 单位 ForceFieldAbility 提供临时高度。 */
+    void applyUnitProjectorHeight(){
+        Groups.unit.each(unit -> {
+            if(unit.type == null || unit.shield <= 0f) return;
+
+            for(Ability ability : unit.type.abilities){
+                if(!(ability instanceof ForceFieldAbility field)) continue;
+                if(field.heightEnhance == 0f) continue;
+
+                float radius = field.getRealRad();
+                if(radius <= 0.001f) continue;
+
+                applyHeightTempCircle(unit.x, unit.y, radius, field.heightEnhance);
+            }
+        });
+    }
+
+    /** ARCreeper: 建筑 ForceProjector 提供临时高度。 */
+    void applyBuildingProjectorHeight(){
+        Groups.build.each(build -> {
+            if(!(build.block instanceof ForceProjector projector)) return;
+            if(!(build instanceof ForceProjector.ForceBuild force)) return;
+            if(projector.heightEnhance == 0f || force.broken) return;
+
+            float radius = force.realRadius();
+            if(radius <= 0.001f) return;
+
+            applyHeightTempCircle(force.x, force.y, radius, projector.heightEnhance);
+        });
+    }
+
+    /** ARCreeper: 对圆形覆盖范围内的 tile 累加 heightTemp。 */
+    void applyHeightTempCircle(float wx, float wy, float radius, float heightEnhance){
+        if(radius <= 0f || heightEnhance == 0f) return;
+
+        int minX = Math.max(0, Mathf.floor((wx - radius) / tilesize));
+        int maxX = Math.min(Vars.world.width() - 1, Mathf.floor((wx + radius) / tilesize));
+        int minY = Math.max(0, Mathf.floor((wy - radius) / tilesize));
+        int maxY = Math.min(Vars.world.height() - 1, Mathf.floor((wy + radius) / tilesize));
+
+        float radius2 = radius * radius;
+
+        for(int x = minX; x <= maxX; x++){
+            for(int y = minY; y <= maxY; y++){
+                Tile tile = Vars.world.tile(x, y);
+                if(tile == null) continue;
+
+                float dx = tile.worldx() - wx;
+                float dy = tile.worldy() - wy;
+
+                if(dx * dx + dy * dy <= radius2){
+                    tile.addHeightTemp(heightEnhance);
+                }
+            }
+        }
     }
 
     void updateFlow() {
@@ -361,7 +435,7 @@ public class CreeperTile {
      * 获取 tile 的地形高度，并转换为 creeper 深度单位。
      */
     float heightOf(Tile tile) {
-        return tile.height * Vars.state.rules.heightScale;
+        return tile.getSumHeight() * Vars.state.rules.heightScale;
     }
 
     /**
@@ -622,7 +696,7 @@ public class CreeperTile {
             Fill.square(
                     tile.worldx(),
                     tile.worldy(),
-                    Vars.tilesize / 2f
+                    tilesize / 2f
             );
         });
 
@@ -635,7 +709,7 @@ public class CreeperTile {
     }
 
     void draw2dTileHeightEdgesRaw() {
-        final float tileSize = Vars.tilesize;
+        final float tileSize = tilesize;
         final float half = tileSize / 2f;
         final float edge = Mathf.clamp(tileSize * EDGE_RATIO, 0.75f, half * 0.5f);
 
@@ -669,11 +743,6 @@ public class CreeperTile {
 
     /**
      * 判断当前 tile 是否需要在指向指定邻居的一侧绘制地形高度边界。
-     *
-     * 地形高度边界只使用 tile.height：
-     * - 当前 tile.height 高于邻居 tile.height 时绘制；
-     * - 当前 tile.height 低于或等于邻居 tile.height 时不绘制；
-     * - 因此每条高度分界只会由高的一侧绘制一次。
      */
     private boolean shouldDrawTileHeightEdge(Tile current, int neighborX, int neighborY) {
         if (current == null) return false;
@@ -681,7 +750,7 @@ public class CreeperTile {
         Tile other = Vars.world.tile(neighborX, neighborY);
         if (other == null) return false;
 
-        return current.height > other.height;
+        return current.getSumHeight() > other.getSumHeight();
     }
 
     public void draw3d() {
@@ -689,7 +758,7 @@ public class CreeperTile {
     }
 
     void draw3dRaw() {
-        final float tileSize = Vars.tilesize;
+        final float tileSize = tilesize;
         final float half = tileSize / 2f;
         final float edge = Mathf.clamp(tileSize * EDGE_RATIO, 0.75f, half * 0.5f);
 

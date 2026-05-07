@@ -51,6 +51,8 @@ public class ForceProjector extends Block{
     public Effect absorbEffect = Fx.absorb;
     public Effect shieldBreakEffect = Fx.shieldBreak;
     public @Load("@-top") TextureRegion topRegion;
+    /** ARCreeper: 此立场覆盖 tile 时增加的临时高度。 */
+    public float heightEnhance = 0f;
 
     //TODO json support
     public @Nullable Consume itemConsumer, coolantConsumer;
@@ -118,6 +120,7 @@ public class ForceProjector extends Block{
         stats.add(Stat.range, radius / tilesize, StatUnit.blocks);
         stats.add(Stat.shieldHealth, shieldHealth, StatUnit.none);
         stats.add(Stat.range, radius / tilesize, StatUnit.blocks);
+        stats.add(Stat.heightEnhance, heightEnhance);
         stats.add(Stat.regenerationRate, cooldownNormal * 60f, StatUnit.perSecond);
         stats.add(Stat.cooldownTime, (int) (shieldHealth / cooldownBrokenBase / 60f), StatUnit.seconds);
         stats.add("回复速度", StatCat.function, cooldownNormal * Time.toSeconds, StatUnit.perSecond);

@@ -50,7 +50,7 @@ public class Tile implements Position, QuadTreeObject, Displayable{
     /** ARCreeper */
     public float creeper, creeperTmp;
     public float creeperOutPos, creeperOutNeg;
-    public float height;
+    public float height, heightTemp;
     public Effect creeperFx;
 
     public Tile(int x, int y){
@@ -841,5 +841,20 @@ public class Tile implements Position, QuadTreeObject, Displayable{
     class PackedTileDataStruct{
         int extraData;
         byte data, floorData, overlayData;
+    }
+
+    /** ARCreeper: 基础地形高度 + 临时立场高度。 */
+    public float getSumHeight(){
+        return height + heightTemp;
+    }
+
+    /** ARCreeper: 清理单位/建筑立场提供的临时高度。 */
+    public void clearHeightTemp(){
+        heightTemp = 0f;
+    }
+
+    /** ARCreeper: 累加单位/建筑立场提供的临时高度。 */
+    public void addHeightTemp(float amount){
+        heightTemp += amount;
     }
 }

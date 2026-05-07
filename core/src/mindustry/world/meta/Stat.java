@@ -123,8 +123,8 @@ public class Stat implements Comparable<Stat>{
     regenerationRate = new Stat("regenerationRate", StatCat.function),
     activationTime = new Stat("activationTime", StatCat.function),
     moduleTier = new Stat("moduletier", StatCat.function),
-
     unitType = new Stat("unittype", StatCat.function),
+            heightEnhance = new Stat("heightEnhance", StatCat.function),
 
     booster = new Stat("booster", StatCat.optional),
     boostEffect = new Stat("boostEffect", StatCat.optional),

@@ -488,7 +488,9 @@ public class PlacementFragment{
                             topTable.row();
                             topTable.table(t -> {
                                 t.left();
-                                t.label(() -> Items.sporePod.emoji() + " " + formatFloat(hoverTile.creeper,4) + " \uE804 " + formatFloat(hoverTile.height)).left();
+                                t.label(() -> Items.sporePod.emoji() + " " + formatFloat(hoverTile.creeper,4) +
+                                        " \uE804 " + formatFloat(hoverTile.height) +
+                                        " \uE826" + formatFloat(hoverTile.heightTemp)).left();
                             }).growX().left();
                         }
                         //只要可行便绘制地板|建筑，移除了其他重复绘制

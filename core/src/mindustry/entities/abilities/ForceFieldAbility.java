@@ -18,6 +18,7 @@ import mindustry.type.UnitType;
 import mindustry.ui.*;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.NumberFormat.autoFixed;
 import static mindustry.arcModule.RFuncs.abilitysFormat;
 
 public class ForceFieldAbility extends Ability{
@@ -33,6 +34,9 @@ public class ForceFieldAbility extends Ability{
     public int sides = 6;
     /** Rotation of shield. */
     public float rotation = 0f;
+
+    /** ARCreeper: 此单位立场覆盖 tile 时增加的临时高度。 */
+    public float heightEnhance = 0f;
 
     public Sound breakSound = Sounds.shieldBreakSmall;
     public Sound hitSound = Sounds.shieldHit;
@@ -71,6 +75,24 @@ public class ForceFieldAbility extends Ability{
         this.rotation = rotation;
     }
 
+    public ForceFieldAbility(float radius, float regen, float max, float cooldown, float heightEnhance){
+        this.radius = radius;
+        this.regen = regen;
+        this.max = max;
+        this.cooldown = cooldown;
+        this.heightEnhance = heightEnhance;
+    }
+
+    public ForceFieldAbility(float radius, float regen, float max, float cooldown, int sides, float rotation, float heightEnhance){
+        this.radius = radius;
+        this.regen = regen;
+        this.max = max;
+        this.cooldown = cooldown;
+        this.sides = sides;
+        this.rotation = rotation;
+        this.heightEnhance = heightEnhance;
+    }
+
     @Override
     public String description(UnitType unit){
         return abilitysFormat("@盾容~@格~@恢复~@s冷却",
@@ -93,6 +115,8 @@ public class ForceFieldAbility extends Ability{
         t.add(abilityStat("repairspeed", Strings.autoFixed(regen * 60f, 2)));
         t.row();
         t.add(abilityStat("cooldown", Strings.autoFixed(cooldown / 60f, 2)));
+        t.row();
+        t.add(abilityStat("heightEnhance", autoFixed(heightEnhance)));
     }
 
     @Override
@@ -168,5 +192,9 @@ public class ForceFieldAbility extends Ability{
     public void checkRadius(Unit unit){
         //timer2 is used to store radius scale as an effect
         realRad = radiusScale * radius;
+    }
+
+    public float getRealRad(){
+        return radius;
     }
 }
