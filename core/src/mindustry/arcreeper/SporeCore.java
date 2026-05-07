@@ -43,6 +43,7 @@ public final class SporeCore{
         spore.maxHealth = health;
         spore.creeperAmount = creeperAmount;
         spore.releaseRadius = releaseRadius;
+        spore.rotate = Mathf.random();
 
         spores.add(spore);
         return spore;
@@ -56,6 +57,13 @@ public final class SporeCore{
             if(spore.removed){
                 spores.remove(i);
             }
+        }
+    }
+
+    public static void draw(){
+        for(int i = spores.size - 1; i >= 0; i--){
+            Spore spore = spores.get(i);
+            spore.draw();
         }
     }
 

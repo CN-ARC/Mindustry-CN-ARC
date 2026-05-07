@@ -62,6 +62,7 @@ public final class CreeperCore {
 
         creeperTile.reset();
         CreeperBuild.reset(true);
+        SporeCore.reset();
 
     }
 
@@ -70,10 +71,10 @@ public final class CreeperCore {
         if(!enabled) return;
         if(Vars.state.isPaused()) return;
 
-        SporeCore.update();
 
-        CreeperBuild.update();
         creeperTile.update();
+        CreeperBuild.update();
+        SporeCore.update();
     }
 
     public static boolean enabled() {
@@ -83,6 +84,7 @@ public final class CreeperCore {
     public static void draw(){
         if(!enabled) return;
         creeperTile.draw();
+        SporeCore.draw();
     }
 
 }

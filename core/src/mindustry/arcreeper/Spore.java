@@ -1,5 +1,6 @@
 package mindustry.arcreeper;
 
+import arc.graphics.g2d.Draw;
 import arc.math.Mathf;
 import arc.math.geom.Position;
 import arc.util.Time;
@@ -7,6 +8,7 @@ import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.Vars;
 import mindustry.content.Fx;
+import mindustry.content.Items;
 import mindustry.gen.Building;
 import mindustry.gen.Entityc;
 import mindustry.gen.Posc;
@@ -35,11 +37,12 @@ public class Spore implements Posc, Senseable {
     // 命中释放半径，单位：tile 半径
     public int releaseRadius = 1;
 
-    // 0.1s = 6 ticks，Mindustry/ARC 里很多逻辑按 60 tick = 1s 处理
-    public float fxTimer;
-    public float fxInterval = 6f;
-
     public boolean removed;
+
+    float sporeSize = 20f;
+    float rotate = 0f;
+    float fxInterval = 60f;
+    float fxTimer = 0f;
 
     @Override
     public Floor floorOn() {
@@ -209,12 +212,6 @@ public class Spore implements Posc, Senseable {
     public void update(){
         if(removed) return;
 
-        fxTimer += Time.delta;
-        if(fxTimer >= fxInterval){
-            fxTimer %= fxInterval;
-            Fx.explosion.at(x, y);
-        }
-
         float dx = targetX - x;
         float dy = targetY - y;
         float dst = Mathf.dst(dx, dy);
@@ -232,6 +229,13 @@ public class Spore implements Posc, Senseable {
         float scl = step / dst;
         x += dx * scl;
         y += dy * scl;
+    }
+
+    public void draw(){
+        Draw.rect(Items.sporePod.uiIcon, x, y, sporeSize, sporeSize, 360f * rotate + Time.time * 0.5f);
+        fxTimer += Time.delta;
+        if (fxTimer > fxInterval)
+            Fx.unitDust.at(x,y, creeperAmount>0? Vars.state.rules.creeperColor:Vars.state.rules.antiCreeperColor);
     }
 
     @Override
