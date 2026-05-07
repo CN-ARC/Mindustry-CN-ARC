@@ -51,8 +51,10 @@ public class ARCVars implements Loadable {
     public static String arcCustomBackgroundName = "background";
     /** Arcreeper */
     public static CreeperCore creeperCore;
-    static {
-        // 减少性能开销
+
+    public static void init(){
+        /** 这部分会导致服务端无法编译，去掉即可 */
+
         Events.run(EventType.Trigger.update, () -> {
             arcInfoControl = !arcCheatServer && (Core.settings.getBool("showOtherTeamState") ||
                     Vars.player.team().id == 255 || Vars.state.rules.mode() != Gamemode.pvp);
@@ -62,7 +64,12 @@ public class ARCVars implements Loadable {
 
             quickBelt = settings.getBool("quickBelt");
         });
+        ARCVars.replayController = new ReplayController();
+
+        ARCVars.creeperCore = new CreeperCore();
+        CreeperCore.init();
     }
+
 
     public static int getMaxSchematicSize(){
         int s = Core.settings.getInt("maxSchematicSize");

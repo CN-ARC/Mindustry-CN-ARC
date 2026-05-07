@@ -11,6 +11,8 @@ import arc.util.CommandHandler.*;
 import arc.util.io.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcreeper.CreeperCore;
+import mindustry.arcreeper.CreeperNet;
 import mindustry.content.*;
 import mindustry.core.GameState.*;
 import mindustry.entities.units.*;
@@ -497,6 +499,15 @@ public class NetServer implements ApplicationListener{
                 player.getInfo().lastSyncTime = Time.millis();
                 Call.worldDataBegin(player.con);
                 netServer.sendWorldData(player);
+            }
+        });
+
+       clientCommands.<Player>register("syncArcreeper", "Sync ARCreeper creeper/height data from server.", (args, player) -> {
+           if(player.isLocal()) return;
+            if(player == null || player.con == null) return;
+
+            if(CreeperCore.enabled()){
+                CreeperNet.sendSnapshot(player.con);
             }
         });
     }

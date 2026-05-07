@@ -391,10 +391,6 @@ public class Vars implements Loadable{
         maps.load();
 
         String uuid = Core.settings.getString("uuid", "o");
-
-        ARCVars.replayController = new ReplayController();
-        ARCVars.creeperCore = new CreeperCore();
-        CreeperCore.init();
     }
 
     /** Checks if a launch failure occurred.

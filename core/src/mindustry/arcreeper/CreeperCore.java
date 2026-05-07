@@ -18,12 +18,17 @@ public final class CreeperCore {
     public static Team creeperTeam = Team.blue;
     public static Team antiCreeperTeam = Team.sharded;
 
-    /** 在 Mod.init() 或游戏包初始化阶段调用一次 */
     public static void init(){
         if(eventsLoaded) return;
         eventsLoaded = true;
+
         Log.info("init ArcCreeper");
+
         CreeperBuild.init();
+
+        CreeperSave.init();
+        CreeperNet.init();
+        SporeCore.init();
 
         Events.on(EventType.WorldLoadEvent.class, e -> {
             if(isFloodMap()){
@@ -32,10 +37,10 @@ public final class CreeperCore {
                 disable();
             }
         });
-        Events.on(EventType.GameOverEvent.class, e-> disable());
+
+        Events.on(EventType.GameOverEvent.class, e -> disable());
 
         Events.run(EventType.Trigger.update, CreeperCore::update);
-
         Events.run(EventType.Trigger.draw, CreeperCore::draw);
     }
 
@@ -62,7 +67,12 @@ public final class CreeperCore {
 
         creeperTile.reset();
         CreeperBuild.reset(true);
-        SporeCore.reset();
+
+        if(Vars.net.client()){
+            SporeCore.resetLocal();
+        }else{
+            SporeCore.clearAuthoritative();
+        }
 
     }
 

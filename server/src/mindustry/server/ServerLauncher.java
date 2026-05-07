@@ -4,6 +4,7 @@ import arc.*;
 import arc.backend.headless.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.ARCVars;
 import mindustry.core.*;
 import mindustry.ctype.*;
 import mindustry.game.EventType.*;
@@ -47,6 +48,7 @@ public class ServerLauncher implements ApplicationListener{
 
         Vars.loadSettings();
         Vars.init();
+        ARCVars.init();
 
         UI.loadColors();
         Fonts.loadContentIconsHeadless();

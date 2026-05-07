@@ -18,14 +18,16 @@ import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.blocks.environment.Floor;
 
-public class Spore implements Posc, Senseable {
+@SuppressWarnings("unchecked")
+public class Spore implements Posc, Senseable{
     public int id;
+    public int generation;
 
     public float startX, startY;
     public float targetX, targetY;
     public float x, y;
 
-    // 建议语义：world units per second
+    // world units / second
     public float speed;
 
     public float health;
@@ -34,7 +36,7 @@ public class Spore implements Posc, Senseable {
     // 正数 = C，负数 = AC
     public float creeperAmount;
 
-    // 命中释放半径，单位：tile 半径
+    // tile 半径
     public int releaseRadius = 1;
 
     public boolean removed;
@@ -44,19 +46,153 @@ public class Spore implements Posc, Senseable {
     float fxInterval = 60f;
     float fxTimer = 0f;
 
+    /**
+     * 只更新飞行位置。
+     * 返回 true 表示已到达目标。
+     * 注意：这里不结算爆炸，不修改 C/AC，不 remove。
+     * 爆炸和释放必须由 SporeCore.arriveAuthoritative() 处理。
+     */
     @Override
-    public Floor floorOn() {
-        return null;
+    public void update(){
+        // Entityc 要求的接口。
+        // Spore 的真实 gameplay 更新由 SporeCore.update() 统一驱动，
+        // 这里不要结算移动、爆炸、C/AC 释放，避免客户端或实体系统重复更新。
     }
 
-    @Override
-    public Building buildOn() {
-        return null;
-    }
+    /**
+     * 只更新飞行位置。
+     * 返回 true 表示已经到达目标。
+     *
+     * 注意：
+     * - 不在这里释放 C/AC。
+     * - 不在这里 remove。
+     * - 不在这里发包。
+     * - 到达后的结算必须由 SporeCore.arriveAuthoritative() 处理。
+     */
+    public boolean updateMotion(){
+        if(removed) return false;
 
-    @Override
-    public boolean onSolid() {
+        float dx = targetX - x;
+        float dy = targetY - y;
+        float dst = Mathf.dst(dx, dy);
+
+        float step = speed * Time.delta / 60f;
+
+        if(dst <= step || dst <= 0.001f){
+            x = targetX;
+            y = targetY;
+            return true;
+        }
+
+        float scl = step / dst;
+        x += dx * scl;
+        y += dy * scl;
+
         return false;
+    }
+
+    public void draw(){
+        if(removed) return;
+
+        Draw.rect(
+                Items.sporePod.uiIcon,
+                x,
+                y,
+                sporeSize,
+                sporeSize,
+                360f * rotate + Time.time * 0.5f
+        );
+
+        fxTimer += Time.delta;
+        if(fxTimer > fxInterval){
+            fxTimer = 0f;
+            Fx.unitDust.at(
+                    x,
+                    y,
+                    creeperAmount > 0f ? Vars.state.rules.creeperColor : Vars.state.rules.antiCreeperColor
+            );
+        }
+    }
+
+    public void damage(float amount){
+        SporeCore.damage(this, amount);
+    }
+
+    public void kill(){
+        SporeCore.killAuthoritative(this);
+    }
+
+    public void arrive(){
+        SporeCore.arriveAuthoritative(this);
+    }
+
+    @Override
+    public void remove(){
+        SporeCore.removeAuthoritative(this, SporeCore.removeDespawned);
+    }
+
+    @Override
+    public void write(Writes write){
+        write.i(id);
+        write.i(generation);
+
+        write.f(startX);
+        write.f(startY);
+        write.f(targetX);
+        write.f(targetY);
+        write.f(x);
+        write.f(y);
+
+        write.f(speed);
+        write.f(health);
+        write.f(maxHealth);
+        write.f(creeperAmount);
+        write.i(releaseRadius);
+
+        write.f(rotate);
+        write.f(fxTimer);
+        write.bool(removed);
+    }
+
+    @Override
+    public void read(Reads read){
+        id = read.i();
+        generation = read.i();
+
+        startX = read.f();
+        startY = read.f();
+        targetX = read.f();
+        targetY = read.f();
+        x = read.f();
+        y = read.f();
+
+        speed = read.f();
+        health = read.f();
+        maxHealth = read.f();
+        creeperAmount = read.f();
+        releaseRadius = read.i();
+
+        rotate = read.f();
+        fxTimer = read.f();
+        removed = read.bool();
+    }
+
+    @Override
+    public Floor floorOn(){
+        Tile tile = tileOn();
+        return tile == null ? null : tile.floor();
+    }
+
+    @Override
+    public Building buildOn(){
+        Tile tile = tileOn();
+        return tile == null ? null : tile.build;
+    }
+
+    @Override
+    public boolean onSolid(){
+        Tile tile = tileOn();
+        return tile != null && tile.solid();
     }
 
     @Override
@@ -70,202 +206,137 @@ public class Spore implements Posc, Senseable {
     }
 
     @Override
-    public float x() {
-        return 0;
+    public float x(){
+        return x;
     }
 
     @Override
-    public float y() {
-        return 0;
+    public float y(){
+        return y;
     }
 
     @Override
-    public int tileX() {
-        return 0;
+    public int tileX(){
+        return (int)(x / Vars.tilesize);
     }
 
     @Override
-    public int tileY() {
-        return 0;
+    public int tileY(){
+        return (int)(y / Vars.tilesize);
     }
 
     @Override
-    public Block blockOn() {
-        return null;
+    public Block blockOn(){
+        Tile tile = tileOn();
+        return tile == null ? null : tile.block();
     }
 
     @Override
-    public Tile tileOn() {
-        return null;
+    public Tile tileOn(){
+        return Vars.world.tileWorld(x, y);
     }
 
     @Override
-    public void set(Position pos) {
-
+    public void set(Position pos){
+        set(pos.getX(), pos.getY());
     }
 
     @Override
-    public void set(float x, float y) {
-
+    public void set(float x, float y){
+        this.x = x;
+        this.y = y;
     }
 
     @Override
-    public void trns(Position pos) {
-
+    public void trns(Position pos){
+        trns(pos.getX(), pos.getY());
     }
 
     @Override
-    public void trns(float x, float y) {
-
+    public void trns(float x, float y){
+        this.x += x;
+        this.y += y;
     }
 
     @Override
-    public void x(float x) {
-
+    public void x(float x){
+        this.x = x;
     }
 
     @Override
-    public void y(float y) {
-
+    public void y(float y){
+        this.y = y;
     }
 
     @Override
-    public <T extends Entityc> T self() {
-        return null;
+    public <T extends Entityc> T self(){
+        return (T)this;
     }
 
     @Override
-    public <T> T as() {
-        return null;
+    public <T> T as(){
+        return (T)this;
     }
 
     @Override
-    public boolean isAdded() {
+    public boolean isAdded(){
+        return !removed && SporeCore.get(id) == this;
+    }
+
+    @Override
+    public boolean isLocal(){
+        return !Vars.net.client();
+    }
+
+    @Override
+    public boolean isNull(){
         return false;
     }
 
     @Override
-    public boolean isLocal() {
+    public boolean isRemote(){
+        return Vars.net.client();
+    }
+
+    /**
+     * 不走 Mindustry 原生 Entity 保存。
+     * Spore 使用 ARCreeper 自己的 custom chunk 保存。
+     */
+    @Override
+    public boolean serialize(){
         return false;
     }
 
     @Override
-    public boolean isNull() {
-        return false;
-    }
-
-    @Override
-    public boolean isRemote() {
-        return false;
-    }
-
-    @Override
-    public boolean serialize() {
-        return false;
-    }
-
-    @Override
-    public int classId() {
+    public int classId(){
         return 0;
     }
 
     @Override
-    public int id() {
-        return 0;
+    public int id(){
+        return id;
     }
 
     @Override
-    public void add() {
-
+    public void id(int id){
+        this.id = id;
     }
 
     @Override
-    public void afterRead() {
-
+    public void add(){
+        SporeCore.addLocal(this);
     }
 
     @Override
-    public void afterReadAll() {
-
+    public void afterRead(){
     }
 
     @Override
-    public void beforeWrite() {
-
+    public void afterReadAll(){
     }
 
     @Override
-    public void id(int id) {
-
-    }
-
-    @Override
-    public void read(Reads read) {
-
-    }
-
-    @Override
-    public void remove() {
-
-    }
-
-    public void update(){
-        if(removed) return;
-
-        float dx = targetX - x;
-        float dy = targetY - y;
-        float dst = Mathf.dst(dx, dy);
-
-        // speed 使用 world units / second
-        float step = speed * Time.delta / 60f;
-
-        if(dst <= step || dst <= 0.001f){
-            x = targetX;
-            y = targetY;
-            arrive();
-            return;
-        }
-
-        float scl = step / dst;
-        x += dx * scl;
-        y += dy * scl;
-    }
-
-    public void draw(){
-        Draw.rect(Items.sporePod.uiIcon, x, y, sporeSize, sporeSize, 360f * rotate + Time.time * 0.5f);
-        fxTimer += Time.delta;
-        if (fxTimer > fxInterval)
-            Fx.unitDust.at(x,y, creeperAmount>0? Vars.state.rules.creeperColor:Vars.state.rules.antiCreeperColor);
-    }
-
-    @Override
-    public void write(Writes write) {
-
-    }
-
-    public void damage(float amount){
-        if(removed) return;
-
-        health -= amount;
-        if(health <= 0f){
-            kill();
-        }
-    }
-
-    public void kill(){
-        // 默认：被拦截后不释放 payload，更接近 CW3 的防孢子逻辑。
-        removed = true;
-        Fx.blastExplosion.at(x, y);
-    }
-
-    public void arrive(){
-        Tile tile = Vars.world.tileWorld(targetX, targetY);
-        if(tile != null && CreeperCore.creeperTile != null){
-            CreeperCore.creeperTile.addArea(tile, releaseRadius, creeperAmount);
-        }
-
-        removed = true;
-        Fx.blastExplosion.at(targetX, targetY);
+    public void beforeWrite(){
     }
 
     @Override
@@ -274,21 +345,16 @@ public class Spore implements Posc, Senseable {
             case x -> x;
             case y -> y;
             case ammo -> creeperAmount;
-
             case health -> health;
             case maxHealth -> maxHealth;
             case speed -> speed;
             case dead -> removed ? 1 : 0;
             case id -> id;
-
             case shootX -> targetX;
             case shootY -> targetY;
             case buildX -> startX;
             case buildY -> startY;
-
-
             default -> Double.NaN;
         };
     }
-
 }

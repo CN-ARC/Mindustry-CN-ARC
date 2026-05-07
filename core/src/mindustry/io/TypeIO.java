@@ -10,6 +10,8 @@ import mindustry.*;
 import mindustry.ai.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcreeper.Spore;
+import mindustry.arcreeper.SporeCore;
 import mindustry.content.TechTree.*;
 import mindustry.ctype.*;
 import mindustry.entities.*;
@@ -149,7 +151,15 @@ public class TypeIO{
             write.s(command.id);
         }else if(object instanceof Bullet b || object instanceof Seq<?> s){ //write bullets as null
             write.b((byte)0);
-        }else{
+        }else if(object instanceof Spore spore){
+            if(spore.removed || spore.id <= 0){
+                write.b((byte)0);
+            }else{
+                write.b((byte)24);
+                write.i(spore.id);
+            }
+        }
+        else{
             throw new IllegalArgumentException("Unknown object type: " + object.getClass());
         }
     }
@@ -264,6 +274,10 @@ public class TypeIO{
                 yield objs;
             }
             case 23 -> content.unitCommand(read.us());
+            case 24 -> {
+                int id = read.i();
+                yield box ? new SporeBox(id) : SporeCore.get(id);
+            }
             default -> throw new IllegalArgumentException("Unknown object type: " + type);
         };
     }
@@ -1317,6 +1331,24 @@ public class TypeIO{
             return "UnitBox{" +
             "id=" + id +
             '}';
+        }
+    }
+
+    public static class SporeBox implements Boxed<Spore>{
+        public int id;
+
+        public SporeBox(int id){
+            this.id = id;
+        }
+
+        @Override
+        public Spore unbox(){
+            return SporeCore.get(id);
+        }
+
+        @Override
+        public String toString(){
+            return "SporeBox{id=" + id + "}";
         }
     }
 }

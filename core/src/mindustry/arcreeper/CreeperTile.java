@@ -7,6 +7,8 @@ import arc.graphics.g2d.Fill;
 import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.Time;
+import arc.util.io.Reads;
+import arc.util.io.Writes;
 import mindustry.Vars;
 import mindustry.content.Fx;
 import mindustry.entities.Effect;
@@ -20,10 +22,18 @@ import mindustry.logic.LStatements;
 import mindustry.logic.LVar;
 import mindustry.world.Tile;
 
+import java.io.*;
+
 import static mindustry.Vars.world;
 
 public class CreeperTile {
-    private float[][] creeperData; // for later multiplayer sync
+    private static final short snapshotVersion = 1;
+
+    // SaveVersion 读到 arc-creeper chunk 后置 true。
+    // CreeperCore.enable() 看到这个标记时，不再 reset 掉刚读出的 creeper/height。
+    private boolean snapshotLoaded = false;
+
+    private boolean eventsRegistered = false;
 
     public float minCreeper = 0.01f;
     public float maxCreeper = 1000f;
@@ -94,15 +104,98 @@ public class CreeperTile {
     private final Color tmpDrawColor = new Color();
     private static final Color sideGray = new Color(0.55f, 0.55f, 0.55f, 1f);
 
-    public void init() {
-        reset();
-        initTileHeight();
+    public void init(){
+        if(snapshotLoaded){
+            clearTmp();
+            clearFxQueue();
+            snapshotLoaded = false;
+        }else{
+            reset();
+            initTileHeight();
+        }
 
-        Events.on(EventType.TileChangeEvent.class, t -> {
-            if (!CreeperCore.enabled()) return;
-            updateTileHeight(t.tile);
+        if(!eventsRegistered){
+            eventsRegistered = true;
+
+            Events.on(EventType.TileChangeEvent.class, t -> {
+                if(!CreeperCore.enabled()) return;
+                updateTileHeight(t.tile);
+            });
+        }
+    }
+    public void writeSnapshot(Writes write){
+        write.s(snapshotVersion);
+        write.i(Vars.world.width());
+        write.i(Vars.world.height());
+
+        Vars.world.tiles.eachTile(tile -> {
+            write.f(tile.creeper);
+            write.f(tile.height);
         });
     }
+
+    public void readSnapshot(Reads read){
+        short version = read.s();
+
+        int width = read.i();
+        int height = read.i();
+
+        int worldWidth = Vars.world.width();
+        int worldHeight = Vars.world.height();
+
+        for(int y = 0; y < height; y++){
+            for(int x = 0; x < width; x++){
+                float creeper = read.f();
+                float tileHeight = read.f();
+
+                if(x < worldWidth && y < worldHeight){
+                    Tile tile = Vars.world.tile(x, y);
+                    if(tile != null){
+                        tile.creeper = creeper;
+                        tile.height = tileHeight;
+                    }
+                }
+            }
+        }
+
+        clearTmp();
+        clearFxQueue();
+        snapshotLoaded = true;
+    }
+    public byte[] writeSnapshotBytes(){
+        try{
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            DataOutputStream data = new DataOutputStream(bytes);
+            Writes write = new Writes(data);
+
+            writeSnapshot(write);
+
+            data.flush();
+            return bytes.toByteArray();
+        }catch(IOException e){
+            throw new RuntimeException("Failed to write ARCreeper snapshot.", e);
+        }
+    }
+
+    public void readSnapshotBytes(byte[] bytes){
+        try{
+            ByteArrayInputStream input = new ByteArrayInputStream(bytes);
+            DataInputStream data = new DataInputStream(input);
+            Reads read = new Reads(data);
+
+            readSnapshot(read);
+        }catch(Exception e){
+            throw new RuntimeException("Failed to read ARCreeper snapshot.", e);
+        }
+    }
+
+    public void applySporeExplosion(float worldX, float worldY, int releaseRadius, float creeperAmount){
+        Tile tile = Vars.world.tileWorld(worldX, worldY);
+        if(tile == null) return;
+
+        addArea(tile, releaseRadius, creeperAmount);
+    }
+
 
     public void initTileHeight() {
         Vars.world.tiles.eachTile(this::updateTileHeight);
