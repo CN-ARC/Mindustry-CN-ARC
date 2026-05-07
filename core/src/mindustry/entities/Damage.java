@@ -261,7 +261,7 @@ public class Damage{
         collidedBlocks.clear();
         vec.trnsExact(angle, length);
 
-        if(hitter.type.collidesGround && !hitter.type.heals() && hitter.damage > 0f){
+        if(hitter.type.collidesGround && hitter.damage > 0f){
             CreeperCombat.lineDamage(team, x, y, angle, length, hitter.damage, pierceCap);
         }
 
