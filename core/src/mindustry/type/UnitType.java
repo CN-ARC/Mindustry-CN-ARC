@@ -535,7 +535,7 @@ public class UnitType extends UnlockableContent implements Senseable{
     protected @Nullable ItemStack[] totalRequirements, cachedRequirements, firstRequirements;
 
     //ARCreeper
-    public float creeperEvade = 0.1f;
+    public float creeperEvade = 0f;
 
     public UnitType(String name){
         super(name);
@@ -551,7 +551,6 @@ public class UnitType extends UnlockableContent implements Senseable{
         if(databaseTag == null || databaseTag.isEmpty()){
             if(flying){
                 databaseTag = "unit-air";
-                creeperEvade = 1f;
             }else if(naval){
                 databaseTag = "unit-naval";
             }else{
@@ -1070,6 +1069,7 @@ public class UnitType extends UnlockableContent implements Senseable{
         initPathType();
 
         if(flying){
+            creeperEvade = 0.8f;
             envEnabled |= Env.space;
         }
 

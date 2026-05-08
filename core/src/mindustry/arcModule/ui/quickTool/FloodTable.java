@@ -11,6 +11,7 @@ import mindustry.ui.Styles;
 
 import static mindustry.arcModule.DrawUtilities.arcDrawText;
 import static mindustry.arcModule.ElementUtils.NCtextStyle;
+import static mindustry.arcreeper.CreeperTile.creeperDrawTrans;
 
 
 public class FloodTable extends ElementUtils.ToolTable {
@@ -31,6 +32,10 @@ public class FloodTable extends ElementUtils.ToolTable {
                     CreeperTile.creeperDrawType %= 3;
                     rebuild();
                 }).tooltip("[cyan]水层显示模式").size(30f);
+                tt.button("[cyan]透", NCtextStyle, () -> {
+                    creeperDrawTrans = !creeperDrawTrans;
+                    rebuild();
+                }).tooltip("[cyan]水层半透明").size(30f);
                 tt.button("[blue]效", NCtextStyle, () -> {
                     CreeperTile.playCreeperFx = !CreeperTile.playCreeperFx;
                     rebuild();

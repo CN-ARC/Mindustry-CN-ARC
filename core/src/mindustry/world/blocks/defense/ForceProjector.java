@@ -35,6 +35,7 @@ public class ForceProjector extends Block{
 
     public float phaseRadiusBoost = 80f;
     public float phaseShieldBoost = 400f;
+    public float heightEnhanceBoost = 3f;
     public float radius = 101.7f;
     public int sides = 6;
     public float shieldRotation = 0f;

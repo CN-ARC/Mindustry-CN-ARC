@@ -93,6 +93,7 @@ public class CreeperTile {
      */
     public static int creeperDrawType = 2;
     public static boolean showCreeperNet = true;
+    public static boolean creeperDrawTrans = false;
 
     private static final float DRAW_LAYER = 55f;
     private static final float TILE_HEIGHT_EDGE_LAYER = DRAW_LAYER + 0.02f;
@@ -159,11 +160,11 @@ public class CreeperTile {
             snapshotLoaded = false;
         }else{
             reset();
-            initTileHeight();
         }
 
         markNetHeightsDirty();
         ensureNetHeights();
+        initTileHeight();//好像有点问题，这样会导致没法读取地形高度，等稍后看看啥情况吧
 
         if(!eventsRegistered){
             eventsRegistered = true;
@@ -664,7 +665,7 @@ public class CreeperTile {
             float radius = force.realRadius();
             if(radius <= 0.001f) return;
 
-            applyHeightTempCircle(force.x, force.y, radius, projector.heightEnhance);
+            applyHeightTempCircle(force.x, force.y, radius, projector.heightEnhance + force.phaseHeat * projector.heightEnhanceBoost);
         });
     }
 
@@ -1216,6 +1217,7 @@ public class CreeperTile {
             int exp = ((bits >>> 23) & 0xFF) - 127;
 
             float normalized = Mathf.clamp((float) (exp - log2Min) / (log2Max - log2Min), 0f, 1f);
+            if (creeperDrawTrans) normalized *=0.3f;
             float alpha = 0.2f + normalized * 0.7f;
 
             Color color = anti ? Vars.state.rules.antiCreeperColor : Vars.state.rules.creeperColor;
@@ -1306,6 +1308,7 @@ public class CreeperTile {
             int exp = ((bits >>> 23) & 0xFF) - 127;
 
             float normalized = Mathf.clamp((float) (exp - log2Min) / (log2Max - log2Min), 0f, 1f);
+            if (creeperDrawTrans) normalized *=0.3f;
             float alpha = 0.2f + normalized * 0.7f;
 
             Color base = anti ? Vars.state.rules.antiCreeperColor : Vars.state.rules.creeperColor;

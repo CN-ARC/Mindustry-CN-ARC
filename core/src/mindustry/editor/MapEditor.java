@@ -6,6 +6,7 @@ import arc.graphics.*;
 import arc.math.*;
 import arc.math.geom.*;
 import arc.struct.*;
+import arc.util.Log;
 import mindustry.content.*;
 import mindustry.entities.units.*;
 import mindustry.game.*;
