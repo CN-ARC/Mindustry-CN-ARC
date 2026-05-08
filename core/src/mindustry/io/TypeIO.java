@@ -669,21 +669,11 @@ public class TypeIO{
             write.bool(ai.attackTarget != null);
             write.bool(ai.targetPos != null);
 
-            boolean serializableAttackTarget = ai.attackTarget instanceof Building || ai.attackTarget instanceof Unit;
-            boolean writeTargetPos = ai.targetPos != null || (!serializableAttackTarget && ai.attackTarget != null);
-
-            write.bool(serializableAttackTarget);
-            write.bool(writeTargetPos);
-
             if(ai.targetPos != null){
                 write.f(ai.targetPos.x);
                 write.f(ai.targetPos.y);
-            }else if(!serializableAttackTarget && ai.attackTarget != null){
-                write.f(ai.attackTarget.getX());
-                write.f(ai.attackTarget.getY());
             }
-
-            if(serializableAttackTarget){
+            if(ai.attackTarget != null){
                 write.b(ai.attackTarget instanceof Building ? 1 : 0);
                 if(ai.attackTarget instanceof Building b){
                     write.i(b.pos());
