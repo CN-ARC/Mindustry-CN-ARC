@@ -1370,6 +1370,7 @@ public class UnitTypes{
 
             mineTier = 1;
             mineSpeed = 2.5f;
+            creeperEvade = 1f;
         }};
 
         poly = new UnitType("poly"){{
@@ -1391,6 +1392,7 @@ public class UnitTypes{
             mineTier = 2;
             mineSpeed = 3.5f;
             wreckSoundVolume = 0.9f;
+            creeperEvade = 1f;
 
             abilities.add(new RepairFieldAbility(5f, 60f * 8, 50f));
 
@@ -2537,6 +2539,7 @@ public class UnitTypes{
             alwaysUnlocked = true;
             wreckSoundVolume = 0.8f;
             deathSoundVolume = 0.7f;
+            creeperEvade = 1f;
 
             weapons.add(new Weapon("small-basic-weapon"){{
                 reload = 17f;
@@ -2585,6 +2588,7 @@ public class UnitTypes{
             engineOffset = 6f;
             hitSize = 9f;
             lowAltitude = true;
+            creeperEvade = 1f;
 
             weapons.add(new Weapon("small-mount-weapon"){{
                 top = false;
@@ -2636,6 +2640,7 @@ public class UnitTypes{
             health = 220f;
             engineOffset = 6f;
             hitSize = 11f;
+            creeperEvade = 1f;
 
             weapons.add(new Weapon("small-mount-weapon"){{
                 top = false;
@@ -4412,6 +4417,7 @@ public class UnitTypes{
             fogRadius = 0f;
             targetable = false;
             hittable = false;
+            creeperEvade = 1f;
 
             setEnginesMirror(
             new UnitEngine(21 / 4f, 19 / 4f, 2.2f, 45f),
@@ -4480,6 +4486,7 @@ public class UnitTypes{
 
             engineOffset = 7.2f;
             engineSize = 3.1f;
+            creeperEvade = 1f;
 
             setEnginesMirror(
             new UnitEngine(25 / 4f, -1 / 4f, 2.4f, 300f)
@@ -4560,6 +4567,7 @@ public class UnitTypes{
 
             engineOffset = 7.5f;
             engineSize = 3.4f;
+            creeperEvade = 1f;
 
             setEnginesMirror(
             new UnitEngine(35 / 4f, -13 / 4f, 2.7f, 315f),

@@ -379,7 +379,7 @@ public class CreeperTile {
             float radius = force.realRadius();
             if(radius <= 0.001f) return;
 
-            applyHeightTempCircle(force.x, force.y, radius, projector.heightEnhance);
+            applyHeightTempCircle(force.x, force.y, radius, projector.heightEnhance + force.phaseHeat * projector.heightEnhanceBoost);
         });
     }
 
