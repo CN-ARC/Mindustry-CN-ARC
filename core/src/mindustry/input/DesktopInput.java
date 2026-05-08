@@ -17,6 +17,7 @@ import mindustry.Vars;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.Marker;
 import mindustry.arcModule.SimpleKeystrokes;
+import mindustry.arcreeper.CreeperCore;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
 import mindustry.core.*;
@@ -491,6 +492,8 @@ public class DesktopInput extends InputHandler{
                 !Binding.zoom.value.equals(Binding.rotate.value) || ((!player.isBuilder() || !isPlacing() || !block.rotate) && selectPlans.isEmpty()))){
             renderer.scaleCamera(Core.input.axisTap(Binding.zoom));
         }
+
+        if(handleCreeperNetBrush()) return;
 
         if(Core.input.keyTap(Binding.select) && !Core.scene.hasMouse()){
             Tile selected = world.tileWorld(input.mouseWorldX(), input.mouseWorldY());
@@ -969,6 +972,46 @@ public class DesktopInput extends InputHandler{
         }
 
         return super.touchDown(x, y, pointer, button);
+    }
+
+    private boolean handleCreeperNetBrush(){
+        if(!state.isGame() || net.client() || scene.hasMouse() || scene.hasField() || scene.hasDialog() || !CreeperCore.enabled()){
+            return false;
+        }
+
+        boolean alt = Core.input.keyDown(KeyCode.altLeft) || Core.input.keyDown(KeyCode.altRight);
+        boolean ctrl = input.ctrl();
+        boolean shift = Core.input.keyDown(KeyCode.shiftLeft) || Core.input.keyDown(KeyCode.shiftRight);
+
+        int setState = Integer.MIN_VALUE;
+        if(alt && shift){
+            if(Core.input.keyDown(KeyCode.mouseLeft)){
+                setState = Tile.creeperNetInactive;
+            }else if(Core.input.keyDown(KeyCode.mouseRight)){
+                setState = Tile.creeperNetNone;
+            }else{
+                return true;
+            }
+        }else if(alt && ctrl){
+            if(Core.input.keyDown(KeyCode.mouseLeft)){
+                setState = Tile.creeperNetOutlet;
+            }else if(Core.input.keyDown(KeyCode.mouseRight)){
+                setState = Tile.creeperNetAntiOutlet;
+            }else{
+                return true;
+            }
+        }else{
+            return false;
+        }
+
+        shouldShoot = false;
+
+        Tile tile = world.tileWorld(input.mouseWorldX(), input.mouseWorldY());
+        if(tile != null){
+            tile.setCreeperNet(setState);
+        }
+
+        return true;
     }
 
     @Override

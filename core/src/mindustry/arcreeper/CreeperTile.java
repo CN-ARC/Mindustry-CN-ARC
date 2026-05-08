@@ -5,11 +5,15 @@ import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
 import arc.math.Mathf;
+import arc.math.geom.Geometry;
+import arc.math.geom.Point2;
+import arc.struct.IntSeq;
 import arc.struct.Seq;
 import arc.util.Time;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.Vars;
+import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.entities.Effect;
 import mindustry.entities.abilities.Ability;
@@ -31,7 +35,7 @@ import static mindustry.Vars.tilesize;
 import static mindustry.Vars.world;
 
 public class CreeperTile {
-    private static final short snapshotVersion = 1;
+    private static final short snapshotVersion = 4;
 
     // SaveVersion 读到 arc-creeper chunk 后置 true。
     // CreeperCore.enable() 看到这个标记时，不再 reset 掉刚读出的 creeper/height。
@@ -88,9 +92,11 @@ public class CreeperTile {
      * 绘制creeper的模式
      */
     public static int creeperDrawType = 2;
+    public static boolean showCreeperNet = true;
 
     private static final float DRAW_LAYER = 55f;
     private static final float TILE_HEIGHT_EDGE_LAYER = DRAW_LAYER + 0.02f;
+    private static final float NET_LAYER = DRAW_LAYER + 0.01f;
     /**
      * 2D 绘制中是否叠加显示地形高度边界。
      * 边界判断直接使用 Tile.height，不使用 heightScale。
@@ -105,8 +111,46 @@ public class CreeperTile {
     private static final float SIDE_GRAY_MIX = 0.45f;     // 左右边界向灰色混合
     private static final float BOTTOM_DARK_MIX = 0.55f;   // 下边界向黑色混合
 
+    private static final float netFlowBoost = 5f;
+    private static final float defaultNetHeight = -1f;
+    private static final float netRetainedDepth = 1f;
+    private static final float netActivationTime = 1.2f;
+    private static final float netDisconnectWearRate = 4f;
+    private static final float netWearThresholdActive = 8f;
+    private static final float netWearThresholdDamaged1 = 6f;
+    private static final float netWearThresholdDamaged2 = 4f;
+    public static final int netStateNone = Tile.creeperNetNone;
+    public static final int netStateInactive = Tile.creeperNetInactive;
+    public static final int netStateActive = Tile.creeperNetActive;
+    public static final int netStateDamaged1 = Tile.creeperNetDamaged1;
+    public static final int netStateDamaged2 = Tile.creeperNetDamaged2;
+    public static final int netStateAntiOutlet = Tile.creeperNetAntiOutlet;
+    public static final int netStateOutlet = Tile.creeperNetOutlet;
+    private static final float netNodeInactiveRadius = 0.16f;
+    private static final float netNodeActiveRadius = 0.16f;
+    private static final float netNodeDamaged1Radius = 0.16f;
+    private static final float netNodeDamaged2Radius = 0.16f;
+    private static final float netNodeOutletRadius = 0.18f;
+    private static final float netLineInactiveThickness = 0.12f;
+    private static final float netLineActiveThickness = 0.12f;
+    private static final float netLineDamaged1Thickness = 0.12f;
+    private static final float netLineDamaged2Thickness = 0.12f;
+    private static final float netLineOutletThickness = 0.14f;
+    private static final float netOutlineScale = 1.45f;
     private final Color tmpDrawColor = new Color();
     private static final Color sideGray = new Color(0.55f, 0.55f, 0.55f, 1f);
+    private static final Color netOutlineColor = new Color(0.05f, 0.07f, 0.1f, 1f);
+    private static final Color netInactiveColor = new Color(0.28f, 0.33f, 0.38f, 1f);
+    private static final Color netDamage1Color = new Color(0.78f, 0.50f, 0.32f, 1f);
+    private static final Color netDamage2Color = new Color(0.64f, 0.22f, 0.18f, 1f);
+    private float[] netHeights = new float[0];
+    private float[] netCharge = new float[0];
+    private float[] netWear = new float[0];
+    private boolean[] netPowered = new boolean[0];
+    private boolean netHeightsDirty = true;
+    private final IntSeq netQueue = new IntSeq();
+    private final IntSeq netComponent = new IntSeq();
+    private final IntSeq netPowerQueue = new IntSeq();
 
     public void init(){
         if(snapshotLoaded){
@@ -118,12 +162,16 @@ public class CreeperTile {
             initTileHeight();
         }
 
+        markNetHeightsDirty();
+        ensureNetHeights();
+
         if(!eventsRegistered){
             eventsRegistered = true;
 
             Events.on(EventType.TileChangeEvent.class, t -> {
                 if(!CreeperCore.enabled()) return;
                 updateTileHeight(t.tile);
+                markNetHeightsDirty();
             });
         }
     }
@@ -135,6 +183,8 @@ public class CreeperTile {
         Vars.world.tiles.eachTile(tile -> {
             write.f(tile.creeper);
             write.f(tile.height);
+            write.i(tile.getCreeperNetState());
+            CreeperCore.creeperNetCombat.writeSnapshotData(write, tile);
         });
     }
 
@@ -157,14 +207,45 @@ public class CreeperTile {
                     if(tile != null){
                         tile.creeper = creeper;
                         tile.height = tileHeight;
+                        if(version >= 4){
+                            tile.creeperNet = sanitizeNetState(read.i());
+                            CreeperCore.creeperNetCombat.readSnapshotData(tile, tile.creeperNet, read);
+                        }else if(version >= 3){
+                            tile.creeperNet = sanitizeNetState(read.i());
+                            CreeperCore.creeperNetCombat.readSnapshotData(tile, tile.creeperNet, 0f, 0f);
+                        }else if(version >= 2){
+                            tile.creeperNet = read.bool() ? netStateActive : netStateNone;
+                            CreeperCore.creeperNetCombat.readSnapshotData(tile, tile.creeperNet, 0f, 0f);
+                        }
+                    }else if(version >= 4){
+                        read.i();
+                        read.f();
+                        read.f();
+                    }else if(version >= 3){
+                        read.i();
+                    }else if(version >= 2){
+                        read.bool();
                     }
+                }else if(version >= 4){
+                    read.i();
+                    read.f();
+                    read.f();
+                }else if(version >= 3){
+                    read.i();
+                }else if(version >= 2){
+                    read.bool();
                 }
             }
         }
 
         clearTmp();
         clearFxQueue();
+        markNetHeightsDirty();
         snapshotLoaded = true;
+    }
+
+    public void onNetStateChanged(Tile tile, int oldState, int newState){
+        CreeperCore.creeperNetCombat.onStateChanged(tile, oldState, newState);
     }
     public byte[] writeSnapshotBytes(){
         try{
@@ -203,6 +284,135 @@ public class CreeperTile {
 
     public void initTileHeight() {
         Vars.world.tiles.eachTile(this::updateTileHeight);
+    }
+
+    public void markNetHeightsDirty(){
+        netHeightsDirty = true;
+    }
+
+    public static int sanitizeNetState(int state){
+        return switch(state){
+            case netStateNone,
+                 netStateInactive,
+                 netStateActive,
+                 netStateDamaged1,
+                 netStateDamaged2,
+                 netStateAntiOutlet,
+                 netStateOutlet -> state;
+            default -> state < netStateInactive ? netStateNone : netStateInactive;
+        };
+    }
+
+    public static boolean hasNetState(int state){
+        return state != netStateNone;
+    }
+
+    public static boolean isOutletState(int state){
+        return state == netStateOutlet || state == netStateAntiOutlet;
+    }
+
+    public static boolean isDamageState(int state){
+        return state == netStateDamaged1 || state == netStateDamaged2;
+    }
+
+    public static boolean isBoostedNetState(int state){
+        return state == netStateActive || state == netStateDamaged1 || state == netStateDamaged2 || isOutletState(state);
+    }
+
+    public static boolean isDegradableNetState(int state){
+        return state == netStateActive || state == netStateDamaged1 || state == netStateDamaged2;
+    }
+
+    public static int degradeNetState(int state){
+        return switch(state){
+            case netStateActive -> netStateDamaged1;
+            case netStateDamaged1 -> netStateDamaged2;
+            case netStateDamaged2 -> netStateInactive;
+            default -> state;
+        };
+    }
+
+    public static int outletNetSign(int state){
+        return switch(state){
+            case netStateOutlet -> 1;
+            case netStateAntiOutlet -> -1;
+            default -> 0;
+        };
+    }
+
+    private void ensureNetHeights(){
+        if(netHeightsDirty){
+            initNetHeights();
+            netHeightsDirty = false;
+        }
+    }
+
+    private void ensureNetRuntimeArrays(int size){
+        if(netHeights.length != size){
+            netHeights = new float[size];
+        }
+        if(netCharge.length != size){
+            netCharge = new float[size];
+        }
+        if(netWear.length != size){
+            netWear = new float[size];
+        }
+        if(netPowered.length != size){
+            netPowered = new boolean[size];
+        }
+    }
+
+    private void initNetHeights(){
+        int size = Vars.world.width() * Vars.world.height();
+        float defaultHeight = defaultNetHeight * Vars.state.rules.heightScale;
+
+        ensureNetRuntimeArrays(size);
+
+        for(int i = 0; i < size; i++){
+            netHeights[i] = defaultHeight;
+        }
+
+        boolean[] visited = new boolean[size];
+
+        Vars.world.tiles.eachTile(tile -> {
+            if(tile == null || !isNetTile(tile)) return;
+
+            int index = tile.array();
+            if(index < 0 || index >= size || visited[index]) return;
+
+            float componentHeight = defaultHeight;
+            netQueue.clear();
+            netComponent.clear();
+            netQueue.add(index);
+            visited[index] = true;
+
+            while(!netQueue.isEmpty()){
+                int current = netQueue.pop();
+                netComponent.add(current);
+
+                Tile currentTile = Vars.world.tiles.geti(current);
+                if(currentTile == null) continue;
+
+                for(Point2 point : Geometry.d4){
+                    Tile other = currentTile.nearby(point);
+                    if(other == null) continue;
+
+                    if(isNetTile(other)){
+                        int otherIndex = other.array();
+                        if(otherIndex >= 0 && otherIndex < size && !visited[otherIndex]){
+                            visited[otherIndex] = true;
+                            netQueue.add(otherIndex);
+                        }
+                    }else{
+                        componentHeight = Math.min(componentHeight, heightOf(other) - Vars.state.rules.heightScale);
+                    }
+                }
+            }
+
+            for(int i = 0; i < netComponent.size; i++){
+                netHeights[netComponent.get(i)] = componentHeight;
+            }
+        });
     }
 
     void updateTileHeight(Tile tile) {
@@ -329,6 +539,7 @@ public class CreeperTile {
         updateTimer -= Vars.state.rules.creeperFlowInterval;
 
         clearTmp();
+        updateNetStates();
         updateFlow();
 
         Vars.world.tiles.eachTile(tile -> {
@@ -336,6 +547,82 @@ public class CreeperTile {
         });
 
         damageUnits();
+    }
+
+    private void updateNetStates(){
+        CreeperCore.creeperNetCombat.update();
+    }
+
+    private void updatePoweredNetMap(){
+        for(int i = 0; i < netPowered.length; i++){
+            netPowered[i] = false;
+        }
+
+        netPowerQueue.clear();
+
+        Vars.world.tiles.eachTile(tile -> {
+            if(tile == null) return;
+
+            int state = netStateOf(tile);
+            if(!isOutletState(state)) return;
+
+            int index = tile.array();
+            if(index < 0 || index >= netPowered.length || netPowered[index]) return;
+
+            netPowered[index] = true;
+            netPowerQueue.add(index);
+        });
+
+        while(!netPowerQueue.isEmpty()){
+            int current = netPowerQueue.pop();
+            Tile tile = Vars.world.tiles.geti(current);
+            if(tile == null) continue;
+
+            for(Point2 point : Geometry.d4){
+                Tile other = tile.nearby(point);
+                if(other == null) continue;
+
+                int otherIndex = other.array();
+                if(otherIndex < 0 || otherIndex >= netPowered.length || netPowered[otherIndex]) continue;
+                if(!isBoostedNetState(netStateOf(other))) continue;
+
+                netPowered[otherIndex] = true;
+                netPowerQueue.add(otherIndex);
+            }
+        }
+    }
+
+    private boolean isNetCharging(Tile tile){
+        for(Point2 point : Geometry.d4){
+            Tile other = tile.nearby(point);
+            if(other == null) continue;
+
+            int otherIndex = other.array();
+            if(otherIndex >= 0 && otherIndex < netPowered.length && netPowered[otherIndex]){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void applyNetWear(Tile tile, int index){
+        while(index >= 0 && index < netWear.length){
+            int state = netStateOf(tile);
+            if(!isDegradableNetState(state)) break;
+
+            float threshold = netWearThreshold(state);
+            if(netWear[index] < threshold) break;
+
+            netWear[index] -= threshold;
+            tile.setCreeperNet(degradeNetState(state));
+
+            if(netStateOf(tile) == netStateInactive){
+                netCharge[index] = 0f;
+                netWear[index] = 0f;
+                break;
+            }
+        }
     }
 
     /** ARCreeper: 每帧重算所有单位/建筑立场提供的临时高度。 */
@@ -409,6 +696,8 @@ public class CreeperTile {
     }
 
     void updateFlow() {
+        ensureNetHeights();
+
         float rate = Vars.state.rules.flowRate;
 
         // 第一遍：统计每个 tile 本轮同号/空格传播想流出的总量。
@@ -497,6 +786,19 @@ public class CreeperTile {
         return sign > 0 ? CreeperCore.creeperTeam : CreeperCore.antiCreeperTeam;
     }
 
+    private int netStateOf(Tile tile){
+        return tile == null ? netStateNone : sanitizeNetState(tile.getCreeperNetState());
+    }
+
+    private float netWearThreshold(int state){
+        return switch(state){
+            case netStateActive -> netWearThresholdActive;
+            case netStateDamaged1 -> netWearThresholdDamaged1;
+            case netStateDamaged2 -> netWearThresholdDamaged2;
+            default -> Float.MAX_VALUE;
+        };
+    }
+
     /**
      * 第一遍：统计 a-b 这条边上可能发生的同号/空格传播候选出流。
      * 每条边仍然只由 updateFlow() 传入一次，但这里内部检查两个方向。
@@ -516,6 +818,7 @@ public class CreeperTile {
 
         // 反号相邻不在这里传播，交给 flowOppositeCancel() 只做抵消，避免一帧内穿透翻色。
         if (signTo != 0 && signTo != signFrom) return;
+        if(!canNetSpreadTo(from, to, signFrom)) return;
 
         float amount = rawSameSignAmount(from, to, signFrom, rate);
         if (amount < minFlow) return;
@@ -544,6 +847,7 @@ public class CreeperTile {
 
         // 反号相邻不做流入穿透，统一交给 flowOppositeCancel() 抵消。
         if (signTo != 0 && signTo != signFrom) return;
+        if(!canNetSpreadTo(from, to, signFrom)) return;
 
         float raw = rawSameSignAmount(from, to, signFrom, rate);
         if (raw < minFlow) return;
@@ -551,7 +855,7 @@ public class CreeperTile {
         float amount = raw;
 
         if (!isEnemyBuilding(to, signFrom) || buildingAbsorb) {
-            float depth = Math.max(0f, from.creeper * signFrom);
+            float depth = spreadableDepth(from, signFrom);
             float maxOut = depth * maxDrainFraction;
             float totalOut = outOf(from, signFrom);
 
@@ -577,13 +881,91 @@ public class CreeperTile {
 
         float depthTo = Math.max(0f, to.creeper * sign);
 
-        float surfaceFrom = heightOf(from) + depthFrom;
-        float surfaceTo = heightOf(to) + depthTo;
+        float surfaceFrom = flowSurfaceHeight(from) + depthFrom;
+        float surfaceTo = flowSurfaceHeight(to) + depthTo;
 
         float diff = surfaceFrom - surfaceTo;
         if (diff <= minSurfaceDiff) return 0f;
 
-        return Math.min(diff, depthFrom) * rate;
+        return Math.min(diff, depthFrom) * rate * flowBoost(from, to);
+    }
+
+    private float flowBoost(Tile from, Tile to){
+        return isBoostedNetTile(from) || isBoostedNetTile(to) ? netFlowBoost : 1f;
+    }
+
+    private float spreadableDepth(Tile tile, int sign){
+        float depth = Math.max(0f, tile.creeper * sign);
+        if(affectsCreeperFlow(tile)){
+            depth = Math.max(0f, depth - netRetainedDepth);
+        }
+        return depth;
+    }
+
+    private float flowSurfaceHeight(Tile tile){
+        return affectsCreeperFlow(tile) ? netHeightOf(tile) : heightOf(tile);
+    }
+
+    private float netHeightOf(Tile tile){
+        float scaledDefault = defaultNetHeight * Vars.state.rules.heightScale;
+        if(tile == null) return scaledDefault;
+
+        int index = tile.array();
+        if(index < 0 || index >= netHeights.length){
+            return scaledDefault;
+        }
+
+        return netHeights[index];
+    }
+
+    private boolean canNetSpreadTo(Tile from, Tile to, int sign){
+        if(!affectsCreeperFlow(from)) return true;
+        if(to == null) return false;
+        if(affectsCreeperFlow(to)) return spreadableDepth(from, sign) > minFlow;
+        if(to.floor() == Blocks.space || to.floor() == Blocks.empty) return false;
+        return spreadableDepth(from, sign) > minFlow;
+    }
+
+    public void applyNetAttackDamage(Tile tile, float damage){
+        // ARCreeper: 普通伤害在这里直接交给 creeperNet 独立结算，不经过 creeper 的 used/consume 转换。
+        CreeperCore.creeperNetCombat.damageTile(tile, damage);
+    }
+
+    void spreadAttackedNet(Tile tile, int sign, float amountBefore, float used){
+        if(tile == null || !affectsCreeperFlow(tile) || used <= minFlow) return;
+
+        float burstBudget = Math.max(0f, amountBefore - netRetainedDepth);
+        float burstAmount = Math.min(used, burstBudget);
+        if(burstAmount <= minFlow) return;
+
+        int neighbors = 0;
+        for(Point2 point : Geometry.d4){
+            if(tile.nearby(point) != null){
+                neighbors++;
+            }
+        }
+
+        if(neighbors == 0) return;
+
+        float share = burstAmount / neighbors;
+        for(Point2 point : Geometry.d4){
+            Tile other = tile.nearby(point);
+            if(other != null){
+                other.creeper += sign * share;
+            }
+        }
+    }
+
+    public boolean isNetTile(Tile tile){
+        return hasNetState(netStateOf(tile));
+    }
+
+    public boolean isBoostedNetTile(Tile tile){
+        return isBoostedNetState(netStateOf(tile));
+    }
+
+    private boolean affectsCreeperFlow(Tile tile){
+        return isBoostedNetTile(tile);
     }
 
     private float outOf(Tile tile, int sign) {
@@ -623,8 +1005,8 @@ public class CreeperTile {
         float depthA = Math.abs(valueA);
         float depthB = Math.abs(valueB);
 
-        float heightA = heightOf(a);
-        float heightB = heightOf(b);
+        float heightA = flowSurfaceHeight(a);
+        float heightB = flowSurfaceHeight(b);
 
         float reachA = Math.max(0f, heightA + depthA - heightB);
         float reachB = Math.max(0f, heightB + depthB - heightA);
@@ -649,9 +1031,11 @@ public class CreeperTile {
             case 0:
                 return;
             case 1:
+                drawNet();
                 draw2d();
                 break;
             case 2:
+                drawNet();
                 draw3d();
                 break;
             default:
@@ -660,6 +1044,150 @@ public class CreeperTile {
 
         // 高度边界是叠加层：主体先提交，边界再以更高 z 提交。
         if (drawTileHeight) draw2dTileHeightEdges();
+    }
+
+    void drawNet(){
+        Draw.draw(NET_LAYER, this::drawNetRaw);
+    }
+
+    void drawNetRaw(){
+        if(!showCreeperNet) return;
+
+        Vars.world.tiles.eachTile(tile -> {
+            if(!isNetTile(tile)) return;
+
+            int state = netRenderState(tile);
+            float nodeRadius = tilesize * netNodeRadius(state);
+            float lineThickness = tilesize * netLineThickness(state);
+            float alpha = netAlpha(tile, state);
+            Color main = netColor(tile, state);
+            float x = tile.worldx();
+            float y = tile.worldy();
+
+            drawNetSegments(tile, x, y, nodeRadius * netOutlineScale, lineThickness * netOutlineScale, netOutlineColor, alpha * 0.55f);
+            drawNetSegments(tile, x, y, nodeRadius, lineThickness, main, alpha);
+            drawNetOutletMark(x, y, state, alpha);
+
+            boolean brightState = isBoostedNetState(state);
+            Draw.color(Color.white);
+            Draw.alpha(alpha * (brightState ? 0.20f : 0.10f));
+            Fill.square(x, y, nodeRadius * (brightState ? 0.45f : 0.32f));
+        });
+
+        Draw.color();
+        Draw.alpha(1f);
+    }
+
+    private void drawNetSegments(Tile tile, float x, float y, float nodeRadius, float lineThickness, Color color, float alpha){
+        float half = tilesize / 2f;
+        float lineLength = half + lineThickness;
+
+        Draw.color(color);
+        Draw.alpha(alpha);
+
+        if(connectsNet(tile, -1, 0)){
+            Fill.rect(x - half / 2f, y, lineLength, lineThickness);
+        }
+        if(connectsNet(tile, 1, 0)){
+            Fill.rect(x + half / 2f, y, lineLength, lineThickness);
+        }
+        if(connectsNet(tile, 0, -1)){
+            Fill.rect(x, y - half / 2f, lineThickness, lineLength);
+        }
+        if(connectsNet(tile, 0, 1)){
+            Fill.rect(x, y + half / 2f, lineThickness, lineLength);
+        }
+
+        Fill.square(x, y, nodeRadius);
+    }
+
+    private void drawNetOutletMark(float x, float y, int state, float alpha){
+        if(state != netStateOutlet && state != netStateAntiOutlet) return;
+
+        float size = tilesize * 0.12f;
+        float offset = tilesize * 0.10f;
+        float tip = state == netStateOutlet ? offset : -offset;
+        Color color = state == netStateOutlet ? Vars.state.rules.creeperColor : Vars.state.rules.antiCreeperColor;
+
+        Draw.color(Color.black);
+        Draw.alpha(alpha * 0.55f);
+        Fill.rect(x + tip * 0.25f, y, size * 1.15f, size * 1.15f);
+
+        Draw.color(color);
+        Draw.alpha(alpha);
+        Fill.rect(x, y, size, size * 1.5f);
+        Fill.rect(x + tip, y, size * 1.4f, size * 0.55f);
+        Fill.rect(x + tip * 0.55f, y + size * 0.55f, size * 0.55f, size * 0.55f);
+        Fill.rect(x + tip * 0.55f, y - size * 0.55f, size * 0.55f, size * 0.55f);
+    }
+
+    private boolean connectsNet(Tile tile, int dx, int dy){
+        return isNetTile(Vars.world.tile(tile.x + dx, tile.y + dy));
+    }
+
+    private int netRenderState(Tile tile){
+        return netStateOf(tile);
+    }
+
+    private boolean isNetActive(Tile tile){
+        return netStateOf(tile) == netStateActive;
+    }
+
+    private int netDamageLevel(Tile tile){
+        return switch(netStateOf(tile)){
+            case netStateDamaged1 -> 1;
+            case netStateDamaged2 -> 2;
+            default -> 0;
+        };
+    }
+
+    private float netNodeRadius(int state){
+        return switch(state){
+            case netStateActive -> netNodeActiveRadius;
+            case netStateDamaged1 -> netNodeDamaged1Radius;
+            case netStateDamaged2 -> netNodeDamaged2Radius;
+            case netStateOutlet, netStateAntiOutlet -> netNodeOutletRadius;
+            default -> netNodeInactiveRadius;
+        };
+    }
+
+    private float netLineThickness(int state){
+        return switch(state){
+            case netStateActive -> netLineActiveThickness;
+            case netStateDamaged1 -> netLineDamaged1Thickness;
+            case netStateDamaged2 -> netLineDamaged2Thickness;
+            case netStateOutlet, netStateAntiOutlet -> netLineOutletThickness;
+            default -> netLineInactiveThickness;
+        };
+    }
+
+    private float netAlpha(Tile tile, int state){
+        return switch(state){
+            case netStateActive -> 0.95f;
+            case netStateDamaged1 -> 0.90f;
+            case netStateDamaged2 -> 0.86f;
+            case netStateOutlet, netStateAntiOutlet -> 1f;
+            default -> Math.abs(tile.creeper) > minCreeper ? 0.78f : 0.66f;
+        };
+    }
+
+    private Color netColor(Tile tile, int state){
+        return switch(state){
+            case netStateActive -> tile.creeper < 0f ? Vars.state.rules.antiCreeperColor : Vars.state.rules.creeperColor;
+            case netStateDamaged1 -> netDamage1Color;
+            case netStateDamaged2 -> netDamage2Color;
+            case netStateOutlet -> tmpDrawColor.set(Vars.state.rules.creeperColor).lerp(Color.white, 0.25f);
+            case netStateAntiOutlet -> tmpDrawColor.set(Vars.state.rules.antiCreeperColor).lerp(Color.white, 0.25f);
+            default -> {
+                if(tile.creeper > minCreeper){
+                    yield tmpDrawColor.set(netInactiveColor).lerp(Vars.state.rules.creeperColor, 0.25f);
+                }
+                if(tile.creeper < -minCreeper){
+                    yield tmpDrawColor.set(netInactiveColor).lerp(Vars.state.rules.antiCreeperColor, 0.25f);
+                }
+                yield netInactiveColor;
+            }
+        };
     }
 
     void draw2d(){
@@ -1027,6 +1555,8 @@ public class CreeperTile {
             result.setnum(switch(type){
                 case creeper -> tile.creeper;
                 case height -> tile.height;
+                // ARCreeper: 世界处理器读取 creeperNet 状态口。
+                case creeperNet -> tile.getCreeperNetState();
             });
         }
     }
@@ -1053,6 +1583,8 @@ public class CreeperTile {
             switch(type){
                 case creeper -> tile.creeper = v;
                 case height -> tile.height = v;
+                // ARCreeper: 世界处理器写入 creeperNet 接口，喷口/网格状态都从这里进。
+                case creeperNet -> tile.setCreeperNet(Mathf.round(v));
             }
 
         }

@@ -11,6 +11,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcreeper.CreeperCore;
 import mindustry.content.*;
 import mindustry.entities.Effect;
 import mindustry.game.EventType.*;
@@ -23,6 +24,15 @@ import mindustry.world.blocks.environment.*;
 import static mindustry.Vars.*;
 
 public class Tile implements Position, QuadTreeObject, Displayable{
+    public static final int creeperNetNone = -1;
+    public static final int creeperNetInactive = 0;
+    public static final int creeperNetActive = 1;
+    public static final int creeperNetDamaged1 = 2;
+    public static final int creeperNetDamaged2 = 3;
+    // ARCreeper: 喷口状态位，供世界处理器/逻辑写入。
+    public static final int creeperNetAntiOutlet = 9;
+    public static final int creeperNetOutlet = 10;
+
     private static final TileChangeEvent tileChange = new TileChangeEvent();
     private static final TilePreChangeEvent preChange = new TilePreChangeEvent();
     private static final TileFloorChangeEvent floorChange = new TileFloorChangeEvent();
@@ -52,6 +62,7 @@ public class Tile implements Position, QuadTreeObject, Displayable{
     public float creeperOutPos, creeperOutNeg;
     public float height, heightTemp;
     public Effect creeperFx;
+    public int creeperNet = creeperNetNone;
 
     public Tile(int x, int y){
         this.x = (short)x;
@@ -445,6 +456,48 @@ public class Tile implements Position, QuadTreeObject, Displayable{
 
     public void clearOverlay(){
         setOverlay(Blocks.air);
+    }
+
+    public int getCreeperNetState(){
+        return creeperNet;
+    }
+
+    public boolean hasCreeperNet(){
+        return creeperNet != creeperNetNone;
+    }
+
+    public boolean hasActiveCreeperNet(){
+        return (creeperNet >= creeperNetActive && creeperNet <= creeperNetDamaged2) || isCreeperNetOutlet();
+    }
+
+    public boolean isCreeperNetOutlet(){
+        return creeperNet == creeperNetOutlet || creeperNet == creeperNetAntiOutlet;
+    }
+
+    public void clearCreeperNet(){
+        setCreeperNet(creeperNetNone);
+    }
+
+    public void setCreeperNet(int value){
+        int next = sanitizeCreeperNetState(value);
+        if(creeperNet == next) return;
+
+        int previous = creeperNet;
+        creeperNet = next;
+        CreeperCore.creeperTile.onNetStateChanged(this, previous, next);
+    }
+
+    private int sanitizeCreeperNetState(int value){
+        return switch(value){
+            case creeperNetNone,
+                 creeperNetInactive,
+                 creeperNetActive,
+                 creeperNetDamaged1,
+                 creeperNetDamaged2,
+                 creeperNetAntiOutlet,
+                 creeperNetOutlet -> value;
+            default -> value < creeperNetInactive ? creeperNetNone : creeperNetInactive;
+        };
     }
 
     public boolean passable(){
