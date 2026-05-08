@@ -136,7 +136,7 @@ public class DatabaseDialog extends BaseDialog {
             for (int j = 0; j < categoryContents.size; j++) {
                 String tagName = categoryContents.orderedKeys().get(j);
                 Seq<UnlockableContent> array = categoryContents.get(tagName).select(u ->
-                        !u.isHidden() && !u.hideDatabase &&
+                        //!u.isHidden() && !u.hideDatabase &&
                                 (tab == Planets.sun || u.allDatabaseTabs || u.databaseTabs.contains(tab)) &&
                                 (text.isEmpty() || u.localizedName.toLowerCase(Locale.ROOT).contains(text))).as();
                 if (array.isEmpty()) continue;

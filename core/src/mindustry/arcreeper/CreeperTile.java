@@ -115,8 +115,9 @@ public class CreeperTile {
             snapshotLoaded = false;
         }else{
             reset();
-            initTileHeight();
         }
+
+        initTileHeight();//好像有点问题，这样会导致没法读取地形高度，等稍后看看啥情况吧
 
         if(!eventsRegistered){
             eventsRegistered = true;
