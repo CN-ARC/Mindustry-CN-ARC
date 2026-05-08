@@ -1069,8 +1069,7 @@ public class UnitType extends UnlockableContent implements Senseable{
         initPathType();
 
         if(flying){
-            Log.info(name, creeperEvade);
-            if (creeperEvade != 0f ) creeperEvade = 0.8f;
+            creeperEvade = 0.8f;
             envEnabled |= Env.space;
         }
 
