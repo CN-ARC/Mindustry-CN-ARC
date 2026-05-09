@@ -1,11 +1,9 @@
 package mindustry.arcModule.ui.quickTool;
 
-import arc.Core;
-import arc.Events;
 import arc.struct.Seq;
 import mindustry.arcModule.ElementUtils;
+import mindustry.arcreeper.CreeperNet;
 import mindustry.arcreeper.CreeperTile;
-import mindustry.game.EventType;
 import mindustry.gen.Iconc;
 import mindustry.ui.Styles;
 
@@ -44,6 +42,26 @@ public class FloodTable extends ElementUtils.ToolTable {
                     CreeperTile.drawTileHeight = !CreeperTile.drawTileHeight;
                     rebuild();
                 }).tooltip("[cyan]显示ARCreeper地形高度").size(30f);
+
+                tt.row();
+                tt.button("[gray]网-", NCtextStyle, () -> {
+                    CreeperNet.setBrush(CreeperNet.none);
+                }).tooltip("[gray]删除Creeper网络").size(30f);
+                tt.button("[lightgray]网0", NCtextStyle, () -> {
+                    CreeperNet.setBrush(CreeperNet.inactive);
+                }).tooltip("[lightgray]绘制未激活网络").size(30f);
+
+                tt.button("[blue]网1", NCtextStyle, () -> {
+                    CreeperNet.setBrush(CreeperNet.active);
+                }).tooltip("[blue]绘制激活网络").size(30f);
+
+                tt.button("[cyan]C口", NCtextStyle, () -> {
+                    CreeperNet.setBrush(CreeperNet.outlet);
+                }).tooltip("[cyan]绘制C喷口网络").size(30f);
+
+                tt.button("[pink]AC口", NCtextStyle, () -> {
+                    CreeperNet.setBrush(CreeperNet.antiOutlet);
+                }).tooltip("[pink]绘制AC喷口网络").size(30f);
             });
 
         });

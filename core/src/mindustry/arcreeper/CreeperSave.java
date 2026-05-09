@@ -5,6 +5,7 @@ import java.io.*;
 
 public final class CreeperSave{
     private static final String chunkName = "arc-creeper";
+    private static final String netChunkName = "arc-creeper-net";
     private static boolean registered = false;
 
     private CreeperSave(){
@@ -28,6 +29,28 @@ public final class CreeperSave{
             @Override
             public boolean shouldWrite(){
                 return CreeperCore.enabled();
+            }
+
+            @Override
+            public boolean writeNet(){
+                return true;
+            }
+        });
+
+        SaveVersion.addCustomChunk(netChunkName, new SaveFileReader.CustomChunk(){
+            @Override
+            public void write(DataOutput stream) throws IOException{
+                CreeperNet.writeSnapshot(new arc.util.io.Writes(stream));
+            }
+
+            @Override
+            public void read(DataInput stream) throws IOException{
+                CreeperNet.readSnapshot(new arc.util.io.Reads(stream));
+            }
+
+            @Override
+            public boolean shouldWrite(){
+                return CreeperCore.enabled() && CreeperNet.hasAnyNet();
             }
 
             @Override

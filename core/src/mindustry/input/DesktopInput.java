@@ -17,6 +17,8 @@ import mindustry.Vars;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.Marker;
 import mindustry.arcModule.SimpleKeystrokes;
+import mindustry.arcreeper.CreeperCore;
+import mindustry.arcreeper.CreeperNet;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
 import mindustry.core.*;
@@ -284,7 +286,7 @@ public class DesktopInput extends InputHandler{
                 spectating = null;
             }
         }
-
+        updateCreeperNetBrush();
 
         panning |= detached;
 
@@ -1122,5 +1124,25 @@ public class DesktopInput extends InputHandler{
                 lastPayloadKeyHoldMillis = Time.millis();
             }
         }
+    }
+    private boolean updateCreeperNetBrush(){
+        if(!CreeperCore.enabled()) return false;
+        if(!CreeperNet.brushEnabled) return false;
+        if(Core.scene.hasMouse()) return false;
+
+        Tile tile = tileAt(Core.input.mouseWorldX(), Core.input.mouseWorldY());
+        if(tile == null) return false;
+
+        if(Core.input.keyDown(KeyCode.mouseLeft)){
+            CreeperNet.paint(tile);
+            return true;
+        }
+
+        if(Core.input.keyDown(KeyCode.mouseRight)){
+            CreeperNet.erase(tile);
+            return true;
+        }
+
+        return false;
     }
 }

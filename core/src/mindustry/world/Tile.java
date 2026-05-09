@@ -53,6 +53,9 @@ public class Tile implements Position, QuadTreeObject, Displayable{
     public float height, heightTemp;
     public Effect creeperFx;
 
+    public int netStat;
+    public float netHealth;
+
     public Tile(int x, int y){
         this.x = (short)x;
         this.y = (short)y;

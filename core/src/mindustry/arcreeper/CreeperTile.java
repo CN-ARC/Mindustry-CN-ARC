@@ -31,7 +31,7 @@ import static mindustry.Vars.tilesize;
 import static mindustry.Vars.world;
 
 public class CreeperTile {
-    private static final short snapshotVersion = 1;
+    static final short snapshotVersion = 1;
 
     // SaveVersion 读到 arc-creeper chunk 后置 true。
     // CreeperCore.enable() 看到这个标记时，不再 reset 掉刚读出的 creeper/height。
@@ -141,8 +141,6 @@ public class CreeperTile {
     }
 
     public void readSnapshot(Reads read){
-        short version = read.s();
-
         int width = read.i();
         int height = read.i();
 
@@ -154,13 +152,17 @@ public class CreeperTile {
                 float creeper = read.f();
                 float tileHeight = read.f();
 
+                Tile tile = null;
+
                 if(x < worldWidth && y < worldHeight){
-                    Tile tile = Vars.world.tile(x, y);
+                    tile = Vars.world.tile(x, y);
+
                     if(tile != null){
                         tile.creeper = creeper;
                         tile.height = tileHeight;
                     }
                 }
+                CreeperNet.readTile(read, tile);
             }
         }
 
@@ -168,6 +170,8 @@ public class CreeperTile {
         clearFxQueue();
         snapshotLoaded = true;
     }
+
+
     public byte[] writeSnapshotBytes(){
         try{
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -330,6 +334,8 @@ public class CreeperTile {
         if(updateTimer < Vars.state.rules.creeperFlowInterval) return;
         updateTimer -= Vars.state.rules.creeperFlowInterval;
 
+        CreeperNet.update();
+
         clearTmp();
         updateFlow();
 
@@ -437,8 +443,8 @@ public class CreeperTile {
     /**
      * 获取 tile 的地形高度，并转换为 creeper 深度单位。
      */
-    float heightOf(Tile tile) {
-        return tile.getSumHeight() * Vars.state.rules.heightScale;
+    float heightOf(Tile tile){
+        return (tile.getSumHeight() + CreeperNet.heightBonus(tile)) * Vars.state.rules.heightScale;
     }
 
     /**
@@ -1031,6 +1037,7 @@ public class CreeperTile {
             result.setnum(switch(type){
                 case creeper -> tile.creeper;
                 case height -> tile.height;
+                case net -> tile.netStat;
             });
         }
     }
@@ -1057,6 +1064,7 @@ public class CreeperTile {
             switch(type){
                 case creeper -> tile.creeper = v;
                 case height -> tile.height = v;
+                case net -> tile.netStat = Mathf.clamp((int) v,0,4);
             }
 
         }

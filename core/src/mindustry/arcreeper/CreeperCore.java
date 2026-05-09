@@ -26,6 +26,7 @@ public final class CreeperCore {
 
         CreeperSave.init();
         CreeperNetwork.init();
+        CreeperNet.init();
         SporeCore.init();
 
         Events.on(EventType.WorldLoadEvent.class, e -> {
@@ -37,7 +38,6 @@ public final class CreeperCore {
         });
 
         Events.on(EventType.GameOverEvent.class, e -> disable());
-
         Events.run(EventType.Trigger.update, CreeperCore::update);
         Events.run(EventType.Trigger.draw, CreeperCore::draw);
     }
@@ -55,6 +55,7 @@ public final class CreeperCore {
         //if(enabled) return;
         enabled = true;
         creeperTile.init();
+        CreeperNet.initWorld();
     }
 
     /** 退出模式 */
@@ -63,6 +64,7 @@ public final class CreeperCore {
         enabled = false;
 
         creeperTile.reset();
+        CreeperNet.resetWorld();
 
         if(Vars.net.client()){
             SporeCore.resetLocal();
@@ -78,6 +80,7 @@ public final class CreeperCore {
         if(Vars.state.isPaused()) return;
 
         creeperTile.update();
+        CreeperNet.draw();
         SporeCore.update();
     }
 

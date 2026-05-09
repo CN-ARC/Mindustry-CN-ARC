@@ -177,21 +177,24 @@ public final class CreeperCombat {
         return damageTile(attacker, tile, damage);
     }
 
-    public static float damageTile(Team attacker, Tile tile, float damage) {
-        if (!damageCreeper || damage <= 0f || !canAttackCreeper(attacker, tile)) return 0f;
+    public static float damageTile(Team attacker, Tile tile, float damage){
+        if(!damageCreeper || damage <= 0f || !canAttackCreeper(attacker, tile)) return 0f;
 
         float damagePerCreeper = Math.max(Vars.state.rules.creeperDamage, 0.0001f);
         float consume = damage / damagePerCreeper;
 
         float amount = creeperAmount(tile);
         float used = Math.min(amount, consume);
+        int sign = tile.creeper > 0f ? 1 : -1;
 
-        // 正 creeper 归 creeperTeam，负 creeper 归 antiCreeperTeam；伤害总是把绝对值推向 0。
-        tile.creeper -= (tile.creeper > 0f ? 1f : -1f) * used;
+        tile.creeper -= sign * used;
 
-        if (creeperAmount(tile) < CreeperCore.creeperTile.minCreeper) {
+        if(creeperAmount(tile) < CreeperCore.creeperTile.minCreeper){
             tile.creeper = 0f;
         }
+
+        CreeperNet.damage(tile, damage);
+        CreeperNet.spreadAttacked(tile, sign, amount, used);
 
         return used * damagePerCreeper;
     }
