@@ -12,7 +12,7 @@ import arc.util.io.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcreeper.CreeperCore;
-import mindustry.arcreeper.CreeperNet;
+import mindustry.arcreeper.CreeperNetwork;
 import mindustry.content.*;
 import mindustry.core.GameState.*;
 import mindustry.entities.units.*;
@@ -507,7 +507,7 @@ public class NetServer implements ApplicationListener{
             if(player == null || player.con == null) return;
 
             if(CreeperCore.enabled()){
-                CreeperNet.sendSnapshot(player.con);
+                CreeperNetwork.sendSnapshot(player.con);
             }
         });
     }

@@ -2,18 +2,16 @@ package mindustry.arcreeper;
 
 
 import arc.*;
-import arc.util.io.*;
 import mindustry.*;
 import mindustry.game.*;
 import mindustry.net.*;
-import mindustry.net.Packets.*;
 
 import java.io.*;
 
-public final class CreeperNet{
+public final class CreeperNetwork {
     private static boolean registered = false;
 
-    private CreeperNet(){
+    private CreeperNetwork(){
     }
 
     public static void init(){
@@ -23,8 +21,8 @@ public final class CreeperNet{
         Net.registerPacket(ArcCreeperSnapshotRequestPacket::new);
         Net.registerPacket(ArcCreeperSnapshotStream::new);
 
-        Vars.net.handleServer(ArcCreeperSnapshotRequestPacket.class, CreeperNet::handleSnapshotRequest);
-        Vars.net.handleClient(ArcCreeperSnapshotStream.class, CreeperNet::handleSnapshotStream);
+        Vars.net.handleServer(ArcCreeperSnapshotRequestPacket.class, CreeperNetwork::handleSnapshotRequest);
+        Vars.net.handleClient(ArcCreeperSnapshotStream.class, CreeperNetwork::handleSnapshotStream);
 
         Events.on(EventType.WorldLoadEvent.class, e -> {
             if(Vars.net.client() && CreeperCore.enabled()){

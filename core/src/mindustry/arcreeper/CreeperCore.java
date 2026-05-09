@@ -25,7 +25,7 @@ public final class CreeperCore {
         Log.info("init ArcCreeper");
 
         CreeperSave.init();
-        CreeperNet.init();
+        CreeperNetwork.init();
         SporeCore.init();
 
         Events.on(EventType.WorldLoadEvent.class, e -> {
