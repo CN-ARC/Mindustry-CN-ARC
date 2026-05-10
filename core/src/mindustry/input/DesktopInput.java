@@ -286,7 +286,7 @@ public class DesktopInput extends InputHandler{
                 spectating = null;
             }
         }
-        updateCreeperNetBrush();
+        if(updateCreeperNetBrush()) return;
 
         panning |= detached;
 
@@ -1126,19 +1126,21 @@ public class DesktopInput extends InputHandler{
         }
     }
     private boolean updateCreeperNetBrush(){
-        if(!CreeperCore.enabled()) return false;
         if(!CreeperNet.brushEnabled) return false;
-        if(Core.scene.hasMouse()) return false;
+        if(!CreeperCore.enabled()) CreeperCore.enable();
+        if(!CreeperCore.enabled()) return false;
 
-        Tile tile = tileAt(Core.input.mouseWorldX(), Core.input.mouseWorldY());
+        Tile tile = world.tileWorld(Core.input.mouseWorldX(), Core.input.mouseWorldY());
         if(tile == null) return false;
 
         if(Core.input.keyDown(KeyCode.mouseLeft)){
+            shouldShoot = false;
             CreeperNet.paint(tile);
             return true;
         }
 
         if(Core.input.keyDown(KeyCode.mouseRight)){
+            shouldShoot = false;
             CreeperNet.erase(tile);
             return true;
         }

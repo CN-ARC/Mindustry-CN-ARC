@@ -80,7 +80,6 @@ public final class CreeperCore {
         if(Vars.state.isPaused()) return;
 
         creeperTile.update();
-        CreeperNet.draw();
         SporeCore.update();
     }
 
@@ -91,6 +90,7 @@ public final class CreeperCore {
     public static void draw(){
         if(!enabled) return;
         creeperTile.draw();
+        CreeperNet.draw();
         SporeCore.draw();
     }
 
