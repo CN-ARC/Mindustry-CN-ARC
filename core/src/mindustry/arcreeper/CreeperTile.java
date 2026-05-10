@@ -39,13 +39,11 @@ public class CreeperTile {
 
     private boolean eventsRegistered = false;
 
-    public float minCreeper = 0.01f;
-    public float maxCreeper = 1000f;
-
     private float updateTimer = 0f;
-
-    int log2Min = (int) Mathf.log2(minCreeper);
-    int log2Max = (int) Mathf.log2(maxCreeper);
+    
+    // 后续会更新
+    int log2Min = (int) Mathf.log2(0.01f);
+    int log2Max = (int) Mathf.log2(1000f);
 
     // 最小流动阈值。
     public float minFlow = 0.001f;
@@ -322,6 +320,8 @@ public class CreeperTile {
      * 推进 creeper 模拟。
      */
     public void update(){
+        updateClamp();
+        
         updateHeightTemp();
 
         updateFx();
@@ -409,6 +409,11 @@ public class CreeperTile {
             }
         }
     }
+    
+    void updateClamp() {
+        log2Min = (int) Mathf.log2(Vars.state.rules.minCreeper);
+        log2Max = (int) Mathf.log2(Vars.state.rules.maxCreeper);
+    }
 
     void updateFlow() {
         float rate = Vars.state.rules.flowRate;
@@ -445,8 +450,8 @@ public class CreeperTile {
      * 获取 creeper 的极性。
      */
     int signOf(float value) {
-        if (value > minCreeper) return 1;
-        if (value < -minCreeper) return -1;
+        if (value > Vars.state.rules.minCreeper) return 1;
+        if (value < -Vars.state.rules.minCreeper) return -1;
         return 0;
     }
 
@@ -575,7 +580,7 @@ public class CreeperTile {
      */
     private float rawSameSignAmount(Tile from, Tile to, int sign, float rate) {
         float depthFrom = Math.max(0f, from.creeper * sign);
-        if (depthFrom <= minCreeper) return 0f;
+        if (depthFrom <= Vars.state.rules.minCreeper) return 0f;
 
         float depthTo = Math.max(0f, to.creeper * sign);
 
@@ -682,9 +687,9 @@ public class CreeperTile {
             float value = Math.abs(raw);
 
             // 绝对值低于阈值则不显示
-            if (value < minCreeper) return;
+            if (value < Vars.state.rules.minCreeper) return;
 
-            float v = Mathf.clamp(value, minCreeper, maxCreeper);
+            float v = Mathf.clamp(value, Vars.state.rules.minCreeper, Vars.state.rules.maxCreeper);
 
             int bits = Float.floatToIntBits(v);
             int exp = ((bits >>> 23) & 0xFF) - 127;
@@ -775,7 +780,7 @@ public class CreeperTile {
             boolean anti = raw < 0f;
 
             float value = Math.abs(raw);
-            float v = Mathf.clamp(value, minCreeper, maxCreeper);
+            float v = Mathf.clamp(value, Vars.state.rules.minCreeper, Vars.state.rules.maxCreeper);
 
             int bits = Float.floatToIntBits(v);
             int exp = ((bits >>> 23) & 0xFF) - 127;
@@ -883,9 +888,9 @@ public class CreeperTile {
         if (raw == 0f) return -1;
 
         float value = Math.abs(raw);
-        if (value < minCreeper) return -1;
+        if (value < Vars.state.rules.minCreeper) return -1;
 
-        float v = Mathf.clamp(value, minCreeper, maxCreeper);
+        float v = Mathf.clamp(value, Vars.state.rules.minCreeper, Vars.state.rules.maxCreeper);
 
         int bits = Float.floatToIntBits(v);
         int exp = ((bits >>> 23) & 0xFF) - 127;
@@ -986,7 +991,7 @@ public class CreeperTile {
         if(unit == null || unit.dead() || unit.type == null) return;
 
         Tile tile = unit.tileOn();
-        if(tile == null || Math.abs(tile.creeper) < minCreeper) return;
+        if(tile == null || Math.abs(tile.creeper) < Vars.state.rules.minCreeper) return;
 
         int sign = signOf(tile.creeper);
         if(sign == 0) return;

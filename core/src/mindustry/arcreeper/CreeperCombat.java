@@ -189,7 +189,7 @@ public final class CreeperCombat {
         // 正 creeper 归 creeperTeam，负 creeper 归 antiCreeperTeam；伤害总是把绝对值推向 0。
         tile.creeper -= (tile.creeper > 0f ? 1f : -1f) * used;
 
-        if (creeperAmount(tile) < CreeperCore.creeperTile.minCreeper) {
+        if (creeperAmount(tile) < Vars.state.rules.minCreeper) {
             tile.creeper = 0f;
         }
 
@@ -250,7 +250,7 @@ public final class CreeperCombat {
 
     public static boolean validCreeperTile(Tile tile) {
         return tile != null
-                && creeperAmount(tile) > CreeperCore.creeperTile.minCreeper;
+                && creeperAmount(tile) > Vars.state.rules.minCreeper;
     }
 
     /**

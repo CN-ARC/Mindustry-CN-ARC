@@ -239,6 +239,8 @@ public class Rules{
     public float creeperUnitDamage = 5f;
 
     public float flowRate = 0.18f;
+    public float minCreeper = 0.01f;
+    public float maxCreeper = 1000f;
 
     public Color creeperColor = new Color(0.1f, 0.35f, 1f, 1f);
     public Color antiCreeperColor = new Color(0.45f, 0.85f, 1f, 1f);
