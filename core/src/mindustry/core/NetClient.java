@@ -39,6 +39,7 @@ import java.util.*;
 import java.util.zip.*;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.FAKEMODNAME;
 
 public class NetClient implements ApplicationListener{
     private static final long entitySnapshotTimeout = 1000 * 20;
@@ -127,6 +128,9 @@ public class NetClient implements ApplicationListener{
             c.color = player.color.rgba();
             c.usid = getUsid(packet.addressTCP);
             c.uuid = platform.getUUID();
+
+            c.mods = mods.getModStrings();
+            c.mods.add(FAKEMODNAME);
 
             if(c.uuid == null){
                 ui.showErrorMessage("@invalidid");

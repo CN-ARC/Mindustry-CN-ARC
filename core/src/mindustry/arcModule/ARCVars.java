@@ -52,6 +52,8 @@ public class ARCVars implements Loadable {
     /** Arcreeper */
     public static CreeperCore creeperCore;
 
+    public static final String FAKEMODNAME = "ARCreeper-Client:1";
+
     public static void init(){
         if(!Vars.headless) {
             Events.run(EventType.Trigger.update, () -> {

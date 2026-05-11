@@ -63,6 +63,7 @@ public final class CreeperCore {
         enabled = false;
 
         creeperTile.reset();
+        SporeCore.reset();
 
         if(Vars.net.client()){
             SporeCore.resetLocal();

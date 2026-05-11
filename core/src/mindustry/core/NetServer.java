@@ -36,6 +36,7 @@ import java.util.zip.*;
 
 import static arc.util.Log.*;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.FAKEMODNAME;
 
 public class NetServer implements ApplicationListener{
     /** note that snapshots are compressed, so the max snapshot size here is above the typical UDP safe limit */
@@ -199,7 +200,13 @@ public class NetServer implements ApplicationListener{
             }
 
             Seq<String> extraMods = packet.mods.copy();
+            boolean hasARCreeperFakeMod = extraMods.remove(FAKEMODNAME, false);
+
             Seq<String> missingMods = mods.getIncompatibility(extraMods);
+
+            if(!hasARCreeperFakeMod){
+                missingMods.add(FAKEMODNAME);
+            }
 
             if(!extraMods.isEmpty() || !missingMods.isEmpty()){
                 //can't easily be localized since kick reasons can't have formatted text with them
