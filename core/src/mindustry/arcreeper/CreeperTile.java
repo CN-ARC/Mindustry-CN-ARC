@@ -592,7 +592,7 @@ public class CreeperTile {
         float diff = surfaceFrom - surfaceTo;
         if (diff <= minSurfaceDiff) return 0f;
 
-        return Math.min(diff, depthFrom) * rate;
+        return Math.min(diff, depthFrom - Vars.state.rules.minCreeper) * rate;
     }
 
     private float outOf(Tile tile, int sign) {
