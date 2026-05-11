@@ -11,6 +11,7 @@ import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.Vars;
 import mindustry.content.Fx;
+import mindustry.content.StatusEffects;
 import mindustry.entities.Effect;
 import mindustry.entities.abilities.Ability;
 import mindustry.entities.abilities.ForceFieldAbility;
@@ -22,6 +23,7 @@ import mindustry.graphics.Pal;
 import mindustry.logic.LExecutor;
 import mindustry.logic.LStatements;
 import mindustry.logic.LVar;
+import mindustry.type.StatusEffect;
 import mindustry.world.Tile;
 import mindustry.world.blocks.defense.ForceProjector;
 
@@ -1005,6 +1007,7 @@ public class CreeperTile {
         if(damage <= 0f) return;
 
         unit.damagePierce(damage);
+        unit.apply(StatusEffects.sporeSlowed, 300f);
 
         if(sign > 0){
             setCreeperFx(tile, Fx.creeperDamage);
