@@ -88,7 +88,7 @@ public class CreeperTile {
      * 绘制creeper的模式
      */
     public static int creeperDrawType = 2;
-    public static boolean creeperDrawTrans = false;
+    public static boolean creeperDrawTrans = true;
 
     private static final float DRAW_LAYER = 55f;
     private static final float TILE_HEIGHT_EDGE_LAYER = DRAW_LAYER + 0.02f;
