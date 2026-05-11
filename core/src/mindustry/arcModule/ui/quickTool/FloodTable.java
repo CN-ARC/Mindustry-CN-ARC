@@ -44,6 +44,10 @@ public class FloodTable extends ElementUtils.ToolTable {
                     CreeperTile.drawTileHeight = !CreeperTile.drawTileHeight;
                     rebuild();
                 }).tooltip("[cyan]显示ARCreeper地形高度").size(30f);
+                tt.button("[blue]网", NCtextStyle, () -> {
+                    CreeperTile.showCreeperNet = !CreeperTile.showCreeperNet;
+                    rebuild();
+                }).tooltip("[cyan]开关Creeper网络显示").size(30f);
             });
 
         });

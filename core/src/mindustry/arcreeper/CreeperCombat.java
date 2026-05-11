@@ -185,14 +185,18 @@ public final class CreeperCombat {
 
         float amount = creeperAmount(tile);
         float used = Math.min(amount, consume);
+        int sign = tile.creeper > 0f ? 1 : -1;
 
         // 正 creeper 归 creeperTeam，负 creeper 归 antiCreeperTeam；伤害总是把绝对值推向 0。
-        tile.creeper -= (tile.creeper > 0f ? 1f : -1f) * used;
+        tile.creeper -= sign * used;
 
         if (creeperAmount(tile) < Vars.state.rules.minCreeper) {
             tile.creeper = 0f;
         }
 
+        // ARCreeper: 这里把原始常规伤害直接转给 creeperNet 独立结算，不再依赖 creeper 的 used 量。
+        CreeperCore.creeperTile.applyNetAttackDamage(tile, damage);
+        CreeperCore.creeperTile.spreadAttackedNet(tile, sign, amount, used);
         return used * damagePerCreeper;
     }
 

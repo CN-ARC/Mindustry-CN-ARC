@@ -239,6 +239,11 @@ public class CustomRulesDialog extends BaseDialog{
         number("更新间隔", b -> rules.creeperFlowInterval = b, () -> rules.creeperFlowInterval);
         number("creeper伤害", b -> rules.creeperDamage = b, () -> rules.creeperDamage);
         number("creeper对单位伤害", b -> rules.creeperUnitDamage = b, () -> rules.creeperUnitDamage);
+        // TODO UI label: creeperNet 伤害倍率
+        number("creeperNet伤害倍率", b -> rules.creeperNetDamageScale = b, () -> rules.creeperNetDamageScale, 0.001f, 999f);
+        // TODO UI label: creeperNet 激活倍率
+        number("creeperNet激活倍率", b -> rules.creeperNetActivationScale = b, () -> rules.creeperNetActivationScale, 0.001f, 999f);
+        number("creeperNet 衰减倍率", b -> rules.creeperNetDecayScale = b, () -> rules.creeperNetDecayScale, 0.001f, 999f);
         number("地形高度系数", b -> rules.heightScale = b, () -> rules.heightScale);
         number("minCreeper [gray]不建议修改",b->rules.minCreeper = b, ()->rules.minCreeper);
         number("maxCreeper [gray]不建议修改，只影响渲染",b->rules.maxCreeper = b, ()->rules.maxCreeper);

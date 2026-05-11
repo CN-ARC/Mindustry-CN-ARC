@@ -2598,7 +2598,8 @@ public class LStatements{
 
     public enum ARCreeperData{
         creeper,
-        height;
+        height,
+        creeperNet;
 
         public static final ARCreeperData[] all = values();
     }

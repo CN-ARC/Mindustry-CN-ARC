@@ -13,6 +13,7 @@ public final class CreeperCore {
     private static boolean eventsLoaded = false;
 
     public static CreeperTile creeperTile = new CreeperTile();
+    public static CreeperNetCombat creeperNetCombat = new CreeperNetCombat();
     public CreeperCore(){}
 
     public static Team creeperTeam = Team.blue;
@@ -55,6 +56,7 @@ public final class CreeperCore {
         //if(enabled) return;
         enabled = true;
         creeperTile.init();
+        creeperNetCombat.init();
     }
 
     /** 退出模式 */
@@ -63,6 +65,7 @@ public final class CreeperCore {
         enabled = false;
 
         creeperTile.reset();
+        creeperNetCombat.reset();
 
         if(Vars.net.client()){
             SporeCore.resetLocal();

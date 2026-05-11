@@ -237,6 +237,12 @@ public class Rules{
     /** 每单元creeper等效于的伤害，用于产生和消耗上 */
     public float creeperDamage = 5f;
     public float creeperUnitDamage = 5f;
+    /** creeperNet 受伤倍率：实际伤害 = 原始伤害 / 该值 */
+    public float creeperNetDamageScale = 3f;
+    /** creeperNet 激活倍率：每 1 倍对应 5 秒 */
+    public float creeperNetActivationScale = 1f;
+    /** creeperNet 衰减倍率：每 1 倍对应 2.5 秒 */
+    public float creeperNetDecayScale = 1f;
 
     public float flowRate = 0.18f;
     public float minCreeper = 0.01f;
