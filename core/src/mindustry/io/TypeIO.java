@@ -666,19 +666,36 @@ public class TypeIO{
             write.i(logic.controller.pos());
         }else if(control instanceof CommandAI ai){
             write.b(9);
-            write.bool(ai.attackTarget != null);
-            write.bool(ai.targetPos != null);
 
-            if(ai.targetPos != null){
-                write.f(ai.targetPos.x);
-                write.f(ai.targetPos.y);
+            // type 9 的 attackTarget 读端只支持 Building / Unit。
+            // CreeperTarget 不能写进 attackTarget，否则读端协议无法表达。
+            boolean hasAttack =
+                    ai.attackTarget instanceof Building ||
+                            ai.attackTarget instanceof Unit;
+
+            // 如果 attackTarget 是不可序列化目标，例如 ARCreeper 的 CreeperTarget，
+            // 至少把它的位置作为 targetPos 同步给客户端，避免客户端完全丢失追击位置。
+            boolean hasPos = ai.targetPos != null || (!hasAttack && ai.attackTarget != null);
+
+            write.bool(hasAttack);
+            write.bool(hasPos);
+
+            if(hasPos){
+                if(ai.targetPos != null){
+                    write.f(ai.targetPos.x);
+                    write.f(ai.targetPos.y);
+                }else{
+                    write.f(ai.attackTarget.getX());
+                    write.f(ai.attackTarget.getY());
+                }
             }
-            if(ai.attackTarget != null){
+
+            if(hasAttack){
                 write.b(ai.attackTarget instanceof Building ? 1 : 0);
                 if(ai.attackTarget instanceof Building b){
                     write.i(b.pos());
-                }else{
-                    write.i(((Unit)ai.attackTarget).id);
+                }else if(ai.attackTarget instanceof Unit u){
+                    write.i(u.id);
                 }
             }
             write.b(ai.command == null ? -1 : ai.command.id);
