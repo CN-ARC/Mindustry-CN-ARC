@@ -55,6 +55,7 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
     transient boolean absorbed, hit;
     transient @Nullable Trail trail;
     transient int frags;
+    transient float originalDamage;
 
     transient Posc stickyTarget;
     transient float stickyX, stickyY, stickyRotation, stickyRotationOffset;
@@ -251,42 +252,10 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
 
             // creeper collision: 必须在 building collision 前面。
             // 这样同一 tile 上 creeper > 0 时，子弹优先打 creeper，而不是建筑。
-            // creeper collision: only enemy creeper/AC should be a collision candidate.
-            if(isAdded()
-                    && type.collides
-                    && type.collidesGround
-                    && !type.heals()
-                    && CreeperCombat.canAttackCreeper(team, tile)){
+            boolean isCollideCreeper = collidedCreeper(x, y);
+            if (hit) return;
 
-                float absorbed = CreeperCombat.damageTile(team, tile, damage);
-
-                if(absorbed > 0f){
-                    float wx = x * tilesize;
-                    float wy = y * tilesize;
-
-                    if(Mathf.dst2(lastX, lastY, wx, wy) < Mathf.dst2(lastX, lastY, this.x, this.y)){
-                        this.x = wx;
-                        this.y = wy;
-                    }
-
-                    type.hit(self(), wx, wy);
-
-                    if(!type.pierce){
-                        hit = true;
-                        remove();
-                        return;
-                    }else{
-                        damage -= absorbed;
-                        if(damage <= 0.001f){
-                            hit = true;
-                            remove();
-                            return;
-                        }
-                    }
-                }
-            }
-
-            if(build != null && isAdded()
+            if (!isCollideCreeper && build != null && isAdded()
                 && checkUnderBuild(build, x * tilesize, y * tilesize)
                 && build.collide(self()) && type.testCollision(self(), build)
                 && !build.dead() && (type.collidesTeam || build.team != team) && !(type.pierceBuilding && hasCollided(build.id))){
@@ -349,6 +318,47 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
                 y += sy;
             }
         }
+    }
+
+    public boolean collidedCreeper(int x, int y){
+        Tile tile = world.tile(x, y);
+        if(isAdded()
+                && type.collides
+                && type.collidesGround
+                && CreeperCombat.canAttackCreeper(team, tile)){
+            // 已经碰撞过本格则不再计算
+            int creepId = 1_000_000 + x * world.height() + y;
+            if(collided.contains(creepId)){
+                return true;
+            }
+
+            float absorbed = CreeperCombat.damageTile(team, tile, damage);
+            if(absorbed <= 0.001f){
+                return false;
+            }
+            // 如果无限穿透，则不计算伤害衰减直接击中并返回
+            if(type.pierce && type.pierceCap <= -1){
+                type.hit(self(), x * tilesize, y * tilesize);
+                return true;
+            }
+            damage -= absorbed;
+            // 如果伤害不足，则触发击中
+            if(damage < 0.001f){
+                type.hit(self(), x * tilesize, y * tilesize);
+                // 如果子弹是穿透的，那么计算一次穿透并恢复子弹伤害
+                if (type.pierce && !(type.pierceCap != -1 && collided.size >= type.pierceCap)){
+                    damage += originalDamage;
+                    collided.add(creepId);
+                }
+                else {
+                    hit = true;
+                    remove();
+                }
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 
     @Override
