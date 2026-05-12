@@ -337,7 +337,7 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
                 return false;
             }
             // 如果无限穿透，则不计算伤害衰减直接击中并返回
-            if(type.pierce && type.pierceCap <= -1){
+            if(type.pierce && type.pierceCap == -1){
                 type.hit(self(), x * tilesize, y * tilesize);
                 return true;
             }
@@ -346,9 +346,14 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
             if(damage < 0.001f){
                 type.hit(self(), x * tilesize, y * tilesize);
                 // 如果子弹是穿透的，那么计算一次穿透并恢复子弹伤害
-                if (type.pierce && !(type.pierceCap != -1 && collided.size >= type.pierceCap)){
-                    damage += originalDamage;
+                if (type.pierce && type.pierceCap != -1){
                     collided.add(creepId);
+                    if(collided.size >= type.pierceCap){
+                        hit = true;
+                        remove();
+                        return true;
+                    }
+                    damage += originalDamage;
                 }
                 else {
                     hit = true;
