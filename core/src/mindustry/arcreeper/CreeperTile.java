@@ -28,12 +28,13 @@ import mindustry.world.Tile;
 import mindustry.world.blocks.defense.ForceProjector;
 
 import java.io.*;
+import java.util.Objects;
 
 import static mindustry.Vars.tilesize;
 import static mindustry.Vars.world;
 
 public class CreeperTile {
-    private static final short snapshotVersion = 1;
+    private static final short snapshotVersion = 2;
 
     // SaveVersion 读到 arc-creeper chunk 后置 true。
     // CreeperCore.enable() 看到这个标记时，不再 reset 掉刚读出的 creeper/height。
@@ -136,13 +137,11 @@ public class CreeperTile {
 
         Vars.world.tiles.eachTile(tile -> {
             write.f(tile.creeper);
-            write.f(tile.height);
         });
     }
 
     public void readSnapshot(Reads read){
         short version = read.s();
-
         int width = read.i();
         int height = read.i();
 
@@ -152,14 +151,15 @@ public class CreeperTile {
         for(int y = 0; y < height; y++){
             for(int x = 0; x < width; x++){
                 float creeper = read.f();
-                float tileHeight = read.f();
 
-                if(x < worldWidth && y < worldHeight){
-                    Tile tile = Vars.world.tile(x, y);
-                    if(tile != null){
-                        tile.creeper = creeper;
-                        tile.height = tileHeight;
-                    }
+                Tile tile = x < worldWidth && y < worldHeight ? Vars.world.tile(x, y) : null;
+                if(tile != null){
+                    tile.creeper = creeper;
+                }
+
+                // 兼容旧 snapshotVersion：如果旧版本还写了 height，就读掉但不要使用
+                if(version <= 1){
+                    read.f();
                 }
             }
         }
@@ -167,7 +167,11 @@ public class CreeperTile {
         clearTmp();
         clearFxQueue();
         snapshotLoaded = true;
+
+        // custom chunk 读完后，重新按当前 patch 计算高度
+        initTileHeight();
     }
+
     public byte[] writeSnapshotBytes(){
         try{
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -1038,7 +1042,6 @@ public class CreeperTile {
 
             result.setnum(switch(type){
                 case creeper -> tile.creeper;
-                case height -> tile.height;
             });
         }
     }
@@ -1064,7 +1067,6 @@ public class CreeperTile {
 
             switch(type){
                 case creeper -> tile.creeper = v;
-                case height -> tile.height = v;
             }
 
         }
