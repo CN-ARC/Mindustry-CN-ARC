@@ -1,11 +1,9 @@
 package mindustry.arcModule.ui.quickTool;
 
-import arc.Core;
-import arc.Events;
 import arc.struct.Seq;
 import mindustry.arcModule.ElementUtils;
+import mindustry.arcreeper.CreeperCore;
 import mindustry.arcreeper.CreeperTile;
-import mindustry.game.EventType;
 import mindustry.gen.Iconc;
 import mindustry.ui.Styles;
 
@@ -14,10 +12,10 @@ import static mindustry.arcModule.ElementUtils.NCtextStyle;
 import static mindustry.arcreeper.CreeperTile.creeperDrawTrans;
 
 
-public class FloodTable extends ElementUtils.ToolTable {
+public class ARCreeperTable extends ElementUtils.ToolTable {
     protected Seq<HudSettingsTable.Setting> list = new Seq<>();
 
-    public FloodTable() {
+    public ARCreeperTable() {
         icon = String.valueOf(Iconc.itemSporePod);
         rebuild();
     }
@@ -44,6 +42,11 @@ public class FloodTable extends ElementUtils.ToolTable {
                     CreeperTile.drawTileHeight = !CreeperTile.drawTileHeight;
                     rebuild();
                 }).tooltip("[cyan]显示ARCreeper地形高度").size(30f);
+                tt.row();
+                tt.button("[blue]孢", NCtextStyle, () -> {
+                    CreeperCore.drawSporeHealth = !CreeperCore.drawSporeHealth;
+                    rebuild();
+                }).tooltip("[cyan]显示孢子血条").size(30f);
             });
 
         });

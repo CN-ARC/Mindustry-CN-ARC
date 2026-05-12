@@ -18,6 +18,8 @@ public final class CreeperCore {
     public static Team creeperTeam = Team.blue;
     public static Team antiCreeperTeam = Team.sharded;
 
+    public static boolean drawSporeHealth = true;
+
     public static void init(){
         if(eventsLoaded) return;
         eventsLoaded = true;

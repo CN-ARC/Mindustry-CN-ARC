@@ -1,6 +1,7 @@
 package mindustry.arcreeper;
 
 import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
 import arc.math.Mathf;
 import arc.math.geom.Position;
 import arc.util.Time;
@@ -12,11 +13,14 @@ import mindustry.content.Items;
 import mindustry.gen.Building;
 import mindustry.gen.Entityc;
 import mindustry.gen.Posc;
+import mindustry.graphics.Pal;
 import mindustry.logic.LAccess;
 import mindustry.logic.Senseable;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.blocks.environment.Floor;
+
+import static mindustry.arcreeper.CreeperCore.drawSporeHealth;
 
 @SuppressWarnings("unchecked")
 public class Spore implements Posc, Senseable{
@@ -46,6 +50,7 @@ public class Spore implements Posc, Senseable{
     float fxInterval = 60f;
     float fxTimer = 0f;
 
+    float drawycorr = 2f;
     /**
      * 只更新飞行位置。
      * 返回 true 表示已到达目标。
@@ -93,6 +98,7 @@ public class Spore implements Posc, Senseable{
 
     public void draw(){
         if(removed) return;
+        Draw.reset();
 
         Draw.rect(
                 Items.sporePod.uiIcon,
@@ -111,6 +117,19 @@ public class Spore implements Posc, Senseable{
                     y,
                     creeperAmount > 0f ? Vars.state.rules.creeperColor : Vars.state.rules.antiCreeperColor
             );
+        }
+
+        if (drawSporeHealth && health < maxHealth){
+            Draw.reset();
+            Lines.stroke(4f);
+            Draw.color(Vars.state.rules.creeperColor, 0.5f);
+            Lines.line(x - sporeSize * 0.6f, y + (sporeSize / 2f) + drawycorr, x + sporeSize * 0.6f, y + (sporeSize / 2f) + drawycorr);
+            Lines.stroke(2f);
+            Draw.color(Pal.health, 0.8f);
+            Lines.line(
+                    x - sporeSize * 0.6f, y + (sporeSize / 2f) + drawycorr,
+                    x + sporeSize * (Math.min(Mathf.maxZero(health), maxHealth) * 1.2f / maxHealth - 0.6f), y + (sporeSize / 2f) + drawycorr);
+            Lines.stroke(2f);
         }
     }
 
