@@ -519,7 +519,7 @@ float prev = Draw.xscl;
                 range + Math.abs(shootY),
                 u -> u.checkTarget(air, ground),
                 t -> ground && (unit.type.targetUnderBlocks || !t.block.underBullets),
-                ground && !bullet.heals(),
+                ground,
                 ground
         );
     }
