@@ -1839,6 +1839,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             font.setUseIntegerPositions(ints);
             Draw.z(z);
         }
+
+        lastSelection.set(x1, y1, x2-x1, y2-y1);
+        lastSelection.normalize();
     }
 
     protected void flushSelectPlans(Seq<BuildPlan> plans){
