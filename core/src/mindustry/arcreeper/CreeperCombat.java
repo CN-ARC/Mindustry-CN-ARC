@@ -132,42 +132,7 @@ public final class CreeperCombat {
 
     public static CreeperTarget findCreeperTarget(Team attacker, float wx, float wy, float range) {
         if (!canAttackCreeper(attacker)) return null;
-
-        int minX = toTile(wx - range);
-        int maxX = toTile(wx + range);
-        int minY = toTile(wy - range);
-        int maxY = toTile(wy + range);
-
-        float range2 = range * range;
-        Tile best = null;
-        float bestDst2 = Float.MAX_VALUE;
-        int scanned = 0;
-
-        for (int tx = minX; tx <= maxX; tx++) {
-            for (int ty = minY; ty <= maxY; ty++) {
-                if (++scanned > maxScanTiles) {
-                    return best == null ? null : new CreeperTarget(best);
-                }
-
-                Tile tile = Vars.world.tile(tx, ty);
-                if (!canAttackCreeper(attacker, tile)) continue;
-
-                float dx = tile.worldx() - wx;
-                float dy = tile.worldy() - wy;
-                float dst2 = dx * dx + dy * dy;
-
-                if (dst2 > range2) continue;
-
-                if (best == null
-                        || dst2 < bestDst2
-                        || (Mathf.equal(dst2, bestDst2) && creeperAmount(tile) > creeperAmount(best))) {
-                    best = tile;
-                    bestDst2 = dst2;
-                }
-            }
-        }
-
-        return best == null ? null : new CreeperTarget(best);
+        return CreeperCore.creeperGrid.findNearestTarget(attacker, wx / tilesize, wy / tilesize, range / tilesize);
     }
 
     public static float damageAt(Team attacker, float wx, float wy, float damage) {

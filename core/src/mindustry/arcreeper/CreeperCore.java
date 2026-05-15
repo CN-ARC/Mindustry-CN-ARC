@@ -13,6 +13,7 @@ public final class CreeperCore {
     private static boolean eventsLoaded = false;
 
     public static CreeperTile creeperTile = new CreeperTile();
+    public static CreeperGrid creeperGrid = new CreeperGrid();
     public CreeperCore(){}
 
     public static Team creeperTeam = Team.blue;
@@ -81,6 +82,7 @@ public final class CreeperCore {
         if(Vars.state.isPaused()) return;
 
         creeperTile.update();
+        creeperGrid.update();
         SporeCore.update();
     }
 
