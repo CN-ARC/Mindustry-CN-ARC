@@ -536,6 +536,8 @@ public class UnitType extends UnlockableContent implements Senseable{
 
     //ARCreeper
     public float creeperEvade = 0f;
+    /** 是否自动瞄准最高水层 */
+    public boolean targetHighestCreeper = false;
 
     public UnitType(String name){
         super(name);

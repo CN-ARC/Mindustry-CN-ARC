@@ -156,6 +156,8 @@ public class Turret extends ReloadTurret{
 
     /** Defines drawing behavior for this turret. */
     public DrawBlock drawer = new DrawTurret();
+    /** 是否自动瞄准最高水层 */
+    public boolean targetHighestCreeper = false;
 
     public Turret(String name){
         super(name);
@@ -663,7 +665,8 @@ public class Turret extends ReloadTurret{
                         b -> buildings && buildingFilter.get(b),
                         unitSort,
                         targetGround, // creeper 是地面目标
-                        buildings
+                        buildings,
+                        targetHighestCreeper
                 );
                 /*return Units.bestTarget(team, x, y, range,
                     e -> !e.dead() && unitFilter.get(e) && (e.isGrounded() || targetAir) && (!e.isGrounded() || targetGround) && (missiles || !(e instanceof TimedKillc)),

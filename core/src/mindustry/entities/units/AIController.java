@@ -289,7 +289,8 @@ public class AIController implements UnitController{
                 u -> u.checkTarget(air, ground),
                 t -> ground && (unit.type.targetUnderBlocks || !t.block.underBullets),
                 ground,
-                ground
+                ground,
+                unit.type().targetHighestCreeper
         );
     }
 

@@ -44,7 +44,8 @@ public final class CreeperCombat {
             Boolf<Building> buildingPred,
             Units.Sortf unitSort,
             boolean allowCreeper,
-            boolean allowBuilding
+            boolean allowBuilding,
+            boolean targetHighestCreeper
     ) {
         if (!CreeperCore.enabled()) {
             return allowBuilding
@@ -58,7 +59,7 @@ public final class CreeperCombat {
 
         // 2. creeper 次之。
         if (allowCreeper && targetCreeper) {
-            CreeperTarget creeper = findCreeperTarget(team, x, y, range);
+            CreeperTarget creeper = findCreeperTarget(team, x, y, range, targetHighestCreeper);
             if (creeper != null) return creeper;
         }
 
@@ -79,7 +80,8 @@ public final class CreeperCombat {
             Boolf<Unit> unitPred,
             Boolf<Building> buildingPred,
             boolean allowCreeper,
-            boolean allowBuilding
+            boolean allowBuilding,
+            boolean targetHighestCreeper
     ) {
         if (!CreeperCore.enabled()) {
             return allowBuilding
@@ -93,7 +95,7 @@ public final class CreeperCombat {
 
         // 2. creeper 次之。
         if (allowCreeper && targetCreeper) {
-            CreeperTarget creeper = findCreeperTarget(team, x, y, range);
+            CreeperTarget creeper = findCreeperTarget(team, x, y, range, targetHighestCreeper);
             if (creeper != null) return creeper;
         }
 
@@ -130,9 +132,11 @@ public final class CreeperCombat {
         return target instanceof Sized sized ? sized.hitSize() : 0f;
     }
 
-    public static CreeperTarget findCreeperTarget(Team attacker, float wx, float wy, float range) {
+    public static CreeperTarget findCreeperTarget(Team attacker, float wx, float wy, float range, boolean targetHighestCreeper) {
         if (!canAttackCreeper(attacker)) return null;
-        return CreeperCore.creeperGrid.findNearestTarget(attacker, wx / tilesize, wy / tilesize, range / tilesize);
+        return targetHighestCreeper
+                ? CreeperCore.creeperGrid.findHighestTarget(attacker, wx / tilesize, wy / tilesize, range / tilesize)
+                : CreeperCore.creeperGrid.findNearestTarget(attacker, wx / tilesize, wy / tilesize, range / tilesize);
     }
 
     public static float damageAt(Team attacker, float wx, float wy, float damage) {

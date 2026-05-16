@@ -162,6 +162,8 @@ public class Weapon implements Cloneable{
     public boolean shootOnDeath = false;
     /** If not null and shootOnDeath == true, overrides the weapon's shoot effect only when its owner dies. */
     public @Nullable Effect shootOnDeathEffect = null;
+    /** 是否自动瞄准最高水层 */
+    public boolean autoTargetHighestCreeper = false;
     /** extra animated parts */
     public Seq<DrawPart> parts = new Seq<>(DrawPart.class);
 
@@ -520,7 +522,8 @@ float prev = Draw.xscl;
                 u -> u.checkTarget(air, ground),
                 t -> ground && (unit.type.targetUnderBlocks || !t.block.underBullets),
                 ground,
-                ground
+                ground,
+                autoTargetHighestCreeper
         );
     }
 
