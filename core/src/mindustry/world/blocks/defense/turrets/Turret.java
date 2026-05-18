@@ -12,6 +12,7 @@ import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.arcreeper.CreeperCombat;
+import mindustry.arcreeper.Spore;
 import mindustry.audio.*;
 import mindustry.content.*;
 import mindustry.core.*;
@@ -445,6 +446,10 @@ public class Turret extends ReloadTurret{
             if(!hasAmmo() || pos == null) return;
             BulletType bullet = peekAmmo();
 
+            if(targetSpore && setSporeTargetPosition(pos, targetPos)){
+                return;
+            }
+
             if(bullet == null) return;
 
             var offset = Tmp.v1.setZero();
@@ -633,6 +638,9 @@ public class Turret extends ReloadTurret{
             return !Units.invalidateTarget(target, canHeal() ? Team.derelict : team, x, y) || isControlled() || logicControlled();
         }*/
         protected boolean validateTarget(){
+            if(targetSpore){
+                return !invalidSporeTarget(target, trackingRange());
+            }
             return !CreeperCombat.invalidateTarget(
                     target,
                     canHeal() ? Team.derelict : team,
@@ -647,6 +655,9 @@ public class Turret extends ReloadTurret{
         }
 
         protected Posc findEnemy(float range){
+            if(targetSpore){
+                return findSporeTarget(range);
+            }
             if(targetAir && !targetGround){
                 return Units.bestEnemy(team, x, y, range, e -> !e.dead() && !e.isGrounded() && unitFilter.get(e), unitSort);
             }else{
@@ -755,11 +766,13 @@ public class Turret extends ReloadTurret{
         }
 
         protected void updateShooting(){
-
             if(reloadCounter >= reload && !charging() && shootWarmup >= minWarmup){
                 BulletType type = peekAmmo();
-
-                shoot(type);
+                if(targetSpore && target instanceof Spore spore){
+                    shootSpore(spore, sporeDamage, shootEffect);
+                }else{
+                    shoot(type);
+                }
 
                 reloadCounter %= reload;
             }

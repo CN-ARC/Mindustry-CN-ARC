@@ -1,6 +1,7 @@
 package mindustry.world.blocks.defense.turrets;
 
 import arc.*;
+import arc.audio.Sound;
 import arc.graphics.*;
 import arc.Core;
 import arc.graphics.g2d.Draw;
@@ -11,6 +12,7 @@ import arc.math.geom.Vec2;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.arcModule.ARCVars;
+import mindustry.arcreeper.*;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.gen.*;
@@ -40,6 +42,21 @@ public class BaseTurret extends Block{
     public float coolantMultiplier = 5f;
     /** If not null, this consumer will be used for coolant. */
     public @Nullable ConsumeLiquidBase coolant;
+
+    /** Whether this turret targets ARCreeper Spore entities. */
+    public boolean targetSpore = false;
+
+    /** Default damage dealt to one Spore by one Spore shot. */
+    public float sporeDamage = 45f;
+
+    /** Default color used by Spore attack effects. */
+    public Color sporeColor = Pal.accent;
+
+    /** Default beam effect used by shootSpore(). */
+    public Effect sporeBeamEffect = Fx.pointBeam;
+
+    /** Default hit effect used by shootSpore(). */
+    public Effect sporeHitEffect = Fx.pointHit;
 
     public BaseTurret(String name){
         super(name);
@@ -106,6 +123,7 @@ public class BaseTurret extends Block{
         super.setStats();
 
         stats.add(Stat.shootRange, range / tilesize, StatUnit.blocks);
+        stats.add(Stat.targetsSpore, targetSpore);
         if(activationTime > 0) stats.add(Stat.activationTime, activationTime / 60f, StatUnit.seconds);
     }
 
@@ -154,6 +172,55 @@ public class BaseTurret extends Block{
         @Override
         public BlockStatus status() {
             return (activationTimer <= 0)? super.status() : BlockStatus.inactive;
+        }
+
+        protected @Nullable Spore findSporeTarget(float range){
+            return SporeCombat.bestTarget(team, x, y, range);
+        }
+
+        protected boolean invalidSporeTarget(@Nullable Posc target, float range){
+            return !(target instanceof Spore spore) || SporeCombat.invalid(team, spore, x, y, range);
+        }
+
+        protected boolean setSporeTargetPosition(@Nullable Posc target, Vec2 out){
+            if(!(target instanceof Spore spore)) return false;
+
+            out.set(spore.x, spore.y);
+            return true;
+        }
+
+        protected boolean shootSpore(Spore spore, float damage, @Nullable Effect shootEffect){
+            if(spore == null) return false;
+
+            float targetX = spore.x;
+            float targetY = spore.y;
+            float rot = Angles.angle(x, y, targetX, targetY);
+
+            boolean hit = SporeCombat.attackSpore(
+                    team,
+                    spore,
+                    x,
+                    y,
+                    range(),
+                    damage * state.rules.blockDamage(team),
+                    efficiency
+            );
+
+            if(!hit) return false;
+
+            if(sporeBeamEffect != null && sporeBeamEffect != Fx.none){
+                sporeBeamEffect.at(x, y, rot, sporeColor, new Vec2(targetX, targetY));
+            }
+
+            if(shootEffect != null && shootEffect != Fx.none){
+                shootEffect.at(x, y, rot, sporeColor);
+            }
+
+            if(sporeHitEffect != null && sporeHitEffect != Fx.none){
+                sporeHitEffect.at(targetX, targetY, sporeColor);
+            }
+
+            return true;
         }
     }
 }

@@ -7,6 +7,8 @@ import arc.math.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcreeper.Spore;
+import mindustry.arcreeper.SporeCombat;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.gen.*;
@@ -70,6 +72,7 @@ public class TractorBeamTurret extends BaseTurret{
 
     public class TractorBeamBuild extends BaseTurretBuild{
         public @Nullable Unit target;
+        public @Nullable Spore sporeTarget;
         public float lastX, lastY, strength;
         public boolean any;
         public float coolantMultiplier = 1f;
@@ -85,27 +88,77 @@ public class TractorBeamTurret extends BaseTurret{
 
             //retarget
             if(timer(timerTarget, retargetTime)){
-                target = Units.closestEnemy(team, x, y, range, u -> u.checkTarget(targetAir, targetGround));
+                if(targetSpore){
+                    sporeTarget = findSporeTarget(range); //傻逼ai我真服了，真不如自己写，至少这个确实能用
+                    target = null;
+                }else{
+                    target = Units.closestEnemy(team, x, y, range, u -> u.checkTarget(targetAir, targetGround));
+                    sporeTarget = null;
+                }
             }
+            if(targetSpore && SporeCombat.invalid(team, sporeTarget, x, y, range)){
+                sporeTarget = null;
+            }
+            boolean hasTarget = targetSpore ? sporeTarget != null : target != null;
 
             //consume coolant
-            if(target != null && coolant != null){
+            if(hasTarget && coolant != null){
                 float maxUsed = coolant.amount;
-
                 Liquid liquid = liquids.current();
-
-                float used = Math.min(Math.min(liquids.get(liquid), maxUsed * Time.delta), Math.max(0, (1f / coolantMultiplier) / liquid.heatCapacity));
+                float used = Math.min(
+                        Math.min(liquids.get(liquid), maxUsed * Time.delta),
+                        Math.max(0, (1f / coolantMultiplier) / liquid.heatCapacity)
+                );
 
                 liquids.remove(liquid, used);
 
                 if(Mathf.chance(0.06 * used)){
-                    coolEffect.at(x + Mathf.range(size * tilesize / 2f), y + Mathf.range(size * tilesize / 2f));
+                    coolEffect.at(
+                            x + Mathf.range(size * tilesize / 2f),
+                            y + Mathf.range(size * tilesize / 2f)
+                    );
                 }
 
                 coolantMultiplier = 1f + (used * liquid.heatCapacity * coolantMultiplier);
             }
 
             any = false;
+
+            if(targetSpore){
+                if(sporeTarget != null && !SporeCombat.invalid(team, sporeTarget, x, y, range) && efficiency > 0.02f){
+                    if(!headless){
+                        control.sound.loop(shootSound, this, shootSoundVolume);
+                    }
+
+                    float dest = Angles.angle(x, y, sporeTarget.x, sporeTarget.y);
+                    rotation = Angles.moveToward(rotation, dest, rotateSpeed * edelta);
+
+                    lastX = sporeTarget.x;
+                    lastY = sporeTarget.y;
+                    strength = Mathf.lerpDelta(strength, 1f, 0.1f);
+
+                    if(Angles.within(rotation, dest, shootCone)){
+                        if(damage > 0f){
+                            shootSpore(sporeTarget, damage * eff * timeScale, Fx.none);
+                        }
+
+                        any = true;
+
+                        if(sporeTarget.removed){
+                            sporeTarget = null;
+                        }
+                    }
+                }else{
+                    strength = Mathf.lerpDelta(strength, 0, 0.1f);
+                }
+            }else if(target != null && target.within(this, range + target.hitSize/2f)
+                    && target.team() != team
+                    && target.checkTarget(targetAir, targetGround)
+                    && efficiency > 0.02f){
+                // 原 Unit 逻辑完整保留
+            }else{
+                strength = Mathf.lerpDelta(strength, 0, 0.1f);
+            }
 
             //look at target
             if(target != null && target.within(this, range + target.hitSize/2f) && target.team() != team && target.checkTarget(targetAir, targetGround) && efficiency > 0.02f){
@@ -139,7 +192,7 @@ public class TractorBeamTurret extends BaseTurret{
 
         @Override
         public boolean shouldConsume(){
-            return super.shouldConsume() && target != null;
+            return super.shouldConsume() && (targetSpore ? sporeTarget != null : target != null);
         }
 
         @Override
