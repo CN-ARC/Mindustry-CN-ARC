@@ -18,6 +18,8 @@ public final class CreeperCore {
 
     public static boolean drawSporeHealth = true;
 
+    public static boolean performanceAnalyze = false;
+
     public static void init(){
         if(eventsLoaded) return;
         eventsLoaded = true;
@@ -78,9 +80,46 @@ public final class CreeperCore {
         if(!enabled) return;
         if(Vars.state.isPaused()) return;
 
+        // 约每秒采样一次；非采样帧完全走原逻辑，尽量减少性能统计本身的影响
+        boolean profile = ((long)(arc.util.Time.time / 60f)) != ((long)((arc.util.Time.time - arc.util.Time.delta) / 60f));
+
+        if(!profile){
+            creeperTile.update();
+            creeperGrid.update();
+            SporeCore.update();
+            return;
+        }
+
+        long t0 = System.nanoTime();
         creeperTile.update();
+
+        long t1 = System.nanoTime();
         creeperGrid.update();
+
+        long t2 = System.nanoTime();
         SporeCore.update();
+
+        long t3 = System.nanoTime();
+
+        double tileMs = (t1 - t0) / 1_000_000.0;
+        double gridMs = (t2 - t1) / 1_000_000.0;
+        double sporeMs = (t3 - t2) / 1_000_000.0;
+        double totalMs = (t3 - t0) / 1_000_000.0;
+
+        String maxName = "creeperTile";
+        double maxMs = tileMs;
+        if(gridMs > maxMs){
+            maxName = "creeperGrid";
+            maxMs = gridMs;
+        }
+        if(sporeMs > maxMs){
+            maxName = "SporeCore";
+            maxMs = sporeMs;
+        }
+        if (performanceAnalyze) Log.info(java.lang.String.format(java.util.Locale.ROOT,
+                        "[ARCreeper性能] creeperTile=%.3fms, creeperGrid=%.3fms, SporeCore=%.3fms, total=%.3fms, 60FPS帧预算占比=%.1f%%, 最慢=%s %.3fms",
+                        tileMs, gridMs, sporeMs, totalMs, totalMs / 16.6666667 * 100.0, maxName, maxMs
+                                ));
     }
 
     public static boolean enabled() {

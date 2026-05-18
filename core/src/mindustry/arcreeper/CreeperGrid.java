@@ -3,6 +3,7 @@ package mindustry.arcreeper;
 import arc.func.Floatf;
 import arc.math.Mathf;
 import arc.struct.Seq;
+import arc.util.Time;
 import mindustry.Vars;
 import mindustry.game.Rules;
 import mindustry.game.Team;
@@ -16,6 +17,7 @@ import static mindustry.arcreeper.CreeperCombat.*;
 
 public class CreeperGrid {
     private static final int GRID_SIZE = 4;
+    private static float updateTimer = 0f;
 
     public CreeperNode root = null;
 
@@ -23,6 +25,10 @@ public class CreeperGrid {
     }
 
     public void update() {
+        //我说更新慢点牢大
+        updateTimer += Time.delta / 60f;
+        if(updateTimer < Vars.state.rules.creeperFlowInterval * 2) return;
+        updateTimer -= Vars.state.rules.creeperFlowInterval * 2;
         rebuildRoot();
     }
 
