@@ -5,7 +5,6 @@ import arc.graphics.Color;
 import arc.util.Log;
 import mindustry.Vars;
 import mindustry.game.EventType;
-import mindustry.game.Team;
 
 public final class CreeperCore {
     public static final String tag = "@Arcreeper";
@@ -16,9 +15,6 @@ public final class CreeperCore {
     public static CreeperTile creeperTile = new CreeperTile();
     public static CreeperGrid creeperGrid = new CreeperGrid();
     public CreeperCore(){}
-
-    public static Team creeperTeam = Team.blue;
-    public static Team antiCreeperTeam = Team.sharded;
 
     public static boolean drawSporeHealth = true;
 

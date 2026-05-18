@@ -16,6 +16,7 @@ import mindustry.entities.Effect;
 import mindustry.entities.abilities.Ability;
 import mindustry.entities.abilities.ForceFieldAbility;
 import mindustry.game.EventType;
+import mindustry.game.Rules;
 import mindustry.game.Team;
 import mindustry.gen.Groups;
 import mindustry.gen.Unit;
@@ -23,12 +24,10 @@ import mindustry.graphics.Pal;
 import mindustry.logic.LExecutor;
 import mindustry.logic.LStatements;
 import mindustry.logic.LVar;
-import mindustry.type.StatusEffect;
 import mindustry.world.Tile;
 import mindustry.world.blocks.defense.ForceProjector;
 
 import java.io.*;
-import java.util.Objects;
 
 import static mindustry.Vars.tilesize;
 import static mindustry.Vars.world;
@@ -507,7 +506,7 @@ public class CreeperTile {
      * 获取指定极性对应的控制队伍。
      */
     Team teamOf(int sign) {
-        return sign > 0 ? CreeperCore.creeperTeam : CreeperCore.antiCreeperTeam;
+        return sign > 0 ? Vars.state.rules.creeperTeam : Vars.state.rules.antiCreeperTeam;
     }
 
     /**

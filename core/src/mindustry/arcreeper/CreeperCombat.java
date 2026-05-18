@@ -10,6 +10,7 @@ import mindustry.Vars;
 import mindustry.core.World;
 import mindustry.entities.Sized;
 import mindustry.entities.Units;
+import mindustry.game.Rules;
 import mindustry.game.Team;
 import mindustry.gen.*;
 import mindustry.world.Block;
@@ -230,8 +231,8 @@ public final class CreeperCombat {
      */
     public static Team creeperTeam(Tile tile) {
         return tile != null && tile.creeper > 0f
-                ? CreeperCore.creeperTeam
-                : CreeperCore.antiCreeperTeam;
+                ? Vars.state.rules.creeperTeam
+                : Vars.state.rules.antiCreeperTeam;
     }
 
     public static float creeperAmount(Tile tile) {

@@ -234,6 +234,10 @@ public class Rules{
     public float heightScale = 1f;
     /** Creeper 更新间隔*/
     public float creeperFlowInterval = 0.02f;
+
+    public Team creeperTeam = Team.blue;
+    public Team antiCreeperTeam = Team.sharded;
+
     /** 每单元creeper等效于的伤害，用于产生和消耗上 */
     public float creeperDamage = 5f;
     public float creeperUnitDamage = 5f;

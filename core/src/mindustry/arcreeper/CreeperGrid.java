@@ -3,6 +3,8 @@ package mindustry.arcreeper;
 import arc.func.Floatf;
 import arc.math.Mathf;
 import arc.struct.Seq;
+import mindustry.Vars;
+import mindustry.game.Rules;
 import mindustry.game.Team;
 import mindustry.world.Tile;
 
@@ -77,9 +79,9 @@ public class CreeperGrid {
         }
 
         public float getCreeperByTeam(Team team) {
-            if (team == CreeperCore.antiCreeperTeam) {
+            if (team == Vars.state.rules.antiCreeperTeam) {
                 return maxC;
-            } else if (team == CreeperCore.creeperTeam) {
+            } else if (team == Vars.state.rules.creeperTeam) {
                 return maxAC;
             }
             return Math.max(maxC, maxAC);

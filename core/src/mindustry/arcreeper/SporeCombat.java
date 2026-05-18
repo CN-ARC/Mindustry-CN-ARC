@@ -2,6 +2,8 @@ package mindustry.arcreeper;
 
 import arc.math.Mathf;
 import arc.struct.Seq;
+import mindustry.Vars;
+import mindustry.game.Rules;
 import mindustry.game.Team;
 
 public final class SporeCombat{
@@ -13,11 +15,11 @@ public final class SporeCombat{
 
         // 正数 payload 视为 C 方孢子，负数 payload 视为 AC 方孢子。
         if(spore.creeperAmount > 0f){
-            return attacker != CreeperCore.creeperTeam;
+            return attacker != Vars.state.rules.creeperTeam;
         }
 
         if(spore.creeperAmount < 0f){
-            return attacker != CreeperCore.antiCreeperTeam;
+            return attacker != Vars.state.rules.antiCreeperTeam;
         }
 
         return true;
