@@ -9,6 +9,7 @@ import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcreeper.CreeperCore;
 import mindustry.async.*;
 import mindustry.content.*;
 import mindustry.core.*;
@@ -70,6 +71,9 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
     transient float drownTime;
     transient float splashTimer;
     transient @Nullable Floor lastDrownFloor;
+
+    /** ARCreeper */
+    transient float creeper = 0f;
 
     public boolean checkTarget(boolean targetAir, boolean targetGround){
         return (isGrounded() && targetGround) || (isFlying() && targetAir);
@@ -303,6 +307,7 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
             case selectedRotation -> controller instanceof Player p ? p.selectedRotation : 0;
             case pingX -> controller instanceof Player p && p.isPinging() ? World.conv(p.pingX) : Float.NaN;
             case pingY -> controller instanceof Player p && p.isPinging() ? World.conv(p.pingY) : Float.NaN;
+            case creeper -> creeper;
             default -> Float.NaN;
         };
     }
@@ -375,6 +380,7 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
             case flag -> flag = value;
             case speed -> statusSpeed(Mathf.clamp((float)value, 0f, 1000f));
             case armor -> statusArmor(Math.max((float)value, 0f));
+            case creeper -> creeper = (float) value;
         }
     }
 
@@ -877,6 +883,8 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
             type.deathExplosionEffect.at(x, y, bounds() / 2f / 8f);
         }
 
+        dropCreeperOnDeath();
+
         float shake = type.deathShake < 0 ? 3f + hitSize / 3f : type.deathShake;
 
         if(type.createScorch){
@@ -987,4 +995,16 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
     public String toString(){
         return "Unit#" + id() + ":" + type + " (" + x + ", " + y + ")";
     }
+
+
+    public void dropCreeperOnDeath(){
+        //if(net.client() || !CreeperCore.enabled() || creeper == 0f) return;
+        if(!CreeperCore.enabled() || creeper == 0f) return;
+
+        Tile tile = world.tileWorld(x, y);
+        if(tile == null) return;
+
+        CreeperCore.creeperTile.add(tile, creeper);
+    }
+
 }

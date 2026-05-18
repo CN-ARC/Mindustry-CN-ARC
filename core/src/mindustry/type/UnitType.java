@@ -19,6 +19,7 @@ import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.NumberFormat;
 import mindustry.arcModule.draw.ARCUnits;
+import mindustry.arcreeper.CreeperCore;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -812,6 +813,9 @@ public class UnitType extends UnlockableContent implements Senseable{
                 bars.add(new Bar(ammoType.icon() + " " + Core.bundle.get("stat.ammo"), ammoType.barColor(), () -> unit.ammo / ammoCapacity));
                 bars.row();
             }
+
+            bars.add(new Bar(Items.sporePod.emoji() + " " + NumberFormat.autoFixed(unit.creeper), CreeperCore.getCreeperColor(unit.creeper), () -> Math.abs(unit.creeper) / unit.maxHealth));
+            bars.row();
 
             for(Ability ability : unit.abilities){
                 ability.displayBars(unit, bars);

@@ -1,6 +1,7 @@
 package mindustry.arcreeper;
 
 import arc.Events;
+import arc.graphics.Color;
 import arc.util.Log;
 import mindustry.Vars;
 import mindustry.game.EventType;
@@ -94,6 +95,10 @@ public final class CreeperCore {
         if(!enabled) return;
         creeperTile.draw();
         SporeCore.draw();
+    }
+
+    public static Color getCreeperColor(float creeper){
+        return creeper>0? Vars.state.rules.creeperColor: Vars.state.rules.antiCreeperColor;
     }
 
 }
