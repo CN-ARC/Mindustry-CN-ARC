@@ -165,7 +165,7 @@ public class LogicDialog extends BaseDialog{
         varTable.row();
             varTable.pane(t->{
                 if(executor==null) return;
-                for(var s : executor.vars){
+                for(var s : displayedVars()){
                     if(s.name.startsWith("___")) continue;
                     String text = arcVarsText(s);
                     t.table(tt->{
@@ -226,6 +226,37 @@ public class LogicDialog extends BaseDialog{
 
                 }).padTop(10f).row();
             }).width(400f).padLeft(20f);
+    }
+
+    private Iterable<LVar> displayedVars(){
+        ArrayList<LVar> out = new ArrayList<>();
+        HashSet<String> seen = new HashSet<>();
+
+        if(executor == null) return out;
+
+        // 补回 logic link 常量变量
+        if(executor.build != null){
+            for(var link : executor.build.links){
+                Building build = world.build(link.x, link.y);
+                if(!executor.build.validLink(build)) continue;
+
+                LVar v = new LVar(link.name);
+                v.setconst(build);
+
+                if(seen.add(v.name)){
+                    out.add(v);
+                }
+            }
+        }
+
+        // 原本的非 constant runtime vars
+        for(var v : executor.vars){
+            if(seen.add(v.name)){
+                out.add(v);
+            }
+        }
+
+        return out;
     }
 
     public static String arcVarsText(LVar s){
