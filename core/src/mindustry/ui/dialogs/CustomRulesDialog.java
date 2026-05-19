@@ -30,6 +30,8 @@ import mindustry.world.*;
 import static arc.Core.*;
 import static arc.util.Time.*;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.getThemeColor;
+import static mindustry.arcModule.ARCVars.getThemeColorCode;
 
 public class CustomRulesDialog extends BaseDialog{
     Rules rules;
@@ -233,7 +235,7 @@ public class CustomRulesDialog extends BaseDialog{
         main.left().defaults().fillX().left();
         main.row();
 
-        category("waves");
+        category("波次");
         check("@rules.waves", b -> rules.waves = b, () -> rules.waves);
         check("@rules.wavetimer", b -> rules.waveTimer = b, () -> rules.waveTimer, () -> rules.waves);
         check("@rules.wavesending", b -> rules.waveSending = b, () -> rules.waveSending, () -> rules.waves);
@@ -248,7 +250,7 @@ public class CustomRulesDialog extends BaseDialog{
         number("@rules.initialwavespacing", false, f -> rules.initialWaveSpacing = f * 60f, () -> rules.initialWaveSpacing / 60f, () -> rules.waves && rules.waveTimer, 0, Float.MAX_VALUE);
         number("@rules.dropzoneradius", false, f -> rules.dropZoneRadius = f * tilesize, () -> rules.dropZoneRadius / tilesize, () -> rules.waves);
 
-        category("resourcesbuilding");
+        category("资源建筑");
         check("@rules.alloweditworldprocessors", b -> rules.allowEditWorldProcessors = b, () -> rules.allowEditWorldProcessors);
         check("@rules.infiniteresources", b -> rules.infiniteResources = b, () -> rules.infiniteResources);
         check("@rules.onlydepositcore", b -> rules.onlyDepositCore = b, () -> rules.onlyDepositCore);
@@ -275,15 +277,12 @@ public class CustomRulesDialog extends BaseDialog{
             )).left().width(300f).row();
         }
 
-        if(Core.bundle.get("bannedblocks").toLowerCase().contains(ruleSearch)){
-            current.button("@bannedblocks", () -> bannedBlocks.show(rules.bannedBlocks)).left().width(300f).row();
-        }
-        main.button("@bannedblocks", () -> showBanned("@bannedblocks", ContentType.block, rules.bannedBlocks, Block::canBeBuilt)).left().width(300f).row();
-        main.button("@revealedblocks", () -> showBanned("@revealedblocks", ContentType.block, rules.revealedBlocks, b -> b.showUnlock() && (!b.isVanilla() || b.hasEmoji()))).left().width(300f).row();
+        current.button("@bannedblocks", () -> showBanned("@bannedblocks", ContentType.block, rules.bannedBlocks, Block::canBeBuilt)).left().width(300f).row();
+        current.button("@revealedblocks", () -> showBanned("@revealedblocks", ContentType.block, rules.revealedBlocks, b -> b.showUnlock() && (!b.isVanilla() || b.hasEmoji()))).left().width(300f).row();
         check("@rules.hidebannedblocks", b -> rules.hideBannedBlocks = b, () -> rules.hideBannedBlocks);
         check("@bannedblocks.whitelist", b -> rules.blockWhitelist = b, () -> rules.blockWhitelist);
 
-        category("unit");
+        category("单位");
         check("@rules.unitcapvariable", b -> rules.unitCapVariable = b, () -> rules.unitCapVariable);
         check("@rules.unitpayloadsexplode", b -> rules.unitPayloadsExplode = b, () -> rules.unitPayloadsExplode);
         numberi("@rules.unitcap", f -> rules.unitCap = f, () -> rules.unitCap, -999, 999);
@@ -301,7 +300,7 @@ public class CustomRulesDialog extends BaseDialog{
         }
         check("@bannedunits.whitelist", b -> rules.unitWhitelist = b, () -> rules.unitWhitelist);
 
-        category("enemy");
+        category("敌人");
         check("@rules.attack", b -> rules.attackMode = b, () -> rules.attackMode);
         check("@rules.corecapture", b -> rules.coreCapture = b, () -> rules.coreCapture);
         check("@rules.placerangecheck", b -> rules.placeRangeCheck = b, () -> rules.placeRangeCheck);
@@ -309,7 +308,7 @@ public class CustomRulesDialog extends BaseDialog{
         number("@rules.enemycorebuildradius", f -> rules.enemyCoreBuildRadius = f * tilesize, () -> Math.min(rules.enemyCoreBuildRadius / tilesize, 200), () -> !rules.polygonCoreProtection);
 
 
-        category("environment");
+        category("环境");
         check("@rules.pauseDisabled", b -> rules.pauseDisabled = b, () -> rules.pauseDisabled);
         check("@rules.explosions", b -> rules.damageExplosions = b, () -> rules.damageExplosions);
         check("@rules.fire", b -> rules.fire = b, () -> rules.fire);
@@ -368,7 +367,7 @@ public class CustomRulesDialog extends BaseDialog{
             current.button("@rules.weather", this::weatherDialog).width(250f).left().row();
         }
 
-        title("@rules.title.arcExperimental");
+        category("学术测试功能");
         check("@rules.logicUnitBuild", b -> rules.logicUnitBuild = b, () -> rules.logicUnitBuild);
         check("@rules.coreDestroyClear",b->rules.coreDestroyClear = b,()->rules.coreDestroyClear);
         check("@rules.unitPayloadUpdate",b->rules.unitPayloadUpdate = b,()->rules.unitPayloadUpdate);
@@ -384,9 +383,7 @@ public class CustomRulesDialog extends BaseDialog{
         numberi("h", h -> state.rules.limitHeight = h, () -> state.rules.limitHeight, () -> state.rules.limitMapArea, 0, 10000);
         check("@rules.disableOutsideArea",b -> rules.disableOutsideArea = b, () -> rules.disableOutsideArea);
 
-        title("@rules.title.planet");
-
-        category("planet");
+        category("星球");
         if(Core.bundle.get("rules.title.planet").toLowerCase().contains(ruleSearch)){
             current.table(Tex.button, t -> {
                 t.margin(10f);
@@ -411,20 +408,18 @@ public class CustomRulesDialog extends BaseDialog{
                 }).group(group).checked(b -> rules.planet == Planets.sun);
             }).left().fill(false).expand(false, false).row();
         }
-
-
-        category("teams");
+        category("队伍");
         //not sure where else to put this
         if(showRuleEditRule){
             check("@rules.allowedit", b -> rules.allowEditRules = b, () -> rules.allowEditRules);
         }
-        main.button("所有队伍开启无限火力", () -> {
+        current.button("所有队伍开启无限火力", () -> {
             for(Team team : Team.all){
                 team.rules().cheat = true;
             }
             setup();
         }).width(256f).height(32f).row();
-        main.button("所有队伍关闭无限火力", () -> {
+        current.button("所有队伍关闭无限火力", () -> {
             for(Team team : Team.all){
                 team.rules().cheat = false;
             }
@@ -434,7 +429,7 @@ public class CustomRulesDialog extends BaseDialog{
         team("@rules.playerteam", t -> rules.defaultTeam = t, () -> rules.defaultTeam);
         team("@rules.enemyteam", t -> rules.waveTeam = t, () -> rules.waveTeam);
 
-        main.button("更多队伍设置", Styles.flatBordert, () -> {
+        current.button("更多队伍设置", Styles.flatBordert, () -> {
             new TeamSelectDialog(team -> {
                 if(teams.contains(team)) teams.remove(team);
                 else teams.add(team);
@@ -500,20 +495,13 @@ public class CustomRulesDialog extends BaseDialog{
             }, () -> shown[0]).growX().row();
         }
 
-
-        additionalSetup.each(Runnable::run);
-
-        for(var i = 0; i < categories.size; i++){
-            addToMain(categories.get(i), Core.bundle.get("rules.title." + categoryNames.get(i)));
-        }
-
-        title("地图背景[lightgray]需要设置空地板");
+        category("地图背景[lightgray]需要设置空地板");
         check("自定义背景", t -> {
             rules.planetBackground = t ? new PlanetParams(){{planet = Planets.sun;zoom=1f;camPos = new Vec3(1.2388899f, 1.6047299f, 2.4758825f);}} : null;
             setup();
         }, () -> rules.planetBackground != null);
         if (rules.planetBackground != null){
-            main.table(Tex.button, t -> {
+            current.table(Tex.button, t -> {
                 t.margin(10f);
                 var group = new ButtonGroup<>();
                 var style = Styles.flatTogglet;
@@ -532,6 +520,12 @@ public class CustomRulesDialog extends BaseDialog{
             number("位置y", f -> rules.planetBackground.camPos.y = f, () -> rules.planetBackground.camPos.y);
             number("位置z", f -> rules.planetBackground.camPos.z = f, () -> rules.planetBackground.camPos.z);
         }
+
+        additionalSetup.each(Runnable::run);
+
+        for(var i = 0; i < categories.size; i++){
+            addToMain(categories.get(i), categoryNames.get(i));
+        }
     }
 
     public void category(String name){
@@ -544,8 +538,8 @@ public class CustomRulesDialog extends BaseDialog{
 
     void addToMain(Table category, String title){
         if(category.hasChildren()){
-            main.add(title).color(Pal.accent).padTop(20).padRight(100f).padBottom(-3).fillX().left().pad(5).row();
-            main.image().color(Pal.accent).height(3f).padRight(100f).padBottom(20).fillX().left().pad(5).row();
+            main.add(title).color(getThemeColor()).padTop(20).padRight(100f).padBottom(-3).fillX().left().pad(5).row();
+            main.image().color(getThemeColor()).height(3f).padRight(100f).padBottom(20).fillX().left().pad(5).row();
             main.add(category).row();
         }
     }
