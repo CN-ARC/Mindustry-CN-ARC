@@ -54,6 +54,8 @@ public class ARCVars implements Loadable {
 
     public static final String FAKEMODNAME = "ARCreeper-Client:1";
 
+    public static ARCBackup arcBackup = new ARCBackup();
+
     public static void init(){
         if(!Vars.headless) {
             Events.run(EventType.Trigger.update, () -> {
@@ -66,6 +68,8 @@ public class ARCVars implements Loadable {
                 quickBelt = settings.getBool("quickBelt");
             });
             ARCVars.replayController = new ReplayController();
+
+            arcBackup.init();
         }
 
         ARCVars.creeperCore = new CreeperCore();

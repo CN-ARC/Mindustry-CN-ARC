@@ -714,6 +714,15 @@ public class SettingsMenuDialog extends BaseDialog{
         arc.checkPref("alwaysShowUnitRTSAi", false);
         arc.sliderPref("rtsWoundUnit", 0, 0, 100, 2, s -> s + "%");
 
+        arc.addCategory("arcBackup");
+        arc.sliderPref("arcSaveMode", settings.getInt("arcSaveMode",0), 0, 2, 1, s -> switch (s) {
+            case 0 -> "关闭";
+            case 1 -> "仅本地";
+            default -> "本地与服务器";
+        });
+        arc.sliderPref("arcBackupSlot", 0, 0, 10, 1, s -> s + "");
+        arc.sliderPref("arcBackupInterval", 30, 30, 900, 30, s -> s + "s");
+
         arc.addCategory("arcShareinfo");
         arc.checkPref("arcPlayerList", true);
         arc.checkPref("ShowInfoPopup", true);
