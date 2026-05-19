@@ -49,6 +49,8 @@ public class ARCVars implements Loadable {
     public static String arcFolderName = "arcCustom";
     public static String arcCustomBackgroundName = "background";
 
+    public static ARCBackup arcBackup = new ARCBackup();
+
     static {
         // 减少性能开销
         Events.run(EventType.Trigger.update, () -> {
@@ -60,6 +62,8 @@ public class ARCVars implements Loadable {
 
             quickBelt = settings.getBool("quickBelt");
         });
+
+        arcBackup.init();
     }
 
     public static int getMaxSchematicSize(){
