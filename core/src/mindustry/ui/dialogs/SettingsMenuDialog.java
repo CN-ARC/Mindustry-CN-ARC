@@ -470,18 +470,17 @@ public class SettingsMenuDialog extends BaseDialog{
             }
         });
 
-            graphics.addCategory("arcCOverview");
+        graphics.addCategory("arcCOverview");
 
-            graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> (s > 240 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s)));
-            int[] lastUiScale = {settings.getInt("uiscale", 100)};
+        graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> (s > 240 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s)));
+        int[] lastUiScale = {settings.getInt("uiscale", 100)};
 
-            graphics.sliderPref("uiscale", 100, 25, 300, 5, s -> {
-                //if the user changed their UI scale, but then put it back, don't consider it 'changed'
-                Core.settings.put("uiscalechanged", s != lastUiScale[0]);
-                return s + "%";
-            });
+        graphics.sliderPref("uiscale", 100, 25, 300, 5, s -> {
+            //if the user changed their UI scale, but then put it back, don't consider it 'changed'
+            Core.settings.put("uiscalechanged", s != lastUiScale[0]);
+            return s + "%";
+        });
 
-            graphics.sliderPref("chatopacity", 100, 0, 100, 5, s -> s + "%");
         graphics.sliderPref("screenshake", 4, 0, 8, i -> (i / 4f) + "x");
 
         graphics.sliderPref("bloomintensity", 6, 0, 16, i -> (int)(i/4f * 100f) + "%");
@@ -498,17 +497,6 @@ public class SettingsMenuDialog extends BaseDialog{
             int value = Core.settings.getInt("fpscap", 240);
             Core.graphics.setPreferredFPS(value > 240 ? 0 : value);
         }
-
-        graphics.sliderPref("chatopacity", 100, 0, 100, 5, s -> s + "%");
-        graphics.sliderPref("lasersopacity", 100, 0, 100, 5, s -> {
-            if(ui.settings != null){
-                Core.settings.put("preferredlaseropacity", s);
-            }
-            return s + "%";
-        });
-
-        graphics.sliderPref("unitlaseropacity", 100, 0, 100, 5, s -> s + "%");
-        graphics.sliderPref("bridgeopacity", 100, 0, 100, 5, s -> s + "%");
 
         graphics.sliderPref("maxmagnificationmultiplierpercent", 100, 100, 200, 25, s -> {
             if(ui.settings != null){
@@ -547,16 +535,15 @@ public class SettingsMenuDialog extends BaseDialog{
             }
         }
 
-            graphics.addCategory("arcCgamewindow");
-            graphics.checkPref("fps", false);
-            graphics.checkPref("override_boss_shown", false);
+        graphics.addCategory("arcCgamewindow");
+        graphics.checkPref("fps", false);
+        graphics.checkPref("override_boss_shown", false);
 
-            graphics.checkPref("displayselection", true);
+        graphics.checkPref("displayselection", true);
         graphics.checkPref("effects", true);
         graphics.checkPref("atmosphere", true);
         graphics.checkPref("drawlight", true);
         graphics.checkPref("destroyedblocks", true);
-        graphics.checkPref("blockstatus", false);
         graphics.checkPref("playerchat", true);
         if(!mobile){
             graphics.checkPref("coreitems", true);
@@ -570,251 +557,252 @@ public class SettingsMenuDialog extends BaseDialog{
 
         graphics.checkPref("showpings", true);
         graphics.checkPref("showotherbuildplans", true);
-            graphics.checkPref("mouseposition", false);
-            graphics.sliderPref("chatopacity", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
+        graphics.checkPref("mouseposition", false);
+        graphics.sliderPref("chatopacity", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
 
-            graphics.addCategory("arcCgameview");
-            graphics.checkPref("blockstatus", false);
-            graphics.checkPref("playerchat", true);
-            graphics.checkPref("alwaysshowdropzone", false);
-            graphics.checkPref("showFlyerSpawn", false);
-            graphics.checkPref("showFlyerSpawnLine", false);
-            graphics.sliderPref("lasersopacity", 100, 0, 100, 5, s -> {
-                if (ui.settings != null) {
-                    Core.settings.put("preferredlaseropacity", s);
-                }
-                return s + "%";
-            });
-            graphics.sliderPref("bridgeopacity", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
-            graphics.sliderPref("HiddleItemTransparency", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
-            graphics.checkPref("playerindicators", true);
-            graphics.checkPref("indicators", true);
-
-            graphics.addCategory("arcCGraphicsOther");
-            graphics.checkPref("smoothcamera", true);
-            graphics.sliderPref("screenshake", 4, 0, 8, i -> (i / 4f) + "x");
-            graphics.checkPref("skipcoreanimation", false);
-            if (!mobile) {
-                Core.settings.put("swapdiagonal", false);
+        graphics.addCategory("arcCgameview");
+        graphics.checkPref("blockstatus", false);
+        graphics.checkPref("playerchat", true);
+        graphics.checkPref("alwaysshowdropzone", false);
+        graphics.checkPref("showFlyerSpawn", false);
+        graphics.checkPref("showFlyerSpawnLine", false);
+        graphics.sliderPref("lasersopacity", 100, 0, 100, 5, s -> {
+            if (ui.settings != null) {
+                Core.settings.put("preferredlaseropacity", s);
             }
+            return s + "%";
+        });
+        graphics.sliderPref("unitlaseropacity", 100, 0, 100, 5, s -> s + "%");
+        graphics.sliderPref("bridgeopacity", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
+        graphics.sliderPref("HiddleItemTransparency", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
+        graphics.checkPref("playerindicators", true);
+        graphics.checkPref("indicators", true);
 
-            arc.addCategory("arcHudToolbox");
-            arc.sliderPref("AuxiliaryTable", 0, 0, 3, 1, s -> {
-                if (s == 0) {
-                    return "关闭";
-                } else if (s == 1) {
-                    return "左上-右";
-                } else if (s == 2) {
-                    return "左上-下";
-                } else if (s == 3) {
-                    return "右上-下";
-                } else {
-                    return "";
-                }
-            });
-            arc.checkPref("showAdvanceToolTable", false);
-            arc.checkPref("arcSpecificTable", true);
-            arc.checkPref("logicSupport", true);
-            arc.checkPref("powerStatistic", true);
-            arc.sliderPref("arccoreitems", 3, 0, 3, 1, s -> {
-                if (s == 0) {
-                    return "不显示";
-                } else if (s == 1) {
-                    return "资源状态";
-                } else if (s == 2) {
-                    return "兵种状态";
-                } else {
-                    return "显示资源和兵种";
-                }
-            });
-            arc.sliderPref("statisticsInterval", 0, 0, 120, 10, s -> {
-                if (s == 0) {
-                    return "不统计";
-                } else {
-                    return "每 " + s + " s";
-                }
-            });
-            arc.sliderPref("arcCoreItemsCol", 5, 4, 15, 1, i -> i + "列");
-            arc.checkPref("showQuickToolTable", settings.getBool("showFloatingSettings"));
-            arc.sliderPref("quickHudSize", 0, 0, 10, 1, i -> i + "");
-            arc.sliderPref("arcDetailInfo", 1, 0, 1, 1, s -> {
-                if (s == 0) {
-                    return "详细模式";
-                } else if (s == 1) {
-                    return "简略模式";
-                } else {
-                    return s + "";
-                }
-            });
-            arc.checkPref("hoveredTileInfo", false);
+        graphics.addCategory("arcCGraphicsOther");
+        graphics.checkPref("smoothcamera", true);
+        graphics.sliderPref("screenshake", 4, 0, 8, i -> (i / 4f) + "x");
+        graphics.checkPref("skipcoreanimation", false);
+        if (!mobile) {
+            Core.settings.put("swapdiagonal", false);
+        }
 
-            arc.addCategory("arcAddBlockInfo");
-            arc.sliderPref("overdrive_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
-            arc.sliderPref("mend_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
-            arc.checkPref("blockdisabled", false);
-            arc.checkPref("blockBars", false);
-            arc.sliderPref("blockbarminhealth", 0, 0, 4000, 50, i -> i + "[red]HP");
-            arc.checkPref("blockBars_mend", false);
-            arc.checkPref("arcdrillmode", false);
-            arc.checkPref("arcDrillProgress", false);
-            arc.checkPref("arcchoiceuiIcon", false);
-            arc.checkPref("hidedisplays", false);
-            arc.checkPref("arcPlacementEffect", false);
+        arc.addCategory("arcHudToolbox");
+        arc.sliderPref("AuxiliaryTable", 0, 0, 3, 1, s -> {
+            if (s == 0) {
+                return "关闭";
+            } else if (s == 1) {
+                return "左上-右";
+            } else if (s == 2) {
+                return "左上-下";
+            } else if (s == 3) {
+                return "右上-下";
+            } else {
+                return "";
+            }
+        });
+        arc.checkPref("showAdvanceToolTable", false);
+        arc.checkPref("arcSpecificTable", true);
+        arc.checkPref("logicSupport", true);
+        arc.checkPref("powerStatistic", true);
+        arc.sliderPref("arccoreitems", 3, 0, 3, 1, s -> {
+            if (s == 0) {
+                return "不显示";
+            } else if (s == 1) {
+                return "资源状态";
+            } else if (s == 2) {
+                return "兵种状态";
+            } else {
+                return "显示资源和兵种";
+            }
+        });
+        arc.sliderPref("statisticsInterval", 0, 0, 120, 10, s -> {
+            if (s == 0) {
+                return "不统计";
+            } else {
+                return "每 " + s + " s";
+            }
+        });
+        arc.sliderPref("arcCoreItemsCol", 5, 4, 15, 1, i -> i + "列");
+        arc.checkPref("showQuickToolTable", settings.getBool("showFloatingSettings"));
+        arc.sliderPref("quickHudSize", 0, 0, 10, 1, i -> i + "");
+        arc.sliderPref("arcDetailInfo", 1, 0, 1, 1, s -> {
+            if (s == 0) {
+                return "详细模式";
+            } else if (s == 1) {
+                return "简略模式";
+            } else {
+                return s + "";
+            }
+        });
+        arc.checkPref("hoveredTileInfo", false);
 
-            arc.addCategory("arcMassDriverInfo");
-            arc.sliderPref("msLineAlpha", settings.getInt("mass_driver_line_alpha", 0), 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
-            arc.checkPref("msShootingDraw", false);
-            arc.sliderPref("msLineInterval", settings.getInt("mass_driver_line_interval", 40), 8, 400, 8, i -> i / 8f + "格");
-            arc.stringInput("msLineColor", settings.getString("mass_driver_line_color", "ff8c66"));
+        arc.addCategory("arcAddBlockInfo");
+        arc.sliderPref("overdrive_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
+        arc.sliderPref("mend_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
+        arc.checkPref("blockdisabled", false);
+        arc.checkPref("blockBars", false);
+        arc.sliderPref("blockbarminhealth", 0, 0, 4000, 50, i -> i + "[red]HP");
+        arc.checkPref("blockBars_mend", false);
+        arc.checkPref("arcdrillmode", false);
+        arc.checkPref("arcDrillProgress", false);
+        arc.checkPref("arcchoiceuiIcon", false);
+        arc.checkPref("hidedisplays", false);
+        arc.checkPref("arcPlacementEffect", false);
 
-            arc.addCategory("arcAddTurretInfo");
-            arc.checkPref("showTurretAmmo", false);
-            arc.checkPref("showTurretAmmoAmount", false);
-            arc.checkPref("arcTurretPlacementItem", false);
-            arc.checkPref("arcTurretPlaceCheck", false);
-            arc.sliderPref("turretShowRange", 0, 0, 3, 1, s -> {
-                if (s == 0) {
-                    return "关闭";
-                } else if (s == 1) {
-                    return "仅对地";
-                } else if (s == 2) {
-                    return "仅对空";
-                } else if (s == 3) {
-                    return "全部";
-                } else {
-                    return "";
-                }
-            });
-            arc.checkPref("turretForceShowRange", false);
-            arc.sliderPref("turretAlertRange", 0, 0, 30, 1, i -> i > 0 ? i + "格" : "关闭");
-            arc.checkPref("blockWeaponTargetLine", false);
-            arc.checkPref("blockWeaponTargetLineWhenIdle", false);
+        arc.addCategory("arcMassDriverInfo");
+        arc.sliderPref("msLineAlpha", settings.getInt("mass_driver_line_alpha", 0), 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
+        arc.checkPref("msShootingDraw", false);
+        arc.sliderPref("msLineInterval", settings.getInt("mass_driver_line_interval", 40), 8, 400, 8, i -> i / 8f + "格");
+        arc.stringInput("msLineColor", settings.getString("mass_driver_line_color", "ff8c66"));
 
-            arc.addCategory("arcAddUnitInfo");
-            arc.checkPref("alwaysShowPlayerUnit", false);
+        arc.addCategory("arcAddTurretInfo");
+        arc.checkPref("showTurretAmmo", false);
+        arc.checkPref("showTurretAmmoAmount", false);
+        arc.checkPref("arcTurretPlacementItem", false);
+        arc.checkPref("arcTurretPlaceCheck", false);
+        arc.sliderPref("turretShowRange", 0, 0, 3, 1, s -> {
+            if (s == 0) {
+                return "关闭";
+            } else if (s == 1) {
+                return "仅对地";
+            } else if (s == 2) {
+                return "仅对空";
+            } else if (s == 3) {
+                return "全部";
+            } else {
+                return "";
+            }
+        });
+        arc.checkPref("turretForceShowRange", false);
+        arc.sliderPref("turretAlertRange", 0, 0, 30, 1, i -> i > 0 ? i + "格" : "关闭");
+        arc.checkPref("blockWeaponTargetLine", false);
+        arc.checkPref("blockWeaponTargetLineWhenIdle", false);
 
-            arc.sliderPref("unitTransparency", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
-            arc.sliderPref("unitDrawMinHealth", settings.getInt("minhealth_unitshown",0), 0, 2500, 50, i -> i + "[red]HP");
+        arc.addCategory("arcAddUnitInfo");
+        arc.checkPref("alwaysShowPlayerUnit", false);
 
-            arc.checkPref("unitHealthBar", false);
-            arc.sliderPref("unitBarDrawMinHealth", settings.getInt("minhealth_unithealthbarshown",0), 0, 2500, 100, i -> i + "[red]HP");
+        arc.sliderPref("unitTransparency", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
+        arc.sliderPref("unitDrawMinHealth", settings.getInt("minhealth_unitshown",0), 0, 2500, 50, i -> i + "[red]HP");
+
+        arc.checkPref("unitHealthBar", false);
+        arc.sliderPref("unitBarDrawMinHealth", settings.getInt("minhealth_unithealthbarshown",0), 0, 2500, 100, i -> i + "[red]HP");
 
 
-            arc.sliderPref("unitWeaponRange", settings.getInt("unitAlertRange",0), 0, 30, 1, s -> {
-                if (s == 0) {
-                    return "关闭";
-                } else if (s == 30) {
-                    return "一直开启";
-                } else {
-                    return s + "格";
-                }
-            });
-            arc.sliderPref("unitWeaponRangeAlpha", settings.getInt("unitweapon_range",0), 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
+        arc.sliderPref("unitWeaponRange", settings.getInt("unitAlertRange",0), 0, 30, 1, s -> {
+            if (s == 0) {
+                return "关闭";
+            } else if (s == 30) {
+                return "一直开启";
+            } else {
+                return s + "格";
+            }
+        });
+        arc.sliderPref("unitWeaponRangeAlpha", settings.getInt("unitweapon_range",0), 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
 
-            arc.checkPref("unitWeaponTargetLine", false);
-            arc.checkPref("showminebeam", true);
-            arc.checkPref("unitItemCarried", false);
-            arc.checkPref("unithitbox", false);
-            arc.checkPref("unitLogicMoveLine", false);
-            arc.checkPref("unitLogicTimerBars", false);
-            arc.checkPref("arcBuildInfo",false);
-            arc.checkPref("unitbuildplan", false);
-            arc.checkPref("payloadpreview", false);
+        arc.checkPref("unitWeaponTargetLine", false);
+        arc.checkPref("showminebeam", true);
+        arc.checkPref("unitItemCarried", false);
+        arc.checkPref("unithitbox", false);
+        arc.checkPref("unitLogicMoveLine", false);
+        arc.checkPref("unitLogicTimerBars", false);
+        arc.checkPref("arcBuildInfo",false);
+        arc.checkPref("unitbuildplan", false);
+        arc.checkPref("payloadpreview", false);
 
-            arc.addCategory("arcRTSSupporter");
-            arc.checkPref("arcCommandTable", true);
-            arc.checkPref("alwaysShowUnitRTSAi", false);
-            arc.sliderPref("rtsWoundUnit", 0, 0, 100, 2, s -> s + "%");
+        arc.addCategory("arcRTSSupporter");
+        arc.checkPref("arcCommandTable", true);
+        arc.checkPref("alwaysShowUnitRTSAi", false);
+        arc.sliderPref("rtsWoundUnit", 0, 0, 100, 2, s -> s + "%");
 
-            arc.addCategory("arcShareinfo");
-            arc.checkPref("arcPlayerList", true);
-            arc.checkPref("ShowInfoPopup", true);
-            arc.checkPref("arcShareWaveInfo", false);
-            arc.checkPref("arcAlwaysTeamColor", false);
-            arc.checkPref("arcSelfName", false);
-            arc.stringInput("arcDisablePacket", "^(.*\\.)?mindustry\\.top(:.*)?$");
+        arc.addCategory("arcShareinfo");
+        arc.checkPref("arcPlayerList", true);
+        arc.checkPref("ShowInfoPopup", true);
+        arc.checkPref("arcShareWaveInfo", false);
+        arc.checkPref("arcAlwaysTeamColor", false);
+        arc.checkPref("arcSelfName", false);
+        arc.stringInput("arcDisablePacket", "^(.*\\.)?mindustry\\.top(:.*)?$");
 
-            arc.addCategory("arcPlayerEffect");
-            arc.stringInput("playerEffectColor", "ffd37f");
-            arc.sliderPref("unitTargetType", 0, 0, 5, 1, s -> {
-                if (s == 0) {
-                    return "关闭";
-                } else if (s == 1) {
-                    return "虚圆";
-                } else if (s == 2) {
-                    return "攻击";
-                } else if (s == 3) {
-                    return "攻击去边框";
-                } else if (s == 4) {
-                    return "圆十字";
-                } else if (s == 5) {
-                    return "十字";
-                } else {
-                    return s + "";
-                }
-            });
-            arc.sliderPref("superUnitEffect", 0, 0, 2, 1, s -> {
-                if (s == 0) {
-                    return "关闭";
-                } else if (s == 1) {
-                    return "独一无二";
-                } else if (s == 2) {
-                    return "全部玩家";
-                } else {
-                    return s + "";
-                }
-            });
-            arc.sliderPref("playerEffectCurStroke", 0, 1, 30, 1, i -> (float) i / 10f + "Pixel(s)");
+        arc.addCategory("arcPlayerEffect");
+        arc.stringInput("playerEffectColor", "ffd37f");
+        arc.sliderPref("unitTargetType", 0, 0, 5, 1, s -> {
+            if (s == 0) {
+                return "关闭";
+            } else if (s == 1) {
+                return "虚圆";
+            } else if (s == 2) {
+                return "攻击";
+            } else if (s == 3) {
+                return "攻击去边框";
+            } else if (s == 4) {
+                return "圆十字";
+            } else if (s == 5) {
+                return "十字";
+            } else {
+                return s + "";
+            }
+        });
+        arc.sliderPref("superUnitEffect", 0, 0, 2, 1, s -> {
+            if (s == 0) {
+                return "关闭";
+            } else if (s == 1) {
+                return "独一无二";
+            } else if (s == 2) {
+                return "全部玩家";
+            } else {
+                return s + "";
+            }
+        });
+        arc.sliderPref("playerEffectCurStroke", 0, 1, 30, 1, i -> (float) i / 10f + "Pixel(s)");
 
-            arc.addCategoryS("雷达扫描设置 [lightgray](PC按键，手机辅助器)");
-            arc.sliderPref("radarMode", 0, 0, 30, 1, s -> {
-                if (s == 0) return "关闭";
-                else if (s == 30) return "一键开关";
-                else {
-                    return "[lightgray]x[white]" + Strings.autoFixed(s * 0.2f, 1) + "倍搜索";
-                }
-            });
-            arc.sliderPref("radarSize", 0, 0, 50, 1, s -> {
-                if (s == 0) return "固定大小";
-                else {
-                    return "[lightgray]x[white]" + Strings.autoFixed(s * 0.1f, 1) + "倍";
-                }
-            });
+        arc.addCategoryS("雷达扫描设置 [lightgray](PC按键，手机辅助器)");
+        arc.sliderPref("radarMode", 0, 0, 30, 1, s -> {
+            if (s == 0) return "关闭";
+            else if (s == 30) return "一键开关";
+            else {
+                return "[lightgray]x[white]" + Strings.autoFixed(s * 0.2f, 1) + "倍搜索";
+            }
+        });
+        arc.sliderPref("radarSize", 0, 0, 50, 1, s -> {
+            if (s == 0) return "固定大小";
+            else {
+                return "[lightgray]x[white]" + Strings.autoFixed(s * 0.1f, 1) + "倍";
+            }
+        });
 
-            arc.addCategory("developerMode");
-            arc.checkPref("arcDisableModWarning", false);
-            arc.sliderPref("menuFlyersCount", 0, -15, 50, 5, i -> i + "");
-            arc.checkPref("menuFlyersRange", false);
-            arc.checkPref("menuFlyersFollower", false);
-            arc.checkPref("menuFloatText", true);
-            arc.checkPref("showUpdateDialog", true);
-            arc.checkPref("arcInfSchem", false);
+        arc.addCategory("developerMode");
+        arc.checkPref("arcDisableModWarning", false);
+        arc.sliderPref("menuFlyersCount", 0, -15, 50, 5, i -> i + "");
+        arc.checkPref("menuFlyersRange", false);
+        arc.checkPref("menuFlyersFollower", false);
+        arc.checkPref("menuFloatText", true);
+        arc.checkPref("showUpdateDialog", true);
+        arc.checkPref("arcInfSchem", false);
 
-            //////////forcehide
-            forcehide.addCategory("arcCDisplayBlock");
-            forcehide.sliderPref("blockRenderLevel", 2, 0, 2, 1, s -> {
-                if (s == 0) {
-                    return "隐藏全部建筑";
-                } else if (s == 1) {
-                    return "只显示建筑状态";
-                } else if (s == 2) {
-                    return "全部显示";
-                } else {
-                    return s + "";
-                }
-            });
-            forcehide.checkPref("displayblock", true);
-            forcehide.addCategory("arcCDisplayEffect");
-            forcehide.checkPref("bulletShow", true);
-            forcehide.checkPref("drawlight", true);
-            forcehide.checkPref("effects", true);
-            forcehide.checkPref("bloom", true, val -> renderer.toggleBloom(val));
-            forcehide.sliderPref("bloomintensity", 6, 0, 16, i -> (int) (i / 4f * 100f) + "%");
-            forcehide.sliderPref("bloomblur", 2, 1, 16, i -> i + "x");
-            forcehide.checkPref("forceEnableDarkness", true);
-            forcehide.checkPref("destroyedblocks", true);
-            forcehide.checkPref("showweather", true);
-            forcehide.checkPref("animatedwater", true);
+        //////////forcehide
+        forcehide.addCategory("arcCDisplayBlock");
+        forcehide.sliderPref("blockRenderLevel", 2, 0, 2, 1, s -> {
+            if (s == 0) {
+                return "隐藏全部建筑";
+            } else if (s == 1) {
+                return "只显示建筑状态";
+            } else if (s == 2) {
+                return "全部显示";
+            } else {
+                return s + "";
+            }
+        });
+        forcehide.checkPref("displayblock", true);
+        forcehide.addCategory("arcCDisplayEffect");
+        forcehide.checkPref("bulletShow", true);
+        forcehide.checkPref("drawlight", true);
+        forcehide.checkPref("effects", true);
+        forcehide.checkPref("bloom", true, val -> renderer.toggleBloom(val));
+        forcehide.sliderPref("bloomintensity", 6, 0, 16, i -> (int) (i / 4f * 100f) + "%");
+        forcehide.sliderPref("bloomblur", 2, 1, 16, i -> i + "x");
+        forcehide.checkPref("forceEnableDarkness", true);
+        forcehide.checkPref("destroyedblocks", true);
+        forcehide.checkPref("showweather", true);
+        forcehide.checkPref("animatedwater", true);
 
         if(Shaders.shield != null){
             forcehide.checkPref("animatedshields", true);
