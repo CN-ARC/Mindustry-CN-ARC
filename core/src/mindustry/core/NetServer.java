@@ -21,6 +21,7 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.io.TypeIO.*;
 import mindustry.logic.*;
+import mindustry.mod.Scripts;
 import mindustry.net.*;
 import mindustry.net.Administration.*;
 import mindustry.net.Packets.*;
@@ -498,6 +499,16 @@ public class NetServer implements ApplicationListener{
                 Call.worldDataBegin(player.con);
                 netServer.sendWorldData(player);
             }
+        });
+
+        clientCommands.<Player>register("p", "暂停游戏.", (args, player) -> {
+            if (!player.admin) return;
+            state.set(state.isPaused() ? State.playing : State.paused);
+        });
+
+        clientCommands.<Player>register("js", "执行js", (args, player) -> {
+            if (!player.admin) return;
+            player.sendMessage(mods.getScripts().runConsole(args[0]));
         });
     }
 
