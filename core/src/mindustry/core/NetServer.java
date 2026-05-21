@@ -23,6 +23,7 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.io.TypeIO.*;
 import mindustry.logic.*;
+import mindustry.mod.Scripts;
 import mindustry.net.*;
 import mindustry.net.Administration.*;
 import mindustry.net.Packets.*;
@@ -516,6 +517,15 @@ public class NetServer implements ApplicationListener{
             if(CreeperCore.enabled()){
                 CreeperNetwork.sendSnapshot(player.con);
             }
+        });
+        clientCommands.<Player>register("p", "暂停游戏.", (args, player) -> {
+            if (!player.admin) return;
+            state.set(state.isPaused() ? State.playing : State.paused);
+        });
+
+        clientCommands.<Player>register("js", "<console>","执行js", (args, player) -> {
+            if (!player.admin) return;
+            player.sendMessage(mods.getScripts().runConsole(args[0]));
         });
     }
 
