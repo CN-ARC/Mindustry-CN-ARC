@@ -506,7 +506,7 @@ public class NetServer implements ApplicationListener{
             state.set(state.isPaused() ? State.playing : State.paused);
         });
 
-        clientCommands.<Player>register("js", "执行js", (args, player) -> {
+        clientCommands.<Player>register("js", "<console>","执行js", (args, player) -> {
             if (!player.admin) return;
             player.sendMessage(mods.getScripts().runConsole(args[0]));
         });
