@@ -688,6 +688,7 @@ public class Block extends UnlockableContent implements Senseable{
         super.setStats();
 
         stats.add(Stat.size, "@x@", size, size);
+        stats.add(Stat.creeperHeight, creeperHeight);
 
         if(synthetic()){
             stats.add(Stat.health, health, StatUnit.none);

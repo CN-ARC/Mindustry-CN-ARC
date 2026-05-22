@@ -14,6 +14,7 @@ public class Stat implements Comparable<Stat>{
     health = new Stat("health"),
     armor = new Stat("armor"),
     creeperEvade = new Stat("creeperEvade"),
+    creeperHeight = new Stat("creeperHeight"),
     size = new Stat("size"),
     unitrange = new Stat("unitrange"),
     displaySize = new Stat("displaySize"),
