@@ -497,6 +497,10 @@ public class Turret extends ReloadTurret{
         public void updateTile(){
             if(!validateTarget()) target = null;
 
+            if(unit.isPlayer()){ //there's no reason to update this when a player isn't controlling it
+                unit.ammo(getAmmoFraction());
+            }
+
             if(soundLoop != null){
                 soundLoop.update(x, y, shouldActiveSound(), activeSoundVolume());
             }

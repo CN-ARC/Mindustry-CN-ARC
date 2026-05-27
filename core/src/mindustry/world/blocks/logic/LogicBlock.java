@@ -38,7 +38,7 @@ import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.logic.LogicDialog.*;
 
 public class LogicBlock extends Block{
-    private static final int maxByteLen = 1024 * 100;
+    public static final int maxByteLen = 1024 * 100;
     private static final int maxCompressedLen = 16_000;
     private static final int maxLinks = 6000;
     public static final int maxNameLength = 32;
