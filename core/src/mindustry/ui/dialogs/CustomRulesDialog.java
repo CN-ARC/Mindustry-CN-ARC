@@ -243,6 +243,7 @@ public class CustomRulesDialog extends BaseDialog{
 
         number("creeper伤害", b -> rules.creeperDamage = b, () -> rules.creeperDamage);
         number("creeper对单位伤害", b -> rules.creeperUnitDamage = b, () -> rules.creeperUnitDamage);
+        number("creeper对建筑伤害", b -> rules.creeperBlockDamage = b, () -> rules.creeperBlockDamage);
         number("minCreeper [gray]不建议修改",b->rules.minCreeper = b, ()->rules.minCreeper);
         number("maxCreeper [gray]不建议修改，只影响渲染",b->rules.maxCreeper = b, ()->rules.maxCreeper);
 

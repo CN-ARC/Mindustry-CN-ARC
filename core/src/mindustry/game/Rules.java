@@ -242,6 +242,7 @@ public class Rules{
 
     /** 每单元creeper等效于的伤害，用于产生和消耗上 */
     public float creeperDamage = 5f;
+    public float creeperBlockDamage = 5f;
     public float creeperUnitDamage = 5f;
 
     public float flowRate = 0.18f;

@@ -419,6 +419,8 @@ public class Block extends UnlockableContent implements Senseable{
     public Seq<Consume> consumeBuilder = new Seq<>();
 
     public float creeperHeight = 0f;
+    /** 受到creeper伤害，不知道叫啥变量了 */
+    public float creeperDmgReceived = 1f;
 
     protected TextureRegion[] generatedIcons;
 

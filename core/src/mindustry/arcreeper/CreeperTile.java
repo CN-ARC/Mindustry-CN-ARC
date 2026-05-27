@@ -493,9 +493,9 @@ public class CreeperTile {
         if (tile == null || tile.build == null) return false;
 
         Team team = teamOf(sign);
-        if (tile.build.team == team) return false;
+        if (tile.build.team == team || tile.build.block.privileged) return false;
 
-        tile.build.damage(amount * Vars.state.rules.creeperDamage);
+        tile.build.damage(amount * Vars.state.rules.creeperBlockDamage * tile.build.block.creeperDmgReceived);
         if (sign > 0) setCreeperFx(tile, Fx.creeperDamage);
         else setCreeperFx(tile, Fx.antiCreeperDamage);
 
@@ -610,6 +610,7 @@ public class CreeperTile {
     private boolean isEnemyBuilding(Tile tile, int sign) {
         return tile != null
                 && tile.build != null
+                && !tile.build.block.privileged
                 && tile.build.team != teamOf(sign);
     }
 
