@@ -23,8 +23,8 @@ public enum SStat{
 
     mapsMade,
     schematicsCreated,
-    bouldersDeconstructed, //TODO
-    totalCampaignItems, //TODO
+    bouldersDeconstructed,
+    totalCampaignItems,
 
     arcUnitsBuilt,
     arcUnitsDestroyed,

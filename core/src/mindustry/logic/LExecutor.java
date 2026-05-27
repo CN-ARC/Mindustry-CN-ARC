@@ -1121,8 +1121,6 @@ public class LExecutor{
         @Override
         public void run(LExecutor exec){
 
-            if(exec.textBuffer.length() >= maxTextBuffer) return;
-
             int placeholderIndex = -1;
             int placeholderNumber = 10;
 
@@ -1154,6 +1152,10 @@ public class LExecutor{
                     exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, value.numval + "");
                 }
             }
+
+            if(exec.textBuffer.length() > maxTextBuffer){
+                exec.textBuffer.setLength(maxTextBuffer);
+            }
         }
     }
 
@@ -1172,7 +1174,7 @@ public class LExecutor{
 
             if(target.building() instanceof MessageBuild d && d.isValid() && (exec.privileged || (d.team == exec.team && !d.block.privileged))){
                 d.message.setLength(0);
-                d.message.append(exec.textBuffer, 0, Math.min(exec.textBuffer.length(), maxTextBuffer));
+                d.message.append(exec.textBuffer, 0, Math.min(exec.textBuffer.length(), ((MessageBlock)d.block).maxTextLength));
             }
             exec.textBuffer.setLength(0);
 
