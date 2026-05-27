@@ -740,6 +740,7 @@ public class ContentParser{
             return status;
         },
         ContentType.sector, (TypeParser<SectorPreset>)(mod, name, value) -> {
+            readBundle(ContentType.sector, name, value);
             if(value.isString()){
                 return locate(ContentType.sector, name);
             }
@@ -794,6 +795,7 @@ public class ContentParser{
             return preset;
         },
         ContentType.planet, (TypeParser<Planet>)(mod, name, value) -> {
+            readBundle(ContentType.planet, name, value);
             if(value.isString()) return locate(ContentType.planet, name);
 
             Planet parent = locate(ContentType.planet, value.getString("parent", ""));

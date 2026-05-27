@@ -14,6 +14,7 @@ import arc.util.io.*;
 import mindustry.audio.*;
 import mindustry.content.*;
 import mindustry.core.*;
+import mindustry.ctype.*;
 import mindustry.entities.*;
 import mindustry.entities.Units.*;
 import mindustry.entities.bullet.*;
@@ -315,6 +316,16 @@ public class Turret extends ReloadTurret{
             if(soundLoop != null){
                 soundLoop.stop();
             }
+        }
+
+        @Nullable
+        public UnlockableContent getAmmoContent(){
+            return null;
+        }
+
+        /** @return ammo as a fraction of capacity; used for direct turret control HUD */
+        public float getAmmoFraction(){
+            return 1f;
         }
 
         @Override

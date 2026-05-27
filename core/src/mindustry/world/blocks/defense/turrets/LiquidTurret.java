@@ -7,6 +7,7 @@ import arc.struct.*;
 import arc.util.Time;
 import mindustry.content.*;
 import mindustry.core.*;
+import mindustry.ctype.*;
 import mindustry.entities.*;
 import mindustry.entities.bullet.*;
 import mindustry.gen.*;
@@ -42,7 +43,7 @@ public class LiquidTurret extends Turret{
     public void setStats(){
         super.setStats();
 
-        stats.add(Stat.ammo, StatValues.ammo(ammoTypes));
+        stats.add(Stat.ammo, StatValues.ammo(ammoTypes, name));
     }
 
     @Override
@@ -96,6 +97,11 @@ public class LiquidTurret extends Turret{
         @Override
         public boolean shouldActiveSound(){
             return wasShooting && enabled;
+        }
+
+        @Override
+        public UnlockableContent getAmmoContent(){
+            return liquids != null && liquids.currentAmount() > 0f ? liquids.current() : null;
         }
 
         @Override

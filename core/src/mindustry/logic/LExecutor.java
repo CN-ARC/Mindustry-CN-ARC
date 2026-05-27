@@ -1121,8 +1121,6 @@ public class LExecutor{
         @Override
         public void run(LExecutor exec){
 
-            if(exec.textBuffer.length() >= maxTextBuffer) return;
-
             int placeholderIndex = -1;
             int placeholderNumber = 10;
 
@@ -1153,6 +1151,10 @@ public class LExecutor{
                 }else{
                     exec.textBuffer.replace(placeholderIndex, placeholderIndex + 3, value.numval + "");
                 }
+            }
+
+            if(exec.textBuffer.length() > maxTextBuffer){
+                exec.textBuffer.setLength(maxTextBuffer);
             }
         }
     }
