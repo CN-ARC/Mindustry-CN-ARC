@@ -246,6 +246,7 @@ public class CustomRulesDialog extends BaseDialog{
         number("creeper对建筑伤害", b -> rules.creeperBlockDamage = b, () -> rules.creeperBlockDamage);
         number("minCreeper [gray]不建议修改",b->rules.minCreeper = b, ()->rules.minCreeper);
         number("maxCreeper [gray]不建议修改，只影响渲染",b->rules.maxCreeper = b, ()->rules.maxCreeper);
+        number("统计阈值 [gray]绝对值超过这个会被统计进逻辑变量",b->rules.minCreeperCount = b, ()->rules.minCreeperCount);
 
         number("[red]转移率(不许修改)", b -> {}, () -> rules.flowRate);
         current.button(b -> {

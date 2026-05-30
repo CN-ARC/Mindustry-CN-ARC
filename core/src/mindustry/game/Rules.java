@@ -249,6 +249,8 @@ public class Rules{
     public float minCreeper = 0.01f;
     public float maxCreeper = 1000f;
 
+    public float minCreeperCount = 0.1f;
+
     public Color creeperColor = new Color(0.1f, 0.35f, 1f, 1f);
     public Color antiCreeperColor = new Color(0.45f, 0.85f, 1f, 1f);
 

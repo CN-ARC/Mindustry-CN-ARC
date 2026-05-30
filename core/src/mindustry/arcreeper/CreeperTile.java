@@ -29,8 +29,7 @@ import mindustry.world.blocks.defense.ForceProjector;
 
 import java.io.*;
 
-import static mindustry.Vars.tilesize;
-import static mindustry.Vars.world;
+import static mindustry.Vars.*;
 
 public class CreeperTile {
     private static final short snapshotVersion = 2;
@@ -109,6 +108,8 @@ public class CreeperTile {
     private final Color tmpDrawColor = new Color();
     private static final Color sideGray = new Color(0.55f, 0.55f, 0.55f, 1f);
 
+    public static int cTile = 0, acTile = 0;
+
     public void init(){
         if(snapshotLoaded){
             clearTmp();
@@ -118,6 +119,7 @@ public class CreeperTile {
             reset();
         }
 
+        clearCreeperTile();
         initTileHeight();//好像有点问题，这样会导致没法读取地形高度，等稍后看看啥情况吧
 
         if(!eventsRegistered){
@@ -326,8 +328,6 @@ public class CreeperTile {
      */
     public void update(){
         updateClamp();
-        
-        updateHeightTemp();
 
         updateFx();
 
@@ -335,14 +335,27 @@ public class CreeperTile {
         if(updateTimer < Vars.state.rules.creeperFlowInterval) return;
         updateTimer -= Vars.state.rules.creeperFlowInterval;
 
+        updateHeightTemp();
         clearTmp();
         updateFlow();
 
+        clearCreeperTile();
         Vars.world.tiles.eachTile(tile -> {
             tile.creeper += tile.creeperTmp;
+            countCreeperTile(tile);
         });
 
         damageUnits();
+    }
+
+    void countCreeperTile(Tile tile){
+        if (tile.creeper > state.rules.minCreeperCount) cTile +=1;
+        else if (tile.creeper < -state.rules.minCreeperCount) acTile += 1;
+    }
+
+    void clearCreeperTile(){
+        cTile = 0;
+        acTile = 0;
     }
 
     /** ARCreeper: 每帧重算所有单位/建筑立场提供的临时高度。 */

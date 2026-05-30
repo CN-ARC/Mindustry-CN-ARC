@@ -8,6 +8,7 @@ import arc.math.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcreeper.CreeperTile;
 import mindustry.ctype.*;
 import mindustry.gen.*;
 import mindustry.game.*;
@@ -30,6 +31,7 @@ public class GlobalVars{
     //non-constants that depend on state
     private static LVar varTime, varTick, varSecond, varMinute, varWave, varWaveTime, varMapW, varMapH, varWait, varServer, varClient, varClientLocale, varClientUnit, varClientName, varClientTeam, varClientMobile;
 
+    private static LVar cTeam, acTeam, cTile, acTile;
     private ObjectMap<String, LVar> vars = new ObjectMap<>();
     private Seq<VarEntry> varEntries = new Seq<>();
     private ObjectSet<String> privilegedNames = new ObjectSet<>();
@@ -75,6 +77,13 @@ public class GlobalVars{
         varMapW = putEntry("@mapw", 0);
         varMapH = putEntry("@maph", 0);
         varWait = put("@wait", null, true, true);
+
+        putEntryOnly("sectionARCreeper");
+
+        cTeam = putEntry("@cTeam",0);
+        acTeam = putEntry("@acTeam",0);
+        cTile = putEntry("@cTile",0);
+        acTile = putEntry("@acTile",0);
 
         putEntryOnly("sectionNetwork");
 
@@ -204,6 +213,12 @@ public class GlobalVars{
         //network
         varServer.numval = (net.server() || !net.active()) ? 1 : 0;
         varClient.numval = net.client() ? 1 : 0;
+
+        //arcreeper
+        cTeam.numval = state.rules.creeperTeam.id;
+        acTeam.numval = state.rules.antiCreeperTeam.id;
+        cTile.numval = CreeperTile.cTile;
+        acTile.numval = CreeperTile.acTile;
 
         //client
         if(player != null){
