@@ -508,7 +508,7 @@ public class CreeperTile {
         Team team = teamOf(sign);
         if (tile.build.team == team || tile.build.block.privileged) return false;
 
-        tile.build.damage(amount * Vars.state.rules.creeperBlockDamage * tile.build.block.creeperDmgReceived);
+        tile.build.damage(teamOf(sign), amount * Vars.state.rules.creeperBlockDamage * tile.build.block.creeperDmgReceived);
         if (sign > 0) setCreeperFx(tile, Fx.creeperDamage);
         else setCreeperFx(tile, Fx.antiCreeperDamage);
 
