@@ -8,6 +8,7 @@ import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.NumberFormat;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.entities.units.*;
@@ -131,7 +132,17 @@ public class WallCrafter extends Block{
     public void drawPlace(int x, int y, int rotation, boolean valid){
         float eff = getEfficiency(x, y, rotation, null, null);
 
-        drawPlaceText(Core.bundle.formatFloat("bar.drillspeed", 60f / drillTime * eff, 2), x, y, valid);
+        //drawPlaceText(Core.bundle.formatFloat("bar.drillspeed", 60f / drillTime * eff, 2), x, y, valid);
+        float speed = 60f / drillTime * eff;
+        StringBuilder stringBuilder = new StringBuilder().append(Iconc.production).append(output.emoji()).append(output.localizedName).append(" [stat]").append(NumberFormat.autoFixed(speed));
+        if (hasLiquidBooster && liquidBoostIntensity > 1) {
+            stringBuilder.append("[white]([cyan]").append(NumberFormat.autoFixed(speed * liquidBoostIntensity)).append("[white])");
+        }
+        else if(itemConsumer != null){
+            stringBuilder.append("[white]([cyan]").append(NumberFormat.autoFixed(speed * itemBoostIntensity)).append("[white])");
+        }
+
+        drawPurePlaceText(stringBuilder.toString(), x, y, valid);
     }
     @Override
     public boolean canPlaceOn(Tile tile, Team team, int rotation){

@@ -9,6 +9,7 @@ import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.NumberFormat;
 import mindustry.entities.units.*;
 import mindustry.game.*;
 import mindustry.gen.*;
@@ -136,6 +137,7 @@ public class BeamDrill extends Block{
     @Override
     public void drawPlace(int x, int y, int rotation, boolean valid){
         Item item = null, invalidItem = null;
+        Seq<Item> items = new Seq<>();
         boolean multiple = false;
         int count = 0;
 
@@ -151,6 +153,7 @@ public class BeamDrill extends Block{
                     Item drop = other.wallDrop();
                     if(drop != null){
                         if(drop.hardness <= tier && (blockedItems == null || !blockedItems.contains(drop))){
+                            items.addUnique(drop);
                             found = drop;
                             count++;
                         }else{
@@ -179,6 +182,16 @@ public class BeamDrill extends Block{
         }
 
         if(item != null){
+            float speed = 60f / getDrillTime(item) * count;
+            StringBuilder stringBuilder = new StringBuilder().append(Iconc.production);
+            items.forEach(item1 -> stringBuilder.append(item1.emoji()).append(item1.localizedName));
+            stringBuilder.append(" [stat]").append(NumberFormat.autoFixed(speed));
+            if (optionalBoostIntensity > 1) {
+                stringBuilder.append("[white]([cyan]").append(NumberFormat.autoFixed(speed * optionalBoostIntensity)).append("[white])");
+            }
+            drawPurePlaceText(stringBuilder.toString(), x, y, valid);
+
+            /*
             float width = drawPlaceText(Core.bundle.formatFloat("bar.drillspeed", 60f / getDrillTime(item) * count, 2), x, y, valid);
             if(!multiple){
                 float dx = x * tilesize + offset - width/2f - 4f, dy = y * tilesize + offset + size * tilesize / 2f + 5, s = iconSmall / 4f;
@@ -186,9 +199,9 @@ public class BeamDrill extends Block{
                 Draw.rect(item.fullIcon, dx, dy - 1, s, s);
                 Draw.reset();
                 Draw.rect(item.fullIcon, dx, dy, s, s);
-            }
+            }*/
         }else if(invalidItem != null){
-            drawPlaceText(Core.bundle.get("bar.drilltierreq"), x, y, false);
+            drawPlaceText("钻头等级不足" + invalidItem.hardness + "/" + tier, x, y, false);
         }
 
     }

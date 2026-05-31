@@ -8,6 +8,7 @@ import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.NumberFormat;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.entities.units.*;
@@ -150,22 +151,20 @@ public class Drill extends Block{
 
         if(returnItem != null){
             float speed = 60f / getDrillTime(returnItem) * returnCount;
-            float width;
+            StringBuilder stringBuilder = new StringBuilder().append(Iconc.production).append(returnItem.emoji()).append(returnItem.localizedName).append(" [stat]").append(NumberFormat.autoFixed(speed));
             if (liquidBoostIntensity > 1) {
-                width = drawPurePlaceText(Iconc.production + " []" + returnItem.emoji()+ returnItem.localizedName + " [stat]" +
-                                        Strings.autoFixed(speed, 2) + "[white]([cyan]" +
-                                        Strings.autoFixed(speed * liquidBoostIntensity * liquidBoostIntensity, 2) + "[white])", x, y, valid);
+                stringBuilder.append("[white]([cyan]");
+                if (this instanceof BurstDrill) stringBuilder.append(NumberFormat.autoFixed(speed * liquidBoostIntensity));
+                else stringBuilder.append(NumberFormat.autoFixed(speed * liquidBoostIntensity * liquidBoostIntensity));
+                stringBuilder.append("[white])");
             }
-            else {
-                width = drawPurePlaceText(Iconc.production + " " + returnItem.emoji() + "[stat]"+ returnItem.localizedName + " " + Strings.autoFixed(speed, 2), x, y, valid);
-            }
-            float dx = x * tilesize + offset - width/2f - 4f, dy = y * tilesize + offset + size * tilesize / 2f + 5, s = iconSmall / 4f;
+            drawPurePlaceText(stringBuilder.toString(), x, y, valid);
+
             /*
             Draw.mixcol(Color.darkGray, 1f);
             Draw.rect(returnItem.fullIcon, dx, dy - 1, s, s);
             Draw.reset();
             Draw.rect(returnItem.fullIcon, dx, dy, s, s);*/
-
             if(drawMineItem){
                 Draw.color(returnItem.color);
                 Draw.rect(itemRegion, tile.worldx() + offset, tile.worldy() + offset);
@@ -176,9 +175,9 @@ public class Drill extends Block{
             Item item = to == null ? null : to.drop();
             if(item != null){
                 if (item == blockedItem) {
-                    drawPlaceText(Core.bundle.format("bar.drillcantmine"), x, y, valid);
+                    drawPlaceText("无法挖掘", x, y, valid);
                 }
-                else drawPlaceText(Core.bundle.format("bar.drilltierreq", item.hardness, tier), x, y, valid);
+                else drawPlaceText("钻头等级不足" + item.hardness + "/" + tier, x, y, valid);
             }
         }
     }
