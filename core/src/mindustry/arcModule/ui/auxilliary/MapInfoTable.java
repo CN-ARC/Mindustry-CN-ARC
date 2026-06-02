@@ -6,8 +6,12 @@ import arc.graphics.Color;
 import arc.graphics.Colors;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.*;
+import arc.struct.OrderedMap;
+import arc.struct.Seq;
+import mindustry.Vars;
 import mindustry.arcModule.ARCVars;
 import mindustry.content.*;
+import mindustry.ctype.UnlockableContent;
 import mindustry.editor.*;
 import mindustry.gen.*;
 import mindustry.input.DesktopInput;
@@ -25,7 +29,8 @@ import static mindustry.ui.Styles.cleart;
 
 public class MapInfoTable extends BaseToolsTable{
     private final MapInfoDialog mapInfoDialog = new MapInfoDialog();
-    private int uiRowIndex = 0;
+    private static int uiRowIndex = 0;
+    static String databaseTag = "";
 
     public MapInfoTable(){
         super(Icon.map);
@@ -50,7 +55,7 @@ public class MapInfoTable extends BaseToolsTable{
             }
         }).tooltip("切换跟踪玩家");
         button(Icon.starSmall, clearAccentNonei, arcui.achievements::show).tooltip("统计与成就");
-        if(!mobile) button(Icon.editSmall,clearAccentNonei,this::uiTable).tooltip("ui大全");
+        button(Icon.editSmall,clearAccentNonei, MapInfoTable::uiTable).tooltip("ui大全");
     }
 
     private void floorStatisticDialog(){
@@ -96,7 +101,7 @@ public class MapInfoTable extends BaseToolsTable{
         dialog.show();
     }
 
-    private void uiTable(){
+    public static void uiTable(){
         BaseDialog dialog = new BaseDialog("ARC-ui大全");
         uiRowIndex = 0;
         TextField sField = dialog.cont.field("", text->{}).fillX().get();
@@ -117,19 +122,7 @@ public class MapInfoTable extends BaseToolsTable{
                     if(uiRowIndex%15==0) ct.row();
                 }
             }).row();
-            c.add("物品").color(ARCVars.getThemeColor()).center().fillX().row();
-            c.image().color(ARCVars.getThemeColor()).fillX().row();
-            c.table(ct->{
-                uiRowIndex = 0;
-                stringIcons.copy().each((name,iconc)->{
-                    ct.button(iconc,cleart, ()->{
-                        Core.app.setClipboardText(iconc);
-                        sField.setText(sField.getText() + iconc);
-                    }).size(50f).tooltip(name);
-                    uiRowIndex+=1;
-                    if(uiRowIndex%15==0) ct.row();
-                });
-            }).row();
+
             c.add("图标").color(ARCVars.getThemeColor()).center().fillX().row();
             c.image().color(ARCVars.getThemeColor()).fillX().row();
             c.table(ct->{
@@ -142,6 +135,32 @@ public class MapInfoTable extends BaseToolsTable{
                     }).size(50f).tooltip(internal);
                     uiRowIndex += 1;
                     if (uiRowIndex % 15 == 0) ct.row();
+                }
+            }).row();
+
+            c.add("内容").color(ARCVars.getThemeColor()).center().fillX().row();
+            c.image().color(ARCVars.getThemeColor()).fillX().row();
+            c.table(ct->{
+                uiRowIndex = 0;
+                for (var contents : Vars.content.getContentMap()) {
+                    for (var content : contents) {
+                        if (content instanceof UnlockableContent u) {
+                            if (!u.hasEmoji()) continue;
+                            if (u.databaseCategory != databaseTag){
+                                ct.row();
+                                ct.add(u.databaseCategory).color(ARCVars.getThemeColor()).center().fillX().row();
+                                ct.image().color(ARCVars.getThemeColor()).fillX().row();
+                                databaseTag = u.databaseCategory;
+                                uiRowIndex = 0;
+                            }
+                            ct.button(u.emoji(),cleart, ()->{
+                                Core.app.setClipboardText(u.emoji());
+                                sField.setText(sField.getText() + u.emoji());
+                            }).size(50f).tooltip(u.localizedName);
+                            uiRowIndex += 1;
+                            if(uiRowIndex % 15==0) ct.row();
+                        }
+                    }
                 }
             }).row();
         }).row();
