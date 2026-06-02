@@ -739,7 +739,7 @@ public class HudFragment{
                 info.row();
                 info.label(() -> fps.get(Core.graphics.getFramesPerSecond())).left().style(Styles.outlineLabel).name("fps");
                 info.row();
-                info.label(() -> "倍速: " + String.format("%.2f", getGameSpeed())).left().style(Styles.outlineLabel);
+                info.label(() -> "时间: " + Math.round(state.tick / 60f / 60f) +" : " + Math.round(state.tick / 60f % 60f) + " : " + Math.round(state.tick % 60f)).left().style(Styles.outlineLabel);
                 info.row();
                 if (!android){
                     info.label(() -> "缩放: " + String.format("%.2f", renderer.getScale())).left().style(Styles.outlineLabel);
