@@ -16,6 +16,7 @@ import arc.util.Log;
 import arc.util.Nullable;
 import arc.util.Strings;
 import arc.util.Time;
+import mindustry.arcModule.ui.auxilliary.MapInfoTable;
 import mindustry.core.GameState.State;
 import mindustry.ctype.Content;
 import mindustry.game.Team;
@@ -160,6 +161,7 @@ public class LogicDialog extends BaseDialog{
                     else state.set(State.paused);
                     arcui.arcInfo(state.isPaused() ? "已暂停" : "已继续游戏");
                 }).checked(state.isPaused()).size(50f);
+                tt.button(Icon.editSmall, Styles.cleari, MapInfoTable::uiTable).checked(state.isPaused()).size(50f);
             });
         });
         varTable.row();
