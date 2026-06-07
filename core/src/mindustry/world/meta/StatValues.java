@@ -991,6 +991,24 @@ public class StatValues{
                         sep(bt, "@bullet.notargetsbuildings");
                     }
 
+                    if(type.intervalBullet != null){
+                        bt.row();
+
+                        Table ic = new Table();
+                        ammo(ObjectMap.of(t, type.intervalBullet), true, false).display(ic);
+                        Collapser coll = new Collapser(ic, true);
+                        coll.setDuration(0.1f);
+
+                        bt.table(it -> {
+                            it.left().defaults().left();
+
+                            it.add(Core.bundle.format("bullet.interval", Strings.autoFixed(type.intervalBullets / type.bulletInterval * 60, 2)));
+                            it.button(Icon.downOpen, Styles.emptyi, () -> coll.toggle(false)).update(i -> i.getStyle().imageUp = (!coll.isCollapsed() ? Icon.upOpen : Icon.downOpen)).size(8).padLeft(16f).expandX();
+                        });
+                        bt.row();
+                        bt.add(coll);
+                    }
+
                     if(type.fragBullet != null){
                         bt.row();
 
@@ -998,40 +1016,23 @@ public class StatValues{
                         ammo(ObjectMap.of(t, type.fragBullet), true, false).display(fc);
                         Collapser coll = new Collapser(fc, true);
                         coll.setDuration(0.1f);
-                    }
 
-                    if(type.intervalBullet != null){
-                        collapser(bt, Core.bundle.format("bullet.interval", Strings.autoFixed(type.intervalBullets / type.bulletInterval * 60, 2)), ic -> {
-                            ammo(ObjectMap.of(t, type.intervalBullet), nested, false).display(ic);
-                        });
-                    }
+                        bt.table(ft -> {
+                            ft.left().defaults().left();
 
-                    Seq<BulletType> spawn = type.spawnBullets.copy();
-                    if (spawn.any()) {
-                        collapser(bt, Strings.format("[stat]@x[lightgray]生成子弹：", spawn.size), sc -> {
-                            while (spawn.any()) {
-                                BulletType bullet = spawn.first();
-                                Boolf<BulletType> pred = b -> bullet.damage == b.damage && bullet.splashDamage == b.splashDamage;
-                                //通过pred的的子弹被认为和当前子弹是一样的，合并显示
-                                int count = spawn.count(pred);
-                                if (count == type.spawnBullets.size) {
-                                    ammo(ObjectMap.of(t, bullet), nested, false).display(sc);
-                                } else {
-                                    sep(sc, Strings.format(" [stat]@x[lightgray]子弹：", count)).padLeft(0f);//不知道为什么padLeft0刚刚好，就这样了
-                                    ammo(ObjectMap.of(t, bullet), nested, false).display(sc);
-                                }
-                                bt.row();
-                                spawn.removeAll(pred);
-                            }
+                            ft.add(Core.bundle.format("bullet.frags", type.fragBullets));
+                            ft.button(Icon.downOpen, Styles.emptyi, () -> coll.toggle(false)).update(i -> i.getStyle().imageUp = (!coll.isCollapsed() ? Icon.upOpen : Icon.downOpen)).size(8).padLeft(16f).expandX();
                         });
+                        bt.row();
+                        bt.add(coll);
                     }
 
                     if(type.spawnBullets != null && type.spawnBullets.size > 0){
                         bt.row();
 
                         Table sc = new Table();
-                        for(BulletType spawnBullet : type.spawnBullets){
-                            if(spawnBullet.showStats) ammo(ObjectMap.of(t, spawnBullet), true, false).display(sc);
+                        for(BulletType spawn : type.spawnBullets){
+                            if(spawn.showStats) ammo(ObjectMap.of(t, spawn), true, false).display(sc);
                         }
                         Collapser coll = new Collapser(sc, true);
                         coll.setDuration(0.1f);
