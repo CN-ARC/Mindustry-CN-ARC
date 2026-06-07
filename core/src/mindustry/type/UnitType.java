@@ -806,7 +806,7 @@ public class UnitType extends UnlockableContent implements Senseable{
             }, () -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();
 
-            bars.add(new Bar(Items.sporePod.emoji() + " " + NumberFormat.autoFixed(unit.creeper), CreeperCore.getCreeperColor(unit.creeper), () -> Math.abs(unit.creeper) / unit.maxHealth));
+            bars.add(new Bar(Items.sporePod.emoji() + " " + NumberFormat.autoFixed(unit.creeper), CreeperCore.getCreeperColor(unit.creeper), () -> Math.min(Math.abs(unit.creeper) / unit.maxHealth, 1f)));
             bars.row();
 
             for(Ability ability : unit.abilities){
