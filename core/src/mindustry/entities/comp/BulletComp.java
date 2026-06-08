@@ -51,7 +51,6 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
     transient float aimX, aimY;
     transient float originX, originY;
     transient float buildingDamageMultiplier;
-    transient float ARCreeperDamageMultiplier;
     transient @Nullable Mover mover;
     transient boolean absorbed, hit;
     transient @Nullable Trail trail;
@@ -326,15 +325,15 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
         if(tile != null && isAdded() && CreeperCombat.canAttackCreeper(team, tile)){
             // 无限穿透，直接触发击中，不衰减伤害
             if(type.pierce && type.pierceCap == -1){
-                CreeperCombat.damageTile(team, tile, damage * ARCreeperDamageMultiplier);
+                CreeperCombat.damageTile(team, tile, damage * type.ARCreeperDamageMultiplier);
                 type.hit(self(), x * tilesize, y * tilesize);
             }
             // 还剩至少一次穿透次数，造成子弹原始的伤害，如果现有伤害不足以抵消则消耗一次穿透补充
             else if(type.pierce && type.pierceCap != -1 && collided.size + 1 < type.pierceCap) {
 
-                float absorbed = CreeperCombat.damageTile(team, tile, originalDamage * ARCreeperDamageMultiplier);
+                float absorbed = CreeperCombat.damageTile(team, tile, originalDamage * type.ARCreeperDamageMultiplier);
 
-                damage -= absorbed;
+                damage -= absorbed / type.ARCreeperDamageMultiplier;
 
                 if (damage <= 0.001f) {
                     damage += originalDamage;
@@ -346,9 +345,9 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
             }
             // 普通子弹，和水抵消伤害，伤害为0后消失
             else {
-                float absorbed = CreeperCombat.damageTile(team, tile, damage);
+                float absorbed = CreeperCombat.damageTile(team, tile, damage * type.ARCreeperDamageMultiplier);
 
-                damage -= absorbed;
+                damage -= absorbed / type.ARCreeperDamageMultiplier;
 
                 if (damage <= 0.001f) {
                     type.hit(self(), x * tilesize, y * tilesize);
