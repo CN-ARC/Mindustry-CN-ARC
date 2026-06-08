@@ -237,9 +237,9 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
 
         while(x >= 0 && y >= 0 && x < ww && y < wh){
             Building build = world.build(x, y);
-            Tile tile = world.tile(x, y);
 
             if(type.collideFloor || type.collideTerrain){
+                Tile tile = world.tile(x, y);
                 if(
                     type.collideFloor && (tile == null || tile.floor().hasSurface() || tile.block() != Blocks.air) ||
                     type.collideTerrain && tile != null && tile.block() instanceof StaticWall
@@ -252,13 +252,13 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
 
             // creeper collision: 必须在 building collision 前面。
             // 这样同一 tile 上 creeper > 0 时，子弹优先打 creeper，而不是建筑。
-            boolean isCollideCreeper = collidedCreeper(x, y);
-            if (hit) return;
+            boolean isRemove = collidedCreeper(x, y);
+            if (isRemove) return;
 
-            if (!isCollideCreeper && build != null && isAdded()
-                && checkUnderBuild(build, x * tilesize, y * tilesize)
-                && build.collide(self()) && type.testCollision(self(), build)
-                && !build.dead() && (type.collidesTeam || build.team != team) && !(type.pierceBuilding && hasCollided(build.id))){
+            if(build != null && isAdded()
+                    && checkUnderBuild(build, x * tilesize, y * tilesize)
+                    && build.collide(self()) && type.testCollision(self(), build)
+                    && !build.dead() && (type.collidesTeam || build.team != team) && !(type.pierceBuilding && hasCollided(build.id))){
 
                 if(type.sticky){
                     if(build.team != team){
@@ -322,46 +322,40 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
 
     public boolean collidedCreeper(int x, int y){
         Tile tile = world.tile(x, y);
-        if(isAdded()
-                && type.collides
-                && type.collidesGround
-                && CreeperCombat.canAttackCreeper(team, tile)){
-            // 已经碰撞过本格则不再计算
-            int creepId = 1_000_000 + x * world.height() + y;
-            if(collided.contains(creepId)){
-                return true;
-            }
-
-            float absorbed = CreeperCombat.damageTile(team, tile, damage);
-            if(absorbed <= 0.001f){
-                return false;
-            }
-            // 如果无限穿透，则不计算伤害衰减直接击中并返回
+        if(tile != null && isAdded() && CreeperCombat.canAttackCreeper(team, tile)){
+            // 无限穿透，直接触发击中，不衰减伤害
             if(type.pierce && type.pierceCap == -1){
+                CreeperCombat.damageTile(team, tile, damage);
                 type.hit(self(), x * tilesize, y * tilesize);
-                return true;
             }
-            damage -= absorbed;
-            // 如果伤害不足，则触发击中
-            if(damage < 0.001f){
-                type.hit(self(), x * tilesize, y * tilesize);
-                // 如果子弹是穿透的，那么计算一次穿透并恢复子弹伤害
-                if (type.pierce && type.pierceCap != -1){
-                    collided.add(creepId);
-                    if(collided.size >= type.pierceCap){
-                        hit = true;
-                        remove();
-                        return true;
-                    }
+            // 还剩至少一次穿透次数，造成子弹原始的伤害，如果现有伤害不足以抵消则消耗一次穿透补充
+            else if(type.pierce && type.pierceCap != -1 && collided.size + 1 < type.pierceCap) {
+
+                float absorbed = CreeperCombat.damageTile(team, tile, originalDamage);
+
+                damage -= absorbed;
+
+                if (damage <= 0.001f) {
                     damage += originalDamage;
+                    type.hit(self(), x * tilesize, y * tilesize);
+
+                    int creepId = 1_000_000 + x * world.height() + y;
+                    collided.add(creepId);
                 }
-                else {
+            }
+            // 普通子弹，和水抵消伤害，伤害为0后消失
+            else {
+                float absorbed = CreeperCombat.damageTile(team, tile, damage);
+
+                damage -= absorbed;
+
+                if (damage <= 0.001f) {
+                    type.hit(self(), x * tilesize, y * tilesize);
                     hit = true;
                     remove();
+                    return true;
                 }
-                return true;
             }
-            return false;
         }
         return false;
     }
