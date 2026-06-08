@@ -11,7 +11,6 @@ import arc.util.*;
 import mindustry.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
-import mindustry.arcreeper.CreeperCombat;
 import mindustry.content.*;
 import mindustry.ctype.*;
 import mindustry.entities.*;
@@ -376,6 +375,9 @@ public class BulletType extends Content implements Cloneable{
     public Color lightColor = Pal.powerLight;
 
     protected float cachedDps = -1;
+
+    /** Multiplier of how much base damage is done to force shields. */
+    public float ARCreeperDM = 1f;
 
     public BulletType(float speed, float damage){
         this.speed = speed;

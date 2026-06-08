@@ -7,7 +7,6 @@ import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.scene.*;
 import arc.scene.event.*;
-import arc.scene.style.*;
 import arc.scene.ui.*;
 import arc.scene.ui.Tooltip.*;
 import arc.scene.ui.layout.*;
@@ -842,6 +841,10 @@ public class StatValues{
 
                     if(type.shieldDamageMultiplier != 1){
                         sep(bt, Core.bundle.format("bullet.shielddamage", ammoStat((int)(type.shieldDamageMultiplier * 100 - 100))));
+                    }
+
+                    if(type.ARCreeperDM != 1){
+                        sep(bt, Core.bundle.format("bullet.creeperdamage", ammoStat((int)(type.ARCreeperDM * 100 - 100))));
                     }
 
                     if(type.splashDamage > 0){

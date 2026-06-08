@@ -572,11 +572,9 @@ public class Damage{
         }
 
         if(ground){
-            float tileDamageAmount = damage * (source == null ? 1f : source.type.buildingDamageMultiplier);
-
             // 新增：范围伤害也消耗 creeper。
             // 只会处理 creeper > 0 的 tile，具体过滤在 CreeperCombat 内部。
-            CreeperCombat.splashDamage(team, x, y, radius, tileDamageAmount);
+            CreeperCombat.splashDamage(team, x, y, radius, damage * (source == null ? 1f : source.type.ARCreeperDM));
 
             if(!complete){
                 tileDamage(team, World.toTile(x), World.toTile(y), radius / tilesize, damage * (source == null ? 1f : source.type.buildingDamageMultiplier), source);

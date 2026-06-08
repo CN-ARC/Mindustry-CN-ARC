@@ -51,6 +51,7 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
     transient float aimX, aimY;
     transient float originX, originY;
     transient float buildingDamageMultiplier;
+    transient float creeperDamageMultiplier;
     transient @Nullable Mover mover;
     transient boolean absorbed, hit;
     transient @Nullable Trail trail;
@@ -325,13 +326,13 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
         if(tile != null && isAdded() && CreeperCombat.canAttackCreeper(team, tile)){
             // 无限穿透，直接触发击中，不衰减伤害
             if(type.pierce && type.pierceCap == -1){
-                CreeperCombat.damageTile(team, tile, damage);
+                CreeperCombat.damageTile(team, tile, damage * creeperDamageMultiplier);
                 type.hit(self(), x * tilesize, y * tilesize);
             }
             // 还剩至少一次穿透次数，造成子弹原始的伤害，如果现有伤害不足以抵消则消耗一次穿透补充
             else if(type.pierce && type.pierceCap != -1 && collided.size + 1 < type.pierceCap) {
 
-                float absorbed = CreeperCombat.damageTile(team, tile, originalDamage);
+                float absorbed = CreeperCombat.damageTile(team, tile, originalDamage * creeperDamageMultiplier);
 
                 damage -= absorbed;
 
