@@ -977,7 +977,7 @@ public class BulletType extends Content implements Cloneable{
         bullet.damage = (damage < 0 ? this.damage : damage) * bullet.damageMultiplier();
         bullet.originalDamage = bullet.damage;
         bullet.buildingDamageMultiplier = buildingDamageMultiplier;
-        bullet.ARCreeperDM = ARCreeperDamageMultiplier;
+        bullet.ARCreeperDamageMultiplier = ARCreeperDamageMultiplier;
         //reset trail
         if(bullet.trail != null){
             bullet.trail.clear();
