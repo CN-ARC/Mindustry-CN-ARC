@@ -377,7 +377,7 @@ public class BulletType extends Content implements Cloneable{
     protected float cachedDps = -1;
 
     /** Multiplier of how much base damage is done to creep. */
-    public float ARCreeperDM = 1f;
+    public float ARCreeperDamageMultiplier = 1f;
 
     public BulletType(float speed, float damage){
         this.speed = speed;
@@ -977,7 +977,7 @@ public class BulletType extends Content implements Cloneable{
         bullet.damage = (damage < 0 ? this.damage : damage) * bullet.damageMultiplier();
         bullet.originalDamage = bullet.damage;
         bullet.buildingDamageMultiplier = buildingDamageMultiplier;
-        bullet.ARCreeperDM = ARCreeperDM;
+        bullet.ARCreeperDM = ARCreeperDamageMultiplier;
         //reset trail
         if(bullet.trail != null){
             bullet.trail.clear();

@@ -843,8 +843,8 @@ public class StatValues{
                         sep(bt, Core.bundle.format("bullet.shielddamage", ammoStat((int)(type.shieldDamageMultiplier * 100 - 100))));
                     }
 
-                    if(type.ARCreeperDM != 1){
-                        sep(bt, Core.bundle.format("bullet.creeperdamage", ammoStat((int)(type.ARCreeperDM * 100 - 100))));
+                    if(type.ARCreeperDamageMultiplier != 1){
+                        sep(bt, Core.bundle.format("bullet.creeperdamage", ammoStat((int)(type.ARCreeperDamageMultiplier * 100 - 100))));
                     }
 
                     if(type.splashDamage > 0){
