@@ -522,6 +522,14 @@ public class CreeperTile {
         return sign > 0 ? Vars.state.rules.creeperTeam : Vars.state.rules.antiCreeperTeam;
     }
 
+    int getTeamSign(Team team){
+        return team == state.rules.creeperTeam ? 1 : team == state.rules.antiCreeperTeam ? -1 : 0;
+    }
+
+    public float getTeamCreeper(Team team, float creeper){
+        return creeper * getTeamSign(team);
+    }
+
     /**
      * 第一遍：统计 a-b 这条边上可能发生的同号/空格传播候选出流。
      * 每条边仍然只由 updateFlow() 传入一次，但这里内部检查两个方向。
