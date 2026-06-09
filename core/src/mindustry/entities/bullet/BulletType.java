@@ -11,6 +11,7 @@ import arc.util.*;
 import mindustry.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcreeper.CreeperCore;
 import mindustry.content.*;
 import mindustry.ctype.*;
 import mindustry.entities.*;
@@ -378,6 +379,8 @@ public class BulletType extends Content implements Cloneable{
 
     /** Multiplier of how much base damage is done to creep. */
     public float ARCreeperDamageMultiplier = 1f;
+    /** 子弹命中时的出水量 */
+    public float creeperAmount = 0f;
 
     public BulletType(float speed, float damage){
         this.speed = speed;
@@ -575,6 +578,16 @@ public class BulletType extends Content implements Cloneable{
 
         for(int i = 0; i < lightning; i++){
             Lightning.create(b, lightningColor, lightningDamage < 0 ? damage : lightningDamage, b.x, b.y, b.rotation() + Mathf.range(lightningCone/2) + lightningAngle, lightningLength + Mathf.random(lightningLengthRand));
+        }
+
+        if(CreeperCore.enabled() && creeperAmount > 0) {
+
+            Tile tile = world.tileWorld(x, y);
+            if(tile == null) return;
+
+            int sign = b.team == state.rules.creeperTeam ? 1 : b.team == state.rules.antiCreeperTeam ? -1 : 0;
+
+            CreeperCore.creeperTile.add(tile, sign * creeperAmount);
         }
     }
 
