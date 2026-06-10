@@ -8,6 +8,7 @@ import arc.graphics.g2d.Lines;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.geom.Position;
+import arc.struct.Seq;
 import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.ai.types.CommandAI;
@@ -15,12 +16,16 @@ import mindustry.ai.types.LogicAI;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.toolpack.arcPlayerEffect;
 import mindustry.entities.units.BuildPlan;
+import mindustry.entities.units.WeaponMount;
 import mindustry.game.EventType;
 import mindustry.gen.*;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
+import mindustry.type.Weapon;
 import mindustry.world.blocks.payloads.Payload;
+
+import java.util.Arrays;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.maxBuildPlans;
@@ -36,6 +41,8 @@ public class ARCUnits {
     public static boolean selectedUnitsFlyer = false, selectedUnitsLand = false;
 
     private static boolean alwaysShowPlayerUnit, alwaysShowUnitRTSAi, unitHealthBar, unitLogicMoveLine, unitLogicTimerBars, unitBuildPlan, unithitbox;
+
+    private static boolean drawWeaponRecharge;
 
     private static boolean canHitPlayer = false, canHitCommand = false, canHitPlans = false, canHitMouse = false;
     private static float curStroke;
@@ -68,6 +75,8 @@ public class ARCUnits {
             unitTargetType = Core.settings.getInt("unitTargetType");
             superUnitEffect = Core.settings.getInt("superUnitEffect");
             arcBuildInfo = Core.settings.getBool("arcBuildInfo");
+
+            drawWeaponRecharge = Core.settings.getBool("drawWeaponRecharge");
         });
     }
 
@@ -206,16 +215,18 @@ public class ARCUnits {
         if (!unitHealthBar || !drawUnitBar) return;
         Draw.z(Layer.shields + 6f);
         float y_corr = 0f;
+        float unitLeft = unit.x - unit.hitSize() * 0.6f;
+
         if (unit.hitSize < 30f && unit.hitSize > 20f && unit.isPlayer()) y_corr = 2f;
         if (unit.health < unit.maxHealth) {
             Draw.reset();
             Lines.stroke(4f);
             Draw.color(unit.team.color, 0.5f);
-            Lines.line(unit.x - unit.hitSize() * 0.6f, unit.y + (unit.hitSize() / 2f) + y_corr, unit.x + unit.hitSize() * 0.6f, unit.y + (unit.hitSize() / 2f) + y_corr);
+            Lines.line(unitLeft, unit.y + (unit.hitSize() / 2f) + y_corr, unit.x + unit.hitSize() * 0.6f, unit.y + (unit.hitSize() / 2f) + y_corr);
             Lines.stroke(2f);
             Draw.color(Pal.health, 0.8f);
             Lines.line(
-                    unit.x - unit.hitSize() * 0.6f, unit.y + (unit.hitSize() / 2f) + y_corr,
+                    unitLeft, unit.y + (unit.hitSize() / 2f) + y_corr,
                     unit.x + unit.hitSize() * (Math.min(Mathf.maxZero(unit.health), unit.maxHealth) * 1.2f / unit.maxHealth - 0.6f), unit.y + (unit.hitSize() / 2f) + y_corr);
             Lines.stroke(2f);
         }
@@ -224,13 +235,13 @@ public class ARCUnits {
                 Draw.color(Pal.shield, 0.8f);
                 float shieldAmountScale = unit.shield / (unit.maxHealth * Mathf.pow(10f, (float) didgt - 1f));
                 if (didgt > 1) {
-                    Lines.line(unit.x - unit.hitSize() * 0.6f,
+                    Lines.line(unitLeft,
                             unit.y + (unit.hitSize() / 2f) + (float) didgt * 2f + y_corr,
                             unit.x + unit.hitSize() * ((Mathf.ceil((shieldAmountScale - Mathf.floor(shieldAmountScale)) * 10f) - 1f + 0.0001f) * 1.2f * (1f / 9f) - 0.6f),
                             unit.y + (unit.hitSize() / 2f) + (float) didgt * 2f + y_corr);
                     //(s-1)*(1/9)because line(0) will draw length of 1
                 } else {
-                    Lines.line(unit.x - unit.hitSize() * 0.6f,
+                    Lines.line(unitLeft,
                             unit.y + (unit.hitSize() / 2f) + (float) didgt * 2f + y_corr,
                             unit.x + unit.hitSize() * ((shieldAmountScale - Mathf.floor(shieldAmountScale) - 0.001f) * 1.2f - 0.6f),
                             unit.y + (unit.hitSize() / 2f) + (float) didgt * 2f + y_corr);
@@ -239,6 +250,28 @@ public class ARCUnits {
         }
         Draw.reset();
 
+
+        if (drawWeaponRecharge){
+            Seq<WeaponMount> weaponList = new Seq<>();
+            for (int i=0; i<unit.mounts.length; i++){
+                if (unit.mounts[i].weapon.reload < 60f * 5 )continue;
+                weaponList.add(unit.mounts[i]);
+            }
+            if (weaponList.size > 0){
+                float thisy = unit.y + (unit.hitSize() / 2f) + iconSize;
+                float thisLeft = unitLeft;
+                for (WeaponMount weaponMount :weaponList){
+                    Draw.color();
+                    Draw.rect(weaponMount.weapon.region, thisLeft, thisy, iconSize, iconSize * weaponMount.weapon.region.height / weaponMount.weapon.region.width);
+                    Draw.color(Pal.health, 0.8f);
+                    Lines.line(thisLeft + iconSize,
+                            thisy,
+                            thisLeft + ( unit.hitSize / weaponList.size - iconSize) * weaponMount.reload / weaponMount.weapon.reload + iconSize,
+                            thisy);
+                    thisLeft += unit.hitSize / weaponList.size;
+                }
+            }
+        }
         float index = 0f;
         int iconColumns = Math.max((int) (unit.hitSize() / (iconSize + 1f)), 4);
         float iconWidth = Math.min(unit.hitSize() / iconColumns, iconSize + 1f);
