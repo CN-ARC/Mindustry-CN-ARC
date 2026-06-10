@@ -767,6 +767,7 @@ public class SettingsMenuDialog extends BaseDialog{
         arc.sliderPref("unitDrawMinHealth", settings.getInt("minhealth_unitshown",0), 0, 2500, 50, i -> i + "[red]HP");
 
         arc.checkPref("unitHealthBar", false);
+        arc.checkPref("drawWeaponRecharge", false);
         arc.sliderPref("unitBarDrawMinHealth", settings.getInt("minhealth_unithealthbarshown",0), 0, 2500, 100, i -> i + "[red]HP");
 
 
