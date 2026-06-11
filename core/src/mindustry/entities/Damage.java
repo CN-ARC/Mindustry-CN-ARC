@@ -573,7 +573,7 @@ public class Damage{
         }
 
         if(ground){
-            CreeperCombat.splashBullet(team, x, y, radius, damage, source);
+            CreeperCombat.splashDamage(team, x, y, radius, damage, source);
             if(!complete){
                 tileDamage(team, World.toTile(x), World.toTile(y), radius / tilesize, damage * (source == null ? 1f : source.type.buildingDamageMultiplier), source);
             }else{

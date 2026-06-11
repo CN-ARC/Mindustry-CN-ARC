@@ -11,8 +11,6 @@ import mindustry.Vars;
 import mindustry.core.World;
 import mindustry.entities.Sized;
 import mindustry.entities.Units;
-import mindustry.entities.bullet.BulletType;
-import mindustry.game.Rules;
 import mindustry.game.Team;
 import mindustry.gen.*;
 import mindustry.world.Block;
@@ -142,13 +140,6 @@ public final class CreeperCombat {
                 : CreeperCore.creeperGrid.findNearestTarget(attacker, wx / tilesize, wy / tilesize, range / tilesize);
     }
 
-    public static float damageAt(Team attacker, float wx, float wy, float damage) {
-        if (!damageCreeper || damage <= 0f || !canAttackCreeper(attacker)) return 0f;
-
-        Tile tile = Vars.world.tileWorld(wx, wy);
-        return damageTile(attacker, tile, damage);
-    }
-
     public static float damageTile(Team attacker, Tile tile, float damage) {
         if (!damageCreeper || damage <= 0f || !canAttackCreeper(attacker, tile)) return 0f;
 
@@ -168,7 +159,43 @@ public final class CreeperCombat {
         return used * damagePerCreeper;
     }
 
-    public static void splashDamage(Team attacker, float wx, float wy, float radius, float damage) {
+    public static float multiplyTileCreeper(Team attacker, Tile tile, float multiplier) {
+        if (!damageCreeper || !canAttackCreeper(attacker, tile)) return 0f;
+
+        float oldAmount = creeperAmount(tile);
+        tile.creeper *= multiplier;
+
+        if (creeperAmount(tile) < Vars.state.rules.minCreeper) {
+            tile.creeper = 0f;
+        }
+
+        float damagePerCreeper = Math.max(Vars.state.rules.creeperDamage, 0.0001f);
+        // 吸收相当于变化量的水对应的伤害，反转出的水量不计
+        if (multiplier < 0f) {
+            return oldAmount * damagePerCreeper;
+        }
+        return (oldAmount - creeperAmount(tile)) * damagePerCreeper;
+    }
+
+    public static float damageTileWithBullet(Bullet bullet, Team attacker, Tile tile, float damage){
+        float absorbed = 0f;
+
+        float appliedMultiplier = bullet.type.ARCreeperAppliedMultiplier;
+        if (appliedMultiplier != 1){
+            absorbed += multiplyTileCreeper(attacker, tile, appliedMultiplier);
+        }
+
+        float damageMultiplier = bullet.type.ARCreeperDamageMultiplier;
+        if (damageMultiplier == 0f) {
+            return absorbed;
+        }
+
+        absorbed += damageTile(attacker, tile, damage * damageMultiplier);
+
+        return absorbed / damageMultiplier;
+    }
+
+    public static void splashDamage(Team attacker, float wx, float wy, float radius, float damage, @Nullable Bullet source) {
         if (!damageCreeper || damage <= 0f || radius <= 0f || !canAttackCreeper(attacker)) return;
 
         int minX = toTile(wx - radius);
@@ -193,63 +220,13 @@ public final class CreeperCombat {
                 if (dst2 > radius2) continue;
 
                 float falloff = 1f - Mathf.sqrt(dst2) / radius;
-                damageTile(attacker, tile, damage * falloff);
+
+                if (source == null){
+                    damageTile(attacker, tile, damage * falloff);
+                } else {
+                    damageTileWithBullet(source, attacker, tile, damage * falloff);
+                }
             }
-        }
-    }
-
-    public static float tileAppliedMultiplier(Team attacker, Tile tile, float multiplier) {
-        if (!damageCreeper || !canAttackCreeper(attacker, tile)) return 0f;
-
-        tile.creeper *= multiplier;
-        return Math.abs(tile.creeper);  //认为吸收了这里的水
-    }
-
-    public static void splashAppliedMultiplier(Team attacker, float wx, float wy, float radius, float multiplier) {
-        if (!damageCreeper || multiplier == 1f || radius <= 0f || !canAttackCreeper(attacker)) return;
-
-        int minX = toTile(wx - radius);
-        int maxX = toTile(wx + radius);
-        int minY = toTile(wy - radius);
-        int maxY = toTile(wy + radius);
-
-        float radius2 = radius * radius;
-        int scanned = 0;
-
-        for (int tx = minX; tx <= maxX; tx++) {
-            for (int ty = minY; ty <= maxY; ty++) {
-                if (++scanned > maxScanTiles) return;
-
-                Tile tile = Vars.world.tile(tx, ty);
-                if (!canAttackCreeper(attacker, tile)) continue;
-
-                float dx = tile.worldx() - wx;
-                float dy = tile.worldy() - wy;
-                float dst2 = dx * dx + dy * dy;
-                if (dst2 > radius2) continue;
-
-                tileAppliedMultiplier(attacker, tile, multiplier);
-            }
-        }
-    }
-
-    public static float damageTileBullet(Team attacker, Tile tile, float damage, @Nullable BulletType source){
-        if (source == null){
-            return damageTile(attacker, tile, damage);
-        } else if (source.ARCreeperAppliedMultiplier == 1) {
-            return damageTile(attacker, tile, damage * source.ARCreeperDamageMultiplier);
-        } else {
-            return tileAppliedMultiplier(attacker, tile,  source.ARCreeperAppliedMultiplier);
-        }
-    }
-
-    public static void splashBullet(Team team, float x, float y, float radius, float damage, @Nullable Bullet source){
-        if (source == null){
-            splashDamage(team, x, y, radius, damage);
-        } else if (source.type.ARCreeperAppliedMultiplier == 1) {
-            splashDamage(team, x, y, radius, damage * source.type.ARCreeperDamageMultiplier);
-        } else {
-            splashAppliedMultiplier(team, x, y, radius, source.type.ARCreeperAppliedMultiplier);
         }
     }
 
