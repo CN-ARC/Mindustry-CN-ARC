@@ -382,12 +382,10 @@ public class BulletType extends Content implements Cloneable{
     /** 击中水格时将水格的水量乘以此系数 */
     public float creeperAppliedMultiplier = 1f;
 
-    /** 子弹产生的出水量 */
-    public float creeperAmount = 0f;
-    /** 是否在击中水格时出水 */
-    public boolean releaseCreeperOnHit = false;
-    /** 是否在子弹消失时出水 */
-    public boolean releaseCreeperOnRemove = true;
+    /** 子弹击中时的出水量 */
+    public float creeperOnHit = 0f;
+    /** 子弹消失时的出水量 */
+    public float creeperOnRemove = 0f;
 
     public BulletType(float speed, float damage){
         this.speed = speed;
@@ -587,10 +585,10 @@ public class BulletType extends Content implements Cloneable{
             Lightning.create(b, lightningColor, lightningDamage < 0 ? damage : lightningDamage, b.x, b.y, b.rotation() + Mathf.range(lightningCone/2) + lightningAngle, lightningLength + Mathf.random(lightningLengthRand));
         }
 
-        if(CreeperCore.enabled() && creeperAmount > 0 && releaseCreeperOnHit) {
+        if(CreeperCore.enabled() && creeperOnHit > 0) {
             Tile tile = b.tileOn();
             if(tile == null) return;
-            CreeperCore.creeperTile.add(tile, CreeperCore.creeperTile.getTeamCreeper(b.team, creeperAmount));
+            CreeperCore.creeperTile.add(tile, CreeperCore.creeperTile.getTeamCreeper(b.team, creeperOnHit));
         }
     }
 
@@ -675,10 +673,10 @@ public class BulletType extends Content implements Cloneable{
         if(b.frags == 0 && fragOnDespawn && fragBullet != null){
             createFrags(b, b.x, b.y);
         }
-        if(CreeperCore.enabled() && creeperAmount > 0 && releaseCreeperOnRemove) {
+        if(CreeperCore.enabled() && creeperOnRemove > 0) {
             Tile tile = b.tileOn();
             if(tile == null) return;
-            CreeperCore.creeperTile.add(tile, CreeperCore.creeperTile.getTeamCreeper(b.team, creeperAmount));
+            CreeperCore.creeperTile.add(tile, CreeperCore.creeperTile.getTeamCreeper(b.team, creeperOnRemove));
         }
     }
 
