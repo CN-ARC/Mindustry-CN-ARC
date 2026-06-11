@@ -180,12 +180,12 @@ public final class CreeperCombat {
     public static float damageTileWithBullet(Bullet bullet, Team attacker, Tile tile, float damage){
         float absorbed = 0f;
 
-        float appliedMultiplier = bullet.type.ARCreeperAppliedMultiplier;
+        float appliedMultiplier = bullet.type.creeperAppliedMultiplier;
         if (appliedMultiplier != 1){
             absorbed += multiplyTileCreeper(attacker, tile, appliedMultiplier);
         }
 
-        float damageMultiplier = bullet.type.ARCreeperDamageMultiplier;
+        float damageMultiplier = bullet.type.creeperDamageMultiplier;
         if (damageMultiplier == 0f) {
             return absorbed;
         }

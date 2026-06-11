@@ -322,7 +322,7 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
 
     public boolean collidedCreeper(int x, int y){
         // 如果对水伤害为0，则不处理碰撞(直接无视水)
-        if (type.ARCreeperDamageMultiplier <= 0) return false;
+        if (type.creeperDamageMultiplier <= 0) return false;
 
         Tile tile = world.tile(x, y);
         if(tile != null && isAdded() && CreeperCombat.canAttackCreeper(team, tile)){

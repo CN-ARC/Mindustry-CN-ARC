@@ -843,16 +843,16 @@ public class StatValues{
                         sep(bt, Core.bundle.format("bullet.shielddamage", ammoStat((int)(type.shieldDamageMultiplier * 100 - 100))));
                     }
 
-                    if(type.creeperReleaseOnRemove > 0){
-                        sep(bt, Core.bundle.format("bullet.creeperamount", type.creeperReleaseOnRemove));
+                    if(type.creeperAmount > 0){
+                        sep(bt, Core.bundle.format("bullet.creeperamount", type.creeperAmount));
                     }
 
-                    if(type.ARCreeperDamageMultiplier != 1){
-                        sep(bt, colorize(type.ARCreeperDamageMultiplier) + "[blue] x 对水伤害");
+                    if(type.creeperDamageMultiplier != 1){
+                        sep(bt, colorize(type.creeperDamageMultiplier) + "[blue] x 对水伤害");
                     }
 
-                    if(type.ARCreeperAppliedMultiplier != 1){
-                        sep(bt, (type.ARCreeperAppliedMultiplier < 1 ? "[stat]" : "[negstat]") + Strings.autoFixed(type.ARCreeperAppliedMultiplier, 2) + "[blue] x 水层");
+                    if(type.creeperAppliedMultiplier != 1){
+                        sep(bt, (type.creeperAppliedMultiplier < 1 ? "[stat]" : "[negstat]") + Strings.autoFixed(type.creeperAppliedMultiplier, 2) + "[blue] x 水层");
                     }
 
                     if(type.splashDamage > 0){

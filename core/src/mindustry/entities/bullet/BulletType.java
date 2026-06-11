@@ -377,14 +377,17 @@ public class BulletType extends Content implements Cloneable{
 
     protected float cachedDps = -1;
 
-    /** Multiplier of how much base damage is done to creep. */
-    public float ARCreeperDamageMultiplier = 1f;
+    /** 对creeper的伤害倍率 */
+    public float creeperDamageMultiplier = 1f;
+    /** 击中水格时将水格的水量乘以此系数 */
+    public float creeperAppliedMultiplier = 1f;
 
-    /** 给击中的creeper乘以一个系数 */
-    public float ARCreeperAppliedMultiplier = 1f;
-
-    /** 子弹消失时的出水量 */
-    public float creeperReleaseOnRemove = 0f;
+    /** 子弹产生的出水量 */
+    public float creeperAmount = 0f;
+    /** 是否在击中水格时出水 */
+    public boolean releaseCreeperOnHit = false;
+    /** 是否在子弹消失时出水 */
+    public boolean releaseCreeperOnRemove = true;
 
     public BulletType(float speed, float damage){
         this.speed = speed;
@@ -583,6 +586,12 @@ public class BulletType extends Content implements Cloneable{
         for(int i = 0; i < lightning; i++){
             Lightning.create(b, lightningColor, lightningDamage < 0 ? damage : lightningDamage, b.x, b.y, b.rotation() + Mathf.range(lightningCone/2) + lightningAngle, lightningLength + Mathf.random(lightningLengthRand));
         }
+
+        if(CreeperCore.enabled() && creeperAmount > 0 && releaseCreeperOnHit) {
+            Tile tile = b.tileOn();
+            if(tile == null) return;
+            CreeperCore.creeperTile.add(tile, CreeperCore.creeperTile.getTeamCreeper(b.team, creeperAmount));
+        }
     }
 
     public void createIncend(Bullet b, float x, float y){
@@ -666,10 +675,10 @@ public class BulletType extends Content implements Cloneable{
         if(b.frags == 0 && fragOnDespawn && fragBullet != null){
             createFrags(b, b.x, b.y);
         }
-        if(CreeperCore.enabled() && creeperReleaseOnRemove > 0) {
-
-            if(b.tileOn() == null) return;
-            CreeperCore.creeperTile.add(b.tileOn(), CreeperCore.creeperTile.getTeamCreeper(b.team, creeperReleaseOnRemove));
+        if(CreeperCore.enabled() && creeperAmount > 0 && releaseCreeperOnRemove) {
+            Tile tile = b.tileOn();
+            if(tile == null) return;
+            CreeperCore.creeperTile.add(tile, CreeperCore.creeperTile.getTeamCreeper(b.team, creeperAmount));
         }
     }
 
