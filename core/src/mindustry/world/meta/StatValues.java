@@ -848,11 +848,11 @@ public class StatValues{
                     }
 
                     if(type.ARCreeperDamageMultiplier != 1){
-                        sep(bt, colorize(type.ARCreeperDamageMultiplier) + "[lightgray]x对水伤害");
+                        sep(bt, colorize(type.ARCreeperDamageMultiplier) + "[blue] x 对水伤害");
                     }
 
                     if(type.ARCreeperAppliedMultiplier != 1){
-                        sep(bt, colorize(type.ARCreeperAppliedMultiplier) + "[lightgray]x 水倍率");
+                        sep(bt, (type.ARCreeperAppliedMultiplier < 1 ? "[stat]" : "[negstat]") + Strings.autoFixed(type.ARCreeperAppliedMultiplier, 2) + "[blue] x 水层");
                     }
 
                     if(type.splashDamage > 0){
