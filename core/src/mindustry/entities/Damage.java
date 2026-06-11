@@ -343,8 +343,9 @@ public class Damage{
         if(hitter.type.collidesGround){
             Tile tile = world.tileWorld(x, y);
 
-            if(CreeperCombat.canAttackCreeper(team, tile) && hitter.damage > 0f){
-                float absorbed = CreeperCombat.damageTile(team, tile, hitter.damage);
+            if(hitter.damage > 0f){
+                float absorbed = hitter.damage;
+                if(CreeperCombat.canAttackCreeper(team, tile)) absorbed = CreeperCombat.damageTile(team, tile, hitter.damage);
 
                 if(absorbed > 0f){
                     hitter.type.hit(hitter, x, y);
@@ -572,9 +573,7 @@ public class Damage{
         }
 
         if(ground){
-            // 新增：范围伤害也消耗 creeper。
-            // 只会处理 creeper > 0 的 tile，具体过滤在 CreeperCombat 内部。
-            CreeperCombat.splashDamage(team, x, y, radius, damage * (source == null ? 1f : source.type.ARCreeperDamageMultiplier));
+            CreeperCombat.splashBullet(team, x, y, radius, damage, source);
             if(!complete){
                 tileDamage(team, World.toTile(x), World.toTile(y), radius / tilesize, damage * (source == null ? 1f : source.type.buildingDamageMultiplier), source);
             }else{

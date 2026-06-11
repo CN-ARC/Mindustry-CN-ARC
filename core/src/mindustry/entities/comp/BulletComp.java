@@ -331,7 +331,8 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
 
                 // 无限穿透，直接触发击中，不衰减伤害
                 if(type.pierceCap == -1){
-                    CreeperCombat.damageTile(team, tile, damage * type.ARCreeperDamageMultiplier);
+
+                    CreeperCombat.damageTileBullet(team, tile, damage, this.type);
                     type.hit(self(), x * tilesize, y * tilesize);
                     collided.add(creepId);
                     return false;
@@ -339,7 +340,7 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
                 // 还剩至少一次穿透次数，造成子弹原始的伤害，如果现有伤害不足以抵消则消耗一次穿透补充
                 else if(collided.size + 1 < type.pierceCap){
 
-                    float absorbed = CreeperCombat.damageTile(team, tile, originalDamage * type.ARCreeperDamageMultiplier);
+                    float absorbed = CreeperCombat.damageTileBullet(team, tile, originalDamage * type.ARCreeperDamageMultiplier, this.type);
 
                     damage -= absorbed / type.ARCreeperDamageMultiplier;
 
@@ -353,7 +354,7 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
                 }
             }
             // 普通子弹，和水抵消伤害，伤害为0后消失
-            float absorbed = CreeperCombat.damageTile(team, tile, damage * type.ARCreeperDamageMultiplier);
+            float absorbed = CreeperCombat.damageTileBullet(team, tile, damage, this.type);
 
             damage -= absorbed / type.ARCreeperDamageMultiplier;
 

@@ -848,7 +848,11 @@ public class StatValues{
                     }
 
                     if(type.ARCreeperDamageMultiplier != 1){
-                        sep(bt, Core.bundle.format("bullet.creeperdamage", ammoStat((int)(type.ARCreeperDamageMultiplier * 100 - 100))));
+                        sep(bt, colorize(type.buildingDamageMultiplier) + "[lightgray]x对水伤害");
+                    }
+
+                    if(type.ARCreeperAppliedMultiplier != 1){
+                        sep(bt, colorize(type.ARCreeperAppliedMultiplier) + "[lightgray]x 水倍率");
                     }
 
                     if(type.splashDamage > 0){

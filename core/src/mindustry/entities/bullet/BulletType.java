@@ -379,6 +379,10 @@ public class BulletType extends Content implements Cloneable{
 
     /** Multiplier of how much base damage is done to creep. */
     public float ARCreeperDamageMultiplier = 1f;
+
+    /** 给击中的creeper乘以一个系数 */
+    public float ARCreeperAppliedMultiplier = 1f;
+
     /** 子弹消失时的出水量 */
     public float creeperReleaseOnRemove = 0f;
 
