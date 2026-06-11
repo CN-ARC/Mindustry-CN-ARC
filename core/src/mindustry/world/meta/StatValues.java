@@ -848,7 +848,7 @@ public class StatValues{
                     }
 
                     if(type.ARCreeperDamageMultiplier != 1){
-                        sep(bt, colorize(type.buildingDamageMultiplier) + "[lightgray]x对水伤害");
+                        sep(bt, colorize(type.ARCreeperDamageMultiplier) + "[lightgray]x对水伤害");
                     }
 
                     if(type.ARCreeperAppliedMultiplier != 1){
