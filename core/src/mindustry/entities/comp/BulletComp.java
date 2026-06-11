@@ -339,10 +339,10 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
                 }
                 // 还剩至少一次穿透次数，造成子弹原始的伤害，如果现有伤害不足以抵消则消耗一次穿透补充
                 else if(collided.size + 1 < type.pierceCap){
-
-                    float absorbed = CreeperCombat.damageTileBullet(team, tile, originalDamage * type.ARCreeperDamageMultiplier, this.type);
-
-                    damage -= absorbed / type.ARCreeperDamageMultiplier;
+                    if (type.ARCreeperDamageMultiplier!= 0){
+                        float absorbed = CreeperCombat.damageTileBullet(team, tile, originalDamage * type.ARCreeperDamageMultiplier, this.type);
+                        damage -= absorbed / type.ARCreeperDamageMultiplier;
+                    }
 
                     if (damage <= 0.001f) {
                         damage += originalDamage;
@@ -354,10 +354,10 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
                 }
             }
             // 普通子弹，和水抵消伤害，伤害为0后消失
-            float absorbed = CreeperCombat.damageTileBullet(team, tile, damage, this.type);
-
-            damage -= absorbed / type.ARCreeperDamageMultiplier;
-
+            if (type.ARCreeperDamageMultiplier!= 0) {
+                float absorbed = CreeperCombat.damageTileBullet(team, tile, damage, this.type);
+                damage -= absorbed / type.ARCreeperDamageMultiplier;
+            }
             if (damage <= 0.001f) {
                 type.hit(self(), x * tilesize, y * tilesize);
                 hit = true;
