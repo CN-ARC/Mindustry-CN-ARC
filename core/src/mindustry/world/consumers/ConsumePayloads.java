@@ -2,6 +2,7 @@ package mindustry.world.consumers;
 
 import arc.scene.ui.layout.*;
 import arc.struct.*;
+import mindustry.arcModule.ui.ARCConsumption;
 import mindustry.gen.*;
 import mindustry.type.*;
 import mindustry.ui.*;
@@ -51,8 +52,8 @@ public class ConsumePayloads extends Consume{
         table.table(c -> {
             int i = 0;
             for(var stack : payloads){
-                c.add(new ReqImage(StatValues.stack(stack.item, Math.round(stack.amount * multiplier.get(build))),
-                () -> inv.contains(stack.item, Math.round(stack.amount * multiplier.get(build))))).padRight(8);
+                c.add(new ReqImage(ARCConsumption.arcAdvancedStack(stack.item, Math.round(stack.amount * multiplier.get(build)), inv.get(stack.item)),
+                        () -> inv.contains(stack.item, Math.round(stack.amount * multiplier.get(build))))).padRight(8);
                 if(++i % 4 == 0) c.row();
             }
         }).left();
