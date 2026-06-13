@@ -272,6 +272,7 @@ public class ARCUnits {
                 }
             }
         }
+        Draw.reset();
         float index = 0f;
         int iconColumns = Math.max((int) (unit.hitSize() / (iconSize + 1f)), 4);
         float iconWidth = Math.min(unit.hitSize() / iconColumns, iconSize + 1f);
