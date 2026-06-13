@@ -4,7 +4,9 @@ import arc.func.Boolf;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.Interval;
+import arc.util.Log;
 import mindustry.*;
+import mindustry.content.Items;
 import mindustry.core.*;
 import mindustry.entities.Units;
 import mindustry.type.*;
@@ -58,7 +60,7 @@ public class RCoreItemsDisplay extends CoreItemsDisplay {
 
     private ItemSeq updatePlanItems() {
         planItems = new ItemSeq();
-        control.input.allPlans().each(plan -> {
+        control.input.lastPlans.each(plan -> {
             if (plan.block instanceof CoreBlock) return;
             for (ItemStack stack : plan.block.requirements) {
                 int planAmount = (int) (plan.breaking ? -1 * state.rules.buildCostMultiplier * state.rules.deconstructRefundMultiplier * stack.amount * plan.progress : state.rules.buildCostMultiplier * stack.amount * (1 - plan.progress));
@@ -90,7 +92,7 @@ public class RCoreItemsDisplay extends CoreItemsDisplay {
                 rebuild();
             }
 
-            if (content.items().contains(item -> core != null && core.items.get(item) > 0 && usedItems.add(item)) || content.units().contains(unit -> Vars.player.team().data().countType(unit) > 0 && usedUnits.add(unit))) {
+            if (content.units().contains(unit -> Vars.player.team().data().countType(unit) > 0 && usedUnits.add(unit))) {
                 rebuild();
             }
 
@@ -102,36 +104,19 @@ public class RCoreItemsDisplay extends CoreItemsDisplay {
         if (arccoreitems == 1 || arccoreitems == 3) {
             for (Item item : content.items()) {
                 if (usedItems.contains(item)) {
-                    if (mobile) {
-                        stack(
-                                new Table(t -> {
-                                    t.image(item.uiIcon).size(iconSmall).padRight(3).tooltip(tooltip -> tooltip.background(Styles.black6).margin(4f).add(item.localizedName).style(Styles.outlineLabel));
-                                }),
+                    stack(
+                            new Table(t -> {
+                                t.image(item.uiIcon).size(iconSmall).padRight(3).tooltip(tooltip -> tooltip.background(Styles.black6).margin(4f).add(item.localizedName).style(Styles.outlineLabel));
+                            }),
 
-                                new Table(t -> {
-                                    t.label(() -> {
-                                        int update = updateItems[item.id];
-                                        if (update == 0) return "";
-                                        return (update < 0 ? "[red]" : "[green]+") + update;
-                                    }).get().setFontScale(0.85f);
-                                }).top().left()
-                        );
-                    } else {
-                        stack(
-                                new Table(t -> {
-                                    t.image(item.uiIcon).size(iconSmall).padRight(3).tooltip(tooltip -> tooltip.background(Styles.black6).margin(4f).add(item.localizedName).style(Styles.outlineLabel));
-                                }),
-
-                                new Table(t -> {
-                                    t.label(() -> {
-                                        int update = updateItems[item.id];
-                                        if (update == 0) return "";
-                                        return (update < 0 ? "[red]" : "[green]+") + update;
-                                    }).get().setFontScale(0.85f);
-                                }).top().left()
-                        );
-                    }
-
+                            new Table(t -> {
+                                t.label(() -> {
+                                    int update = updateItems[item.id];
+                                    if (update == 0) return "";
+                                    return (update < 0 ? "[red]" : "[green]+") + update;
+                                }).get().setFontScale(0.85f);
+                            }).top().left()
+                    );
 
                     label(() -> {
                         if (core == null) return "";
@@ -172,7 +157,7 @@ public class RCoreItemsDisplay extends CoreItemsDisplay {
         i = 0;
         row();
         planBlock.clear();
-        control.input.allPlans().each(p -> planBlock.put(p.block, planBlock.get(p.block, 0) + (p.breaking ? -1 : 1)));
+        control.input.lastPlans.each(p -> planBlock.put(p.block, planBlock.get(p.block, 0) + (p.breaking ? -1 : 1)));
         for (Block block : content.blocks().select(planBlockFilter)) {
             int count = planBlock.get(block, 0);
             if (count != 0) {
