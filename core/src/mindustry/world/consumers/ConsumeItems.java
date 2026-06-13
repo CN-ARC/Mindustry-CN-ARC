@@ -1,6 +1,7 @@
 package mindustry.world.consumers;
 
 import arc.scene.ui.layout.*;
+import mindustry.arcModule.ui.ARCConsumption;
 import mindustry.gen.*;
 import mindustry.type.*;
 import mindustry.ui.*;
@@ -33,7 +34,7 @@ public class ConsumeItems extends Consume{
         table.table(c -> {
             int i = 0;
             for(var stack : items){
-                c.add(new ReqImage(StatValues.stack(stack.item, Math.round(stack.amount * multiplier.get(build))),
+                c.add(new ReqImage(ARCConsumption.arcAdvancedStack(stack.item, Math.round(stack.amount * multiplier.get(build)), build.items.get(stack.item)),
                 () -> build.items.has(stack.item, Math.round(stack.amount * multiplier.get(build))))).padRight(8);
                 if(++i % 4 == 0) c.row();
             }
