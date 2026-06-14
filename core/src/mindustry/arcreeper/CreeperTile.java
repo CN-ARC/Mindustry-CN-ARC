@@ -19,6 +19,7 @@ import mindustry.game.EventType;
 import mindustry.game.Rules;
 import mindustry.game.Team;
 import mindustry.gen.Groups;
+import mindustry.gen.Payloadc;
 import mindustry.gen.Unit;
 import mindustry.graphics.Pal;
 import mindustry.logic.LExecutor;
@@ -26,6 +27,8 @@ import mindustry.logic.LStatements;
 import mindustry.logic.LVar;
 import mindustry.world.Tile;
 import mindustry.world.blocks.defense.ForceProjector;
+import mindustry.world.blocks.payloads.BuildPayload;
+import mindustry.world.blocks.payloads.Payload;
 
 import java.io.*;
 
@@ -1028,7 +1031,18 @@ public class CreeperTile {
         // 与 damageBuildingOnFlow() 保持一致：属于对应 C/AC 队伍的不受该液体伤害。
         if(unit.team == team) return;
 
-        float damage = baseDamage * (1f -  unit.type.creeperEvade) * Math.abs(tile.creeper);
+        // 如果单位装有物品时无视水免，防直接罐子爆核心
+        boolean payloadDamage = false;
+        if (unit instanceof Payloadc payload && payload.payloads().any()) {
+
+            for (Payload p : payload.payloads()) {
+                if (p instanceof BuildPayload) {
+                    payloadDamage = true;
+                    break;
+                }
+            }
+        }
+        float damage = baseDamage * (payloadDamage ? 1f: (1f -  unit.type.creeperEvade)) * Math.abs(tile.creeper);
         if(damage <= 0f) return;
 
         unit.damagePierce(damage);
