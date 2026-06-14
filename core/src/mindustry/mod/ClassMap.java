@@ -38,6 +38,7 @@ public class ClassMap{
         classes.put("SpawnDeathAbility", mindustry.entities.abilities.SpawnDeathAbility.class);
         classes.put("StatusFieldAbility", mindustry.entities.abilities.StatusFieldAbility.class);
         classes.put("SuppressionFieldAbility", mindustry.entities.abilities.SuppressionFieldAbility.class);
+        classes.put("SporeDisruptFieldAbility", mindustry.arcreeper.SporeDisruptFieldAbility.class);
         classes.put("UnitSpawnAbility", mindustry.entities.abilities.UnitSpawnAbility.class);
         classes.put("ArtilleryBulletType", mindustry.entities.bullet.ArtilleryBulletType.class);
         classes.put("BasicBulletType", mindustry.entities.bullet.BasicBulletType.class);
