@@ -38,7 +38,7 @@ import static mindustry.Vars.tilesize;
     @Override
     public void update(Unit unit){
         timer += Time.delta;
-        Fx.overdriveWave.at(unit.x, unit.y, range, Color.purple);
+        boolean showEffect = false;
 
         if(timer >= reload){
             for(Spore spore : SporeCore.all()){
@@ -47,11 +47,13 @@ import static mindustry.Vars.tilesize;
                 if(Mathf.dst2(unit.x, unit.y, spore.x, spore.y) > range * range) continue;
 
                 spore.damage(damage);
+                showEffect = true;
 
             }
 
             timer = 0f;
         }
+        if (showEffect) Fx.overdriveWave.at(unit.x, unit.y, range, Color.purple);
     }
 
 }
