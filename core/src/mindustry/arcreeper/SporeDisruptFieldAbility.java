@@ -12,7 +12,7 @@ import mindustry.gen.Unit;
 
 import static mindustry.Vars.tilesize;
 
-public class SporeDisruptFieldAbility extends Ability {
+    public class SporeDisruptFieldAbility extends Ability {
     public float range = 60, reload = 60, damage = 1;
 
     protected float timer;
@@ -38,15 +38,16 @@ public class SporeDisruptFieldAbility extends Ability {
     @Override
     public void update(Unit unit){
         timer += Time.delta;
+        Fx.overdriveWave.at(unit.x, unit.y, range, Color.purple);
 
         if(timer >= reload){
             for(Spore spore : SporeCore.all()){
                 if(spore == null || spore.removed) continue;
                 if(!SporeCombat.canAttack(unit.team, spore)) continue;
-                if(Mathf.dst2(unit.x, unit.y, spore.x, spore.y) > range) continue;
+                if(Mathf.dst2(unit.x, unit.y, spore.x, spore.y) > range * range) continue;
 
                 spore.damage(damage);
-                Fx.overdriveWave.at(unit.x, unit.y, range, Color.purple);
+
             }
 
             timer = 0f;
