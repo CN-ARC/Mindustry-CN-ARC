@@ -4,7 +4,11 @@ import arc.math.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
+import mindustry.Vars;
+import mindustry.arcreeper.Spore;
+import mindustry.arcreeper.SporeCombat;
 import mindustry.content.*;
+import mindustry.entities.Damage;
 import mindustry.entities.bullet.*;
 import mindustry.gen.*;
 import mindustry.world.consumers.*;
@@ -16,6 +20,8 @@ public class ContinuousTurret extends Turret{
     /** Speed at which the turret can change its bullet "aim" distance. This is only used for point laser bullets. */
     public float aimChangeSpeed = Float.POSITIVE_INFINITY;
     public boolean scaleDamageEfficiency = false;
+    /** Visual hit size used when testing whether a continuous beam touches an ARCreeper Spore. */
+    public float sporeHitSize = 20f;
 
     public ContinuousTurret(String name){
         super(name);
@@ -38,6 +44,8 @@ public class ContinuousTurret extends Turret{
     public class ContinuousTurretBuild extends TurretBuild{
         public Seq<BulletEntry> bullets = new Seq<>();
         public float lastLength = size * 4f;
+        public float sporeDamageTimer;
+        public boolean sporeBeamHitting;
 
         @Override
         public float estimateDps(){
@@ -63,7 +71,7 @@ public class ContinuousTurret extends Turret{
 
         @Override
         public boolean shouldConsume(){
-            return isShooting();
+            return isShooting() && (!(targetSpore && target instanceof Spore) || sporeBeamHitting);
         }
 
         @Override
@@ -84,6 +92,8 @@ public class ContinuousTurret extends Turret{
 
         @Override
         public void updateTile(){
+            sporeBeamHitting = false;
+
             super.updateTile();
 
             bullets.removeAll(b -> !b.bullet.isAdded() || b.bullet.type == null || b.bullet.owner != this);
@@ -93,9 +103,17 @@ public class ContinuousTurret extends Turret{
                     updateBullet(entry);
                 }
 
+                if(targetSpore && target instanceof Spore spore && isShooting() && canConsume() && !charging() && shootWarmup >= minWarmup){
+                    sporeBeamHitting = updateSporeBeamDamage(spore);
+                }else{
+                    sporeDamageTimer = 0f;
+                }
+
                 wasShooting = true;
                 heat = 1f;
                 curRecoil = recoil;
+            }else{
+                sporeDamageTimer = 0f;
             }
         }
 
@@ -134,8 +152,121 @@ public class ContinuousTurret extends Turret{
             //continuous turrets don't have a concept of reload, they are always firing when possible
         }
 
+        protected float sporeDamageInterval(){
+            BulletType type = peekAmmo();
+
+            if(type instanceof ContinuousBulletType c){
+                return Math.max(c.damageInterval, 1f);
+            }
+
+            if(type instanceof PointLaserBulletType p){
+                return Math.max(p.damageInterval, 1f);
+            }
+
+            return 5f;
+        }
+
+        protected boolean updateSporeBeamDamage(Spore spore){
+            int hitCount = 0;
+
+            for(var entry : bullets){
+                if(sporeBeamHits(entry.bullet, spore)){
+                    hitCount++;
+                }
+            }
+
+            if(hitCount <= 0){
+                sporeDamageTimer = 0f;
+                return false;
+            }
+
+            sporeDamageTimer += delta() * efficiency;
+
+            float interval = sporeDamageInterval();
+
+            while(sporeDamageTimer >= interval){
+                sporeDamageTimer -= interval;
+
+                if(!SporeCombat.attackSpore(
+                        team,
+                        spore,
+                        x,
+                        y,
+                        range(),
+                        sporeDamage * hitCount * Vars.state.rules.blockDamage(team),
+                        efficiency
+                )){
+                    sporeDamageTimer = 0f;
+                    break;
+                }
+
+                if(sporeHitEffect != null && sporeHitEffect != Fx.none){
+                    sporeHitEffect.at(spore.x, spore.y, sporeColor);
+                }
+
+                if(spore.removed){
+                    break;
+                }
+            }
+
+            return true;
+        }
+
+        protected boolean sporeBeamHits(Bullet bullet, Spore spore){
+            if(bullet == null || bullet.type == null || !bullet.isAdded() || spore == null || spore.removed){
+                return false;
+            }
+
+            float radius = sporeHitSize / 2f;
+
+            if(bullet.type instanceof PointLaserBulletType){
+                return Mathf.dst2(bullet.aimX, bullet.aimY, spore.x, spore.y) <= radius * radius;
+            }
+
+            float length;
+
+            if(bullet.type instanceof ContinuousBulletType c){
+                length = Damage.findLength(bullet, c.currentLength(bullet), c.laserAbsorb, c.pierceCap);
+            }else{
+                length = Mathf.dst(bullet.x, bullet.y, bullet.aimX, bullet.aimY);
+            }
+
+            if(length <= 0f){
+                return false;
+            }
+
+            float x2 = bullet.x + Angles.trnsx(bullet.rotation(), length);
+            float y2 = bullet.y + Angles.trnsy(bullet.rotation(), length);
+
+            return dst2PointSegment(spore.x, spore.y, bullet.x, bullet.y, x2, y2) <= radius * radius;
+        }
+
+        protected float dst2PointSegment(float px, float py, float x1, float y1, float x2, float y2){
+            float dx = x2 - x1;
+            float dy = y2 - y1;
+            float len2 = dx * dx + dy * dy;
+
+            if(len2 <= 0.0001f){
+                return Mathf.dst2(px, py, x1, y1);
+            }
+
+            float t = Mathf.clamp(((px - x1) * dx + (py - y1) * dy) / len2);
+            float cx = x1 + dx * t;
+            float cy = y1 + dy * t;
+
+            return Mathf.dst2(px, py, cx, cy);
+        }
+
         @Override
         protected void updateShooting(){
+            if(targetSpore && target instanceof Spore){
+                if(!bullets.any() && canConsume() && !charging() && shootWarmup >= minWarmup){
+                    shoot(peekAmmo());
+                }
+
+                return;
+            }
+
             if(bullets.any()){
                 return;
             }
