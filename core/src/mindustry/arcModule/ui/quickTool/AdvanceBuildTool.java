@@ -65,6 +65,7 @@ public class AdvanceBuildTool extends ElementUtils.ToolTable {
     private boolean shadowBuild = false;
 
     public static boolean buildPlansConstrain = true;
+    public static boolean auxiliaryLine = false;
 
     public AdvanceBuildTool() {
         icon = Blocks.buildTower.emoji();
@@ -174,7 +175,14 @@ public class AdvanceBuildTool extends ElementUtils.ToolTable {
                     rebuild();
                 }).size(30).tooltip("地图世处信息");
             }).fillX().row();
-            t.table(tt -> tt.button("\uE817", textStyle, () -> shadowBuild = !shadowBuild).checked(a -> shadowBuild).size(30, 30).tooltip("虚影建造模式\n[red]有些服限制发包数较低，建筑较多时会被踢出。请酌情使用")).fillX().row();
+            t.table(tt -> {
+                tt.button("\uE817", textStyle, () -> shadowBuild = !shadowBuild
+                ).checked(a -> shadowBuild).size(30, 30
+                ).tooltip("虚影建造模式\n[red]有些服限制发包数较低，建筑较多时会被踢出。请酌情使用");
+                tt.button("\uE812", textStyle, () -> auxiliaryLine = !auxiliaryLine
+                ).checked(a -> auxiliaryLine).size(30, 30
+                ).tooltip("选择范围辅助线");
+            }).fillX().row();
                 t.table(tt -> {
                     tt.button("\uF8C9", textStyle, () -> {
                         buildPlansConstrain = !buildPlansConstrain;
