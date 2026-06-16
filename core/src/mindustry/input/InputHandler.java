@@ -51,6 +51,7 @@ import java.util.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ui.quickTool.AdvanceBuildTool.auxiliaryLine;
 
 public abstract class InputHandler implements InputProcessor, GestureListener{
     //not sure where else to put this - maps unique commands based on position to a list of units that will be turned into a unit group
@@ -1815,6 +1816,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         Draw.color(col1);
         Lines.rect(result.x, result.y - 1, result.x2 - result.x, result.y2 - result.y);
         Draw.color(col2);
+        if (auxiliaryLine) DrawUtilities.arcAuxiliaryLine(result.x, result.y, result.x2, result.y2);
         Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
 
         if(withText){

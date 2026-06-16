@@ -132,9 +132,9 @@ public class DrawUtilities {
         font.draw(text, dx, dy + layout.height + 1, Align.center);
         dy -= 1f;
         Lines.stroke(2f, Color.darkGray);
-        line(dx - layout.width / 2f - 2f, dy, dx + layout.width / 2f + 1.5f, dy);
+        line(dx - layout.width / 2f - 2f, dy, dx + layout.width / 2f + 2f, dy);
         Lines.stroke(1f, color);
-        line(dx - layout.width / 2f - 2f, dy, dx + layout.width / 2f + 1.5f, dy);
+        line(dx - layout.width / 2f - 2f, dy, dx + layout.width / 2f + 2f, dy);
 
         font.setUseIntegerPositions(ints);
         font.setColor(Color.white);
@@ -216,25 +216,80 @@ public class DrawUtilities {
         }
     }
 
-    public static void drawNSideRegion(float x, float y, int n, float range, float rotation, Color color, float fraction, TextureRegion region, boolean regionColor){
+    public static void drawNSideRegion(float x, float y, int n, float range, float rotation, Color color, float fraction, TextureRegion region, boolean regionColor) {
         Draw.z(Layer.effect - 2f);
         Draw.color(color);
 
         Lines.stroke(2f);
 
         for (int i = 0; i < n; i++) {
-            float frac = 360f * (1 - fraction * n)/n/2;
+            float frac = 360f * (1 - fraction * n) / n / 2;
             float rot = rotation + i * 360f / n + frac;
-            if (!regionColor){
+            if (!regionColor) {
                 Draw.color(color);
                 Lines.arc(x, y, range, 0.25f, rot, (int) (50 + range / 10));
                 Draw.color();
-            }else{
+            } else {
                 Lines.arc(x, y, range, 0.25f, rot, (int) (50 + range / 10));
             }
-            Draw.rect(region, x + range * Mathf.cos((float) Math.toRadians(rot-frac)),  y + range * Mathf.sin((float) Math.toRadians(rot-frac)),12f,12f);
+            Draw.rect(region, x + range * Mathf.cos((float) Math.toRadians(rot - frac)), y + range * Mathf.sin((float) Math.toRadians(rot - frac)), 12f, 12f);
         }
         Draw.reset();
+    }
+
+    public static void arcAuxiliaryLine(float x, float y, float x2, float y2){
+        arcAuxiliaryLine(x, y, x2, y2, 50f, 5f);
+    }
+
+    public static void arcAuxiliaryLine(float x, float y, float x2, float y2, float extendTiles, float dashTiles){
+        float extend = extendTiles * tilesize;
+        float dash = dashTiles * tilesize;
+
+        // 下边：向左、向右延长
+        arcAuxiliaryDash(x, y, -1f, 0f, extend, dash);
+        arcAuxiliaryDash(x2, y, 1f, 0f, extend, dash);
+
+        // 上边：向左、向右延长
+        arcAuxiliaryDash(x, y2, -1f, 0f, extend, dash);
+        arcAuxiliaryDash(x2, y2, 1f, 0f, extend, dash);
+
+        // 左边：向下、向上延长
+        arcAuxiliaryDash(x, y, 0f, -1f, extend, dash);
+        arcAuxiliaryDash(x, y2, 0f, 1f, extend, dash);
+
+        // 右边：向下、向上延长
+        arcAuxiliaryDash(x2, y, 0f, -1f, extend, dash);
+        arcAuxiliaryDash(x2, y2, 0f, 1f, extend, dash);
+
+        // 四角
+        arcAuxiliaryDash(x, y, -1f, -1f, extend, dash);
+        arcAuxiliaryDash(x, y2, -1f, 1f, extend, dash);
+        arcAuxiliaryDash(x2, y, 1f, -1f, extend, dash);
+        arcAuxiliaryDash(x2, y2, 1f, 1f, extend, dash);
+    }
+
+    private static void arcAuxiliaryDash(float x, float y, float dx, float dy, float extend, float dash){
+        if(extend <= 0f || dash <= 0f) return;
+
+        float interval = dash * 2f;
+
+        float phase = (Time.time / 5f) % interval;
+
+        for(float end = phase; end <= extend + dash; end += interval){
+            float start = end - dash;
+
+            float drawStart = Math.max(start, 0f);
+            float drawEnd = Math.min(end, extend);
+
+            if(drawEnd <= drawStart) continue;
+
+            line(
+                    x + dx * drawStart,
+                    y + dy * drawStart,
+                    x + dx * drawEnd,
+                    y + dy * drawEnd
+            );
+        }
     }
 
     /*
