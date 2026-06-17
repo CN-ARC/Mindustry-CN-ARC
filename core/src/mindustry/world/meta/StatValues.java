@@ -15,6 +15,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.NumberFormat;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -538,6 +539,32 @@ public class StatValues{
                         b.add(Strings.autoFixed(60f / ((drillTime + drillMultiplier * block.itemDrop.hardness) / (multipliers == null ? 1 : multipliers.get(block.itemDrop, 1f))) * size, 2) + StatUnit.perSecond.localized())
                         .right().pad(10f).padRight(15f).color(Color.lightGray);
                     }).growX().pad(5);
+                    if(++i % 2 == 0) c.row();
+                }
+            }).growX().colspan(table.getColumns());
+        };
+    }
+
+    public static StatValue pumpables(float pumpAmount, Boolf<Block> filter){
+        return table -> {
+            table.row();
+            table.table(c -> {
+                int i = 0;
+                for(Block block : content.blocks()){
+                    if(!filter.get(block)) continue;
+                    if (block instanceof Floor floor){
+                        c.table(Styles.grayPanel, b -> {
+                            b.image(block.uiIcon).size(40).pad(10f).left().scaling(Scaling.fit);
+                            b.table(info -> {
+                                info.left();
+                                info.add(block.localizedName).left().row();
+                                info.add(floor.liquidDrop.emoji()).with(l -> withTooltip(l, floor.liquidDrop)).left();
+                            }).grow();
+                            b.add(NumberFormat.autoFixed( pumpAmount * floor.liquidMultiplier * 60f) + StatUnit.perSecond.localized())
+                                    .right().pad(10f).padRight(15f).color(Color.lightGray);
+                        }).growX().pad(5);
+                    }
+
                     if(++i % 2 == 0) c.row();
                 }
             }).growX().colspan(table.getColumns());

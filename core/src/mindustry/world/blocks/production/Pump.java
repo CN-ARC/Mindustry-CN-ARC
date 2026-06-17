@@ -5,10 +5,13 @@ import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.util.*;
+import mindustry.arcModule.NumberFormat;
 import mindustry.game.*;
+import mindustry.gen.Iconc;
 import mindustry.logic.*;
 import mindustry.type.*;
 import mindustry.world.*;
+import mindustry.world.blocks.environment.Floor;
 import mindustry.world.blocks.liquid.*;
 import mindustry.world.draw.*;
 import mindustry.world.meta.*;
@@ -34,6 +37,7 @@ public class Pump extends LiquidBlock{
     public void setStats(){
         super.setStats();
         stats.add(Stat.output, 60f * pumpAmount * size * size, StatUnit.liquidSecond);
+        stats.add(Stat.drillTier, StatValues.pumpables(pumpAmount * size * size, b -> b instanceof Floor f && f.liquidDrop != null && (indexer.isBlockPresent(f) || state.isMenu())));
     }
 
     @Override
@@ -58,6 +62,9 @@ public class Pump extends LiquidBlock{
             }
 
             if(liquidDrop != null){
+                String stringBuilder = Iconc.production + liquidDrop.emoji() + liquidDrop.localizedName + " [stat]" + NumberFormat.autoFixed(amount * pumpAmount * 60f);
+                drawPurePlaceText(stringBuilder, x, y, valid);
+                /*
                 float width = drawPlaceText(Core.bundle.formatFloat("bar.pumpspeed", amount * pumpAmount * 60f, 0), x, y, valid);
                 float dx = x * tilesize + offset - width/2f - 4f, dy = y * tilesize + offset + size * tilesize / 2f + 5, s = iconSmall / 4f;
                 float ratio = (float)liquidDrop.fullIcon.width / liquidDrop.fullIcon.height;
@@ -65,6 +72,7 @@ public class Pump extends LiquidBlock{
                 Draw.rect(liquidDrop.fullIcon, dx, dy - 1, s * ratio, s);
                 Draw.reset();
                 Draw.rect(liquidDrop.fullIcon, dx, dy, s * ratio, s);
+                */
             }
         }
     }
