@@ -33,6 +33,7 @@ import mindustry.ui.dialogs.*;
 import java.io.*;
 
 import static arc.Core.bundle;
+import static arc.Core.settings;
 import static mindustry.Vars.*;
 
 public class DesktopLauncher extends ClientLauncher{
@@ -593,8 +594,7 @@ public class DesktopLauncher extends ClientLauncher{
         if(steam){
             //Steam mostly just expects us to give it a nice string, but it apparently expects "steam_display" to always be a loc token, so I've uploaded this one which just passes through 'steam_status' raw.
             SVars.net.friends.setRichPresence("steam_display", "#steam_status_raw");
-
-            SVars.net.friends.setRichPresence("steam_status", Strings.stripColors(ARCVars.arcVersionPrefix) + " " + (inGame ? gameMapWithWave : uiState));
+            SVars.net.friends.setRichPresence("steam_status", Strings.stripColors(ARCVars.arcVersionPrefix +  settings.getString("arcSteamOverride","") + (inGame ? gameMapWithWave : uiState)));
         }
     }
 
