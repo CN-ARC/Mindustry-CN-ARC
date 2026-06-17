@@ -812,7 +812,7 @@ public class SettingsMenuDialog extends BaseDialog{
         arc.checkPref("arcShareWaveInfo", false);
         arc.checkPref("arcAlwaysTeamColor", false);
         arc.checkPref("arcSelfName", false);
-        arc.stringInput("arcDisablePacket", "^(.*\\.)?mindustry\\.top(:.*)?$");
+        //arc.stringInput("arcDisablePacket", "^(.*\\.)?mindustry\\.top(:.*)?$");
 
         arc.addCategory("arcPlayerEffect");
         arc.stringInput("playerEffectColor", "ffd37f");
@@ -862,6 +862,7 @@ public class SettingsMenuDialog extends BaseDialog{
         });
 
         arc.addCategory("developerMode");
+        if (steam) arc.stringInput("arcSteamOverride", "");
         arc.checkPref("arcDisableModWarning", false);
         arc.sliderPref("menuFlyersCount", 0, -15, 50, 5, i -> i + "");
         arc.checkPref("menuFlyersRange", false);
