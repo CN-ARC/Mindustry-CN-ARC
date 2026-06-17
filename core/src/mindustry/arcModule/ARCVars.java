@@ -56,6 +56,9 @@ public class ARCVars implements Loadable {
 
     public static ARCBackup arcBackup = new ARCBackup();
 
+    public static boolean showSettingTable = false;
+    public static boolean showContent = false, showLink = false;
+
     public static void init(){
         if(!Vars.headless) {
             Events.run(EventType.Trigger.update, () -> {
