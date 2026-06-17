@@ -34,7 +34,7 @@ import java.io.*;
 import java.util.zip.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.ARCVars.arcui;
+import static mindustry.arcModule.ARCVars.*;
 import static mindustry.logic.LogicDialog.*;
 
 public class LogicBlock extends Block{
@@ -272,8 +272,6 @@ public class LogicBlock extends Block{
         public @Nullable LVar linksVar;
 
         Table settingTable = new Table();
-        boolean showSettingTable = false;
-        boolean showContent = false;
 
         float counter = 0f;
 
@@ -738,24 +736,28 @@ public class LogicBlock extends Block{
                 t.button(Icon.copy, Styles.cleari, () -> {
                     Core.app.setClipboardText(code);
                     arcui.arcInfo("已复制逻辑");
-                }).size(40);
+                }).tooltip("复制逻辑").size(40);
                 t.button(Icon.download, Styles.cleari, () -> {
                     updateCode(Core.app.getClipboardText().replace("\r\n", "\n"));
                     arcui.arcInfo("已导入逻辑(仅单机生效)");
-                }).size(40);
+                }).tooltip("导入逻辑").size(40);
                 t.button(Icon.trash, Styles.cleari, () -> {
                     code = "";
                     updateCode(code);
                     arcui.arcInfo("已清除逻辑(仅单机生效)");
-                }).size(40);
+                }).tooltip("清除逻辑").size(40);
                 t.button(Icon.chatSmall, Styles.cleari, () -> {
                     linkSimplify = !linkSimplify;
                     arcui.arcInfo(linkSimplify ? "仅显示linkindex" : "显示方块名和linkindex");
-                }).size(40);
+                }).tooltip("linkindex显示").size(40);
                 t.button(Icon.info, Styles.cleari, () -> {
                     showContent = !showContent;
                     rebuildSettingTable();
-                }).size(40);
+                }).tooltip("变量显示").size(40);
+                t.button(Icon.flipY, Styles.cleari, () -> {
+                    showLink = !showLink;
+                    rebuildSettingTable();
+                }).tooltip("link列表").size(40);
             });
             if (showContent && !code.isEmpty()) {
                 settingTable.row();
@@ -775,7 +777,33 @@ public class LogicBlock extends Block{
                         t.row();
                     }
                 }).maxHeight(400f);
-
+            }
+            if (showLink){
+                settingTable.row();
+                settingTable.pane(t -> {
+                    if (state.isEditor())
+                        t.add("[gray]沙盒下显示可能有问题\n尽量在游戏内测试").row();
+                    t.table(tt->{
+                        tt.add("id");
+                        tt.add("状态");
+                        tt.add("坐标");
+                        tt.add("建筑");
+                        tt.add("变量");
+                        tt.add("操作");
+                        tt.row();
+                    int i = 0;
+                    for (var s : links) {
+                        tt.add(i + "");
+                        tt.add(s.valid? "[green]\uE800" : "[red]\uE815");
+                        tt.add(s.x + "," + s.y);
+                        tt.add(s.lastBuild != null? s.lastBuild.block.emoji(): "[red]\uE815");
+                        tt.add(s.logicVar != null? s.logicVar.name: "[red]\uE815");
+                        tt.button("\uE86F", Styles.logicButton, ()->{s.valid = !s.valid; links.remove(s); updateLinks(); rebuildSettingTable();});
+                        tt.row();
+                        i++;
+                    }
+                    });
+                }).maxHeight(400f);
             }
         }
 
@@ -794,6 +822,7 @@ public class LogicBlock extends Block{
                         rebuildSettingTable();
                     }).size(40);
                 });
+                rebuildSettingTable();
             }else{
                 table.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
             }

@@ -150,11 +150,6 @@ public class LogicDialog extends BaseDialog{
                     refreshing = !refreshing;
                     arcui.arcInfo("[orange]已" + (refreshing ? "开启" : "关闭") + "逻辑刷新");
                 }).checked(refreshing).size(50f);
-                tt.button(Icon.rightOpenOutSmall, Styles.cleari, () -> {
-                    Core.settings.put("rectJumpLine", !Core.settings.getBool("rectJumpLine"));
-                    arcui.arcInfo("[orange]已" + (refreshing ? "开启" : "关闭") + "方形跳转线");
-                    this.canvas.rebuild();
-                }).checked(refreshing).size(50f);
 
                 tt.button(Icon.playSmall, Styles.cleari, () -> {
                     if (state.isPaused()) state.set(State.playing);
