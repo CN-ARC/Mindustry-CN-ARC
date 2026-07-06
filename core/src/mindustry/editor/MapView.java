@@ -253,9 +253,13 @@ public class MapView extends Element implements GestureListener{
         Draw.reset();
 
         if(grid){
-            Draw.color(Color.gray);
-            image.setBounds(centerx - sclwidth / 2, centery - sclheight / 2, sclwidth, sclheight);
-            image.draw();
+            image.setBounds(
+                    centerx - sclwidth / 2,
+                    centery - sclheight / 2,
+                    sclwidth,
+                    sclheight
+            );
+            image.drawEditorGrid();
 
             Lines.stroke(2f);
             Draw.color(Pal.bulletYellowBack);
@@ -276,31 +280,6 @@ public class MapView extends Element implements GestureListener{
 
             Lines.line(centerx - diagonal, centery - diagonal, centerx + diagonal, centery + diagonal);
             Lines.line(centerx - diagonal, centery + diagonal, centerx + diagonal, centery - diagonal);
-
-            float tileCorr = 5.051f;//LC: anuke这什么几把画图算法，为了对齐只能做这种小数
-
-            if (width>20f && editor.interval>1){
-                for(int count = 1; count < width / editor.interval / tilesize ; count += 1){
-                    float dx = tileCorr * zoom * editor.interval * count;
-                    Draw.color(Color.cyan);
-                    Draw.alpha(0.5f);
-
-                    Lines.line(centerx + dx, centery - sclheight/2f, centerx + dx, centery + sclheight/2f);
-                    Lines.line(centerx - dx, centery - sclheight/2f, centerx - dx, centery + sclheight/2f);
-                }
-            }
-
-            if (height>20f && editor.interval>1){
-                for(int count = 1; count < height / editor.interval / tilesize ; count += 1){
-
-                    float dy = tileCorr * zoom * editor.interval * count;
-                    Draw.color(Color.acid);
-                    Draw.alpha(0.5f);
-
-                    Lines.line(centerx - sclwidth/2f,centery + dy , centerx + sclwidth/2f, centery + dy);
-                    Lines.line(centerx - sclwidth/2f, centery - dy, centerx + sclwidth/2f, centery - dy);
-                }
-            }
 
             Draw.reset();
         }
@@ -337,7 +316,13 @@ public class MapView extends Element implements GestureListener{
                 //pencil square outline
                 if(tool == EditorTool.pencil && tool.mode == 1){
                     float xCorr = ((int)editor.brushSize + 1) % 2 * tilesize * zoom / 4;
-                    Lines.square(v.x + xCorr + scaling/2f, v.y + xCorr + scaling/2f, scaling * (editor.brushSize/2));
+
+                    float squareX = v.x + xCorr + scaling / 2f;
+                    float squareY = v.y + xCorr + scaling / 2f;
+                    float halfSize = scaling * editor.brushSize / 2f;
+
+                    drawSelectionGuideLines(squareX, squareY, halfSize);
+                    Lines.square(squareX, squareY, halfSize);
                 }else{
                     Lines.poly(arcBrushPolygons, v.x, v.y, scaling);
                 }
@@ -347,10 +332,13 @@ public class MapView extends Element implements GestureListener{
                 Point2 p = project(mousex, mousey);
                 Vec2 v = unproject(p.x, p.y).add(x, y);
                 float offset = (editor.drawBlock.size % 2 == 0 ? scaling / 2f : 0f);
-                Lines.square(
-                v.x + scaling / 2f + offset,
-                v.y + scaling / 2f + offset,
-                scaling * editor.drawBlock.size / 2f);
+
+                float squareX = v.x + scaling / 2f + offset;
+                float squareY = v.y + scaling / 2f + offset;
+                float halfSize = scaling * editor.drawBlock.size / 2f;
+
+                drawSelectionGuideLines(squareX, squareY, halfSize);
+                Lines.square(squareX, squareY, halfSize);
             }
         }
 
@@ -360,6 +348,35 @@ public class MapView extends Element implements GestureListener{
         Draw.reset();
 
         ScissorStack.pop();
+    }
+
+    private void drawSelectionGuideLines(float cx, float cy, float halfSize){
+        // 足够长，超出地图显示区的部分会被当前 ScissorStack 自动裁掉。
+        float reach = Math.max(width, height) * 2f;
+
+        Draw.color(Color.salmon);
+        Draw.alpha(0.70f);
+        Lines.stroke(Scl.scl(1.1f));
+
+        // X 轴：从方框左右边中点向外延长。
+        Lines.line(cx - halfSize, cy, cx - reach, cy);
+        Lines.line(cx + halfSize, cy, cx + reach, cy);
+
+        // Y 轴：从方框上下边中点向外延长。
+        Lines.line(cx, cy - halfSize, cx, cy - reach);
+        Lines.line(cx, cy + halfSize, cx, cy + reach);
+
+        // 45° 对角线 1：左下 ↔ 右上。
+        Lines.line(cx - halfSize, cy - halfSize, cx - reach, cy - reach);
+        Lines.line(cx + halfSize, cy + halfSize, cx + reach, cy + reach);
+
+        // 45° 对角线 2：左上 ↔ 右下。
+        Lines.line(cx - halfSize, cy + halfSize, cx - reach, cy + reach);
+        Lines.line(cx + halfSize, cy - halfSize, cx + reach, cy - reach);
+
+        // 恢复原本黄色方框的绘制状态。
+        Draw.color(Pal.accent);
+        Lines.stroke(Scl.scl(2f));
     }
 
     private boolean active(){
