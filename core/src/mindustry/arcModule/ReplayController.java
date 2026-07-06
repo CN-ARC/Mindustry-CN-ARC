@@ -96,7 +96,8 @@ public class ReplayController {
                 dialog.cont.add("玩家名:" + now.name).row();
                 int secs = (int) (length / 1000000000);
                 dialog.cont.add("回放长度:" + (secs / 3600) + ":" + (secs / 60 % 60) + ":" + (secs % 60)).row();
-                dialog.cont.pane(t -> map.keys().toArray().each(b -> t.add(Net.newPacket((byte) b).getClass().getSimpleName() + " " + map.get(b)).row())).growX().row();
+                //! to fix 这里有问题
+                //dialog.cont.pane(t -> map.keys().toArray().each(b -> t.add(Net.newPacket((byte) b).getClass().getSimpleName() + " " + map.get(b)).row())).growX().row();
             });
             dialog.addCloseButton();
             controller.table(t -> {

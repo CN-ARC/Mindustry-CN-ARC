@@ -260,13 +260,14 @@ public class MapView extends Element implements GestureListener{
                     sclheight
             );
             image.drawEditorGrid();
-
+            /*
             Lines.stroke(2f);
             Draw.color(Pal.bulletYellowBack);
             Lines.line(centerx - sclwidth/2f, centery - sclheight/4f, centerx + sclwidth/2f, centery - sclheight/4f);
             Lines.line(centerx - sclwidth/4f, centery - sclheight/2f, centerx - sclwidth/4f, centery + sclheight/2f);
             Lines.line(centerx - sclwidth/2f, centery + sclheight/4f, centerx + sclwidth/2f, centery + sclheight/4f);
             Lines.line(centerx + sclwidth/4f, centery - sclheight/2f, centerx + sclwidth/4f, centery + sclheight/2f);
+            */
 
             Lines.stroke(3f);
             Draw.color(Pal.accent);

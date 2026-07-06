@@ -44,7 +44,8 @@ public class GridImage extends Element{
             return;
         }
 
-        final int majorStep = 10;
+        final int minorStep = 10;
+        final int majorStep = 100;
         final float xspace = getWidth() / imageWidth;
         final float yspace = getHeight() / imageHeight;
         final float s = 1f;
@@ -57,7 +58,7 @@ public class GridImage extends Element{
         // ---------- 普通竖线：浅灰 / 深灰交替 ----------
         for(int gx = 0; gx <= imageWidth; gx += jumpx){
             // 主线后续单独画，避免先被灰线覆盖。
-            if(gx % majorStep == 0) continue;
+            if(gx % minorStep == 0) continue;
 
             Draw.color(((gx / jumpx) & 1) == 0 ? gridLight : gridDark);
 
@@ -71,7 +72,7 @@ public class GridImage extends Element{
 
         // ---------- 普通横线：浅灰 / 深灰交替 ----------
         for(int gy = 0; gy <= imageHeight; gy += jumpy){
-            if(gy % majorStep == 0) continue;
+            if(gy % minorStep == 0) continue;
 
             Draw.color(((gy / jumpy) & 1) == 0 ? gridLight : gridDark);
 
@@ -85,8 +86,9 @@ public class GridImage extends Element{
 
         // ---------- 每 10 格的竖向主线：cyan / acid 交替 ----------
         // 0 格为 cyan，10 格为 acid，20 格重新 cyan。
-        for(int gx = 0; gx <= imageWidth; gx += majorStep){
-            Draw.color(((gx / majorStep) & 1) == 0 ? Color.cyan : Color.acid);
+        for(int gx = 0; gx <= imageWidth; gx += minorStep){
+            Draw.color(((gx / minorStep) & 1) == 0 ? Color.cyan : Color.acid);
+            if (gx % majorStep !=0 ) Draw.alpha(0.8f);
 
             Fill.crect(
                     (int)(this.x + xspace * gx - s),
@@ -97,8 +99,9 @@ public class GridImage extends Element{
         }
 
         // ---------- 每 10 格的横向主线：cyan / acid 交替 ----------
-        for(int gy = 0; gy <= imageHeight; gy += majorStep){
-            Draw.color(((gy / majorStep) & 1) == 0 ? Color.cyan : Color.acid);
+        for(int gy = 0; gy <= imageHeight; gy += minorStep){
+            Draw.color(((gy / minorStep) & 1) == 0 ? Color.cyan : Color.acid);
+            if (gy % majorStep !=0 ) Draw.alpha(0.8f);
 
             Fill.crect(
                     this.x - s,
