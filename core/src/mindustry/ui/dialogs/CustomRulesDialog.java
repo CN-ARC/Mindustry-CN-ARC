@@ -73,7 +73,7 @@ public class CustomRulesDialog extends BaseDialog{
         categoryNames = new Seq<>();
 
         buttons.button("@edit", Icon.pencil, () -> {
-            BaseDialog dialog = new BaseDialog("@waves.edit");
+            BaseDialog dialog = new BaseDialog("@edit.menu");
             dialog.addCloseButton();
             dialog.setFillParent(false);
 
@@ -81,7 +81,7 @@ public class CustomRulesDialog extends BaseDialog{
                 var style = Styles.cleart;
                 t.defaults().size(280f, 64f).pad(2f);
 
-                t.button("@waves.copy", Icon.copy, style, () -> {
+                t.button("@copy.clipboard", Icon.copy, style, () -> {
                     ui.showInfoFade("@copied");
 
                     //hack: don't write the spawns, they just waste space
@@ -92,7 +92,7 @@ public class CustomRulesDialog extends BaseDialog{
                     dialog.hide();
                 }).marginLeft(12f).row();
 
-                t.button("@waves.load", Icon.download, style, () -> {
+                t.button("@load.clipboard", Icon.download, style, () -> {
                     try{
                         Rules newRules = JsonIO.read(Rules.class, Core.app.getClipboardText());
                         //objectives and spawns are considered to be map-specific; don't use them
@@ -286,6 +286,8 @@ public class CustomRulesDialog extends BaseDialog{
         check("@rules.unitcapvariable", b -> rules.unitCapVariable = b, () -> rules.unitCapVariable);
         check("@rules.unitpayloadsexplode", b -> rules.unitPayloadsExplode = b, () -> rules.unitPayloadsExplode);
         numberi("@rules.unitcap", f -> rules.unitCap = f, () -> rules.unitCap, -999, 999);
+
+        number("@rules.unitfactoryactivation", f -> rules.unitFactoryActivationDelay = f * 60f, () -> rules.unitFactoryActivationDelay / 60f);
         number("@rules.unitdamagemultiplier", f -> rules.unitDamageMultiplier = f, () -> rules.unitDamageMultiplier);
         number("@rules.unitcrashdamagemultiplier", f -> rules.unitCrashDamageMultiplier = f, () -> rules.unitCrashDamageMultiplier);
         number("@rules.unitminespeedmultiplier", f -> rules.unitMineSpeedMultiplier = f, () -> rules.unitMineSpeedMultiplier);
@@ -403,6 +405,7 @@ public class CustomRulesDialog extends BaseDialog{
                 }
 
                 t.button("@rules.anyenv", style, () -> {
+                    rules.attributes.clear();
                     rules.env = Vars.defaultEnv;
                     rules.planet = Planets.sun;
                 }).group(group).checked(b -> rules.planet == Planets.sun);

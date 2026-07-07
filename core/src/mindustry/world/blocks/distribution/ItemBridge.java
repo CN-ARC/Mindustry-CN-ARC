@@ -200,7 +200,7 @@ public class ItemBridge extends Block{
         public IntSeq incoming = new IntSeq(false, 4);
         public float warmup;
         public float time = -8f, timeSpeed;
-        public boolean wasMoved, moved;
+        public boolean wasMoved, moved, hadValidLink;
         public float transportCounter;
 
         @Override
@@ -331,7 +331,9 @@ public class ItemBridge extends Block{
             checkIncoming();
 
             Tile other = world.tile(link);
-            if(!linkValid(tile, other)){
+            hadValidLink = linkValid(tile, other);
+
+            if(!hadValidLink){
                 doDump();
                 warmup = 0f;
             }else{
@@ -426,14 +428,16 @@ public class ItemBridge extends Block{
 
             Draw.color();
 
-            int arrows = (int)(dist * tilesize / arrowSpacing), dx = Geometry.d4x(i), dy = Geometry.d4y(i);
+            if(Lod.l1){
+                int arrows = (int)(dist * tilesize / arrowSpacing), dx = Geometry.d4x(i), dy = Geometry.d4y(i);
 
-            for(int a = 0; a < arrows; a++){
-                Draw.alpha(Mathf.absin(a - time / arrowTimeScl, arrowPeriod, 1f) * warmup * Renderer.bridgeOpacity);
-                Draw.rect(arrowRegion,
-                x + dx * (tilesize / 2f + a * arrowSpacing + arrowOffset),
-                y + dy * (tilesize / 2f + a * arrowSpacing + arrowOffset),
-                i * 90f);
+                for(int a = 0; a < arrows; a++){
+                    Draw.alpha(Mathf.absin(a - time / arrowTimeScl, arrowPeriod, 1f) * warmup * Renderer.bridgeOpacity * Lod.alpha1);
+                    Draw.rect(arrowRegion,
+                    x + dx * (tilesize / 2f + a * arrowSpacing + arrowOffset),
+                    y + dy * (tilesize / 2f + a * arrowSpacing + arrowOffset),
+                    i * 90f);
+                }
             }
 
             Draw.reset();
@@ -512,7 +516,7 @@ public class ItemBridge extends Block{
 
         @Override
         public boolean shouldConsume(){
-            return linkValid(tile, world.tile(link)) && enabled;
+            return hadValidLink && enabled;
         }
 
         @Override

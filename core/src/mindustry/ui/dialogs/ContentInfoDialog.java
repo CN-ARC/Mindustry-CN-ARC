@@ -7,6 +7,7 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.core.UI;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.RFuncs;
 import mindustry.ctype.*;
@@ -51,7 +52,7 @@ public class ContentInfoDialog extends BaseDialog{
 
         table.row();
 
-        if(state.isGame() && state.patcher.isPatched(content)){
+        if(state.isGame() && state.data.isPatched(content)){
             table.table(t -> {
                 t.image(Icon.info).color(Pal.lightishGray);
                 t.add("@database.patched").color(Pal.lightishGray).padLeft(4f);
@@ -68,7 +69,7 @@ public class ContentInfoDialog extends BaseDialog{
                 table.row();
             }
 
-            table.add("[lightgray]" + content.displayDescription()).wrap().fillX().padLeft(any ? 10 : 0).width(500f).padTop(any ? 0 : 10).left();
+            table.add("[lightgray]" + UI.formatIcons(content.displayDescription())).wrap().fillX().padLeft(any ? 10 : 0).width(500f).padTop(any ? 0 : 10).left();
             table.row();
 
             if(!content.stats.useCategories && any){
@@ -105,7 +106,7 @@ public class ContentInfoDialog extends BaseDialog{
 
         if(content.details != null){
             //table.add("[gray]" + (content.unlocked() || !content.hideDetails ? content.details : Iconc.lock + " " + Core.bundle.get("unlock.incampaign"))).pad(6).padTop(20).width(400f).wrap().fillX();
-            table.add("[gray]" + content.details ).pad(6).padTop(20).width(400f).wrap().fillX();
+            table.add("[gray]" + UI.formatIcons(content.details) ).pad(6).padTop(20).width(400f).wrap().fillX();
             table.row();
         }
 
