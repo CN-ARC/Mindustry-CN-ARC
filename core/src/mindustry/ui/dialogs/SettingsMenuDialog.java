@@ -424,7 +424,7 @@ public class SettingsMenuDialog extends BaseDialog{
             ArcSounds.play("attention");
         }).marginLeft(marg).row();
 
-        menu.button("@settings.dev", Icon.fileCode, style, isize, () -> visible(3)).marginLeft(marg).row();
+        menu.button("@settings.dev", Icon.fileCode, style, isize, () -> visible(7)).marginLeft(marg).row();
 
         int i =  8;
         for(var cat : categories){
