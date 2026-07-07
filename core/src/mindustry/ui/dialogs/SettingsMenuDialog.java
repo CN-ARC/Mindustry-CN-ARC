@@ -424,7 +424,6 @@ public class SettingsMenuDialog extends BaseDialog{
             ArcSounds.play("attention");
         }).marginLeft(marg).row();
 
-        menu.button("@settings.data", Icon.save, style, isize, () -> dataDialog.show()).marginLeft(marg).row();
         menu.button("@settings.dev", Icon.fileCode, style, isize, () -> visible(3)).marginLeft(marg).row();
 
         int i =  8;
@@ -897,122 +896,122 @@ public class SettingsMenuDialog extends BaseDialog{
             }
         }
 
-            forcehide.checkPref("pixelate", false, val -> {
-                if (val) {
-                    Events.fire(Trigger.enablePixelation);
-                }
-            });
+        forcehide.checkPref("pixelate", false, val -> {
+            if (val) {
+                Events.fire(Trigger.enablePixelation);
+            }
+        });
 
-            ARCVars.limitUpdate = settings.getBool("limitupdate", false);
-            forcehide.checkPref("limitupdate", false, v -> {
-                settings.put("limitupdate", false);
-                if (ARCVars.limitUpdate) {
-                    ARCVars.limitUpdate = false;
-                    return;
-                }
-                ui.showConfirm("确认开启限制更新", "此功能可以大幅提升fps，但会导致视角外的一切停止更新\n在服务器里会造成不同步\n强烈不建议在单人开启\n\n[darkgray]在帧数和体验里二选一", () -> {
-                    ARCVars.limitUpdate = true;
-                    settings.put("limitupdate", true);
+        ARCVars.limitUpdate = settings.getBool("limitupdate", false);
+        forcehide.checkPref("limitupdate", false, v -> {
+            settings.put("limitupdate", false);
+            if (ARCVars.limitUpdate) {
+                ARCVars.limitUpdate = false;
+                return;
+            }
+            ui.showConfirm("确认开启限制更新", "此功能可以大幅提升fps，但会导致视角外的一切停止更新\n在服务器里会造成不同步\n强烈不建议在单人开启\n\n[darkgray]在帧数和体验里二选一", () -> {
+                ARCVars.limitUpdate = true;
+                settings.put("limitupdate", true);
+            });
+        });
+        ARCVars.limitDst = settings.getInt("limitdst", 10);
+        forcehide.sliderPref("limitdst", 10, 0, 100, 1, s -> {
+            ARCVars.limitDst = s * 8;
+            return s + "格";
+        });
+
+        //////////specmode
+        specmode.addCategory("moreContent");
+        specmode.checkPref("modMode", false);
+        specmode.sliderPref("itemSelectionHeight", 4, 4, 12, i -> i + "行");
+        specmode.sliderPref("itemSelectionWidth", 4, 4, 12, i -> i + "列");
+        specmode.sliderPref("blockInventoryWidth", 3, 3, 16, i -> i + "");
+        specmode.sliderPref("editorBrush", 4, 3, 12, i -> i + "");
+
+        specmode.addCategory("personalized");
+        specmode.checkPref("colorizedContent", false);
+        specmode.sliderPref("fontSet", 0, 0, 2, 1, s -> {
+            if (s == 0) {
+                return "原版字体";
+            } else if (s == 1) return "[violet]LC[white]の[cyan]萌化字体包";
+            else if (s == 2) return "[violet]9527[white]の[cyan]楷体包";
+            else {
+                return s + "";
+            }
+        });
+        specmode.sliderPref("fontSize", 10, 5, 25, 1, i -> "x " + Strings.fixed(i * 0.1f, 1));
+        specmode.stringInput("themeColor", "ffd37f");
+        //specmode.stringInput("arcBackgroundPath", ""); 使用默认路径
+        if (!OS.isAndroid && !OS.isIos) {
+            specmode.stringInput("arcCursorPath", "");
+            specmode.buttonInput("[cyan]查看当前指针样式", () -> new BaseDialog("指针样式") {{
+                shown(() -> {
+                    addCloseButton();
+
+                    cont.add("[orange]将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
+                    cont.add("[cyan]图片中心是指针中心").row();
+                    cont.button("[orange]重载指针", () -> {
+                        RFuncs.cursorChecked = false;
+                        RFuncs.cachedCursor = null;
+                        ui.drillCursor = RFuncs.customCursor("drill", Fonts.cursorScale());
+                        ui.unloadCursor = RFuncs.customCursor("unload", Fonts.cursorScale());
+                        ui.targetCursor = RFuncs.customCursor("target", Fonts.cursorScale());
+                        ARCVars.arcui.resizeHorizontalCursor = RFuncs.customCursor("resizeHorizontal", Fonts.cursorScale());
+                        ARCVars.arcui.resizeVerticalCursor = RFuncs.customCursor("resizeVertical", Fonts.cursorScale());
+                        ARCVars.arcui.resizeLeftCursor = RFuncs.customCursor("resizeLeft", Fonts.cursorScale());
+                        ARCVars.arcui.resizeRightCursor = RFuncs.customCursor("resizeRight", Fonts.cursorScale());
+                        Fonts.loadSystemCursors();
+                    }).growX().row();
+                    cont.table(root -> {
+                        root.table(t -> t.add("cursor").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.arrow));
+                        root.table(t -> t.add("hand").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.hand));
+                        root.table(t -> t.add("ibeam").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.ibeam));
+                    }).growX().row();
+                    cont.table(root -> {
+                        root.table(t -> t.add("drill").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.drillCursor));
+                        root.table(t -> t.add("unload").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.unloadCursor));
+                        root.table(t -> t.add("target").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.targetCursor));
+                    }).growX().row();
+                    cont.table(root -> {
+                        root.table(t -> t.add("resizeHorizontal").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeHorizontalCursor));
+                        root.table(t -> t.add("resizeVertical").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeVerticalCursor));
+                        root.table(t -> t.add("resizeLeft").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeLeftCursor));
+                        root.table(t -> t.add("resizeRight").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeRightCursor));
+                    }).growX();
                 });
-            });
-            ARCVars.limitDst = settings.getInt("limitdst", 10);
-            forcehide.sliderPref("limitdst", 10, 0, 100, 1, s -> {
-                ARCVars.limitDst = s * 8;
-                return s + "格";
-            });
-
-            //////////specmode
-            specmode.addCategory("moreContent");
-            specmode.checkPref("modMode", false);
-            specmode.sliderPref("itemSelectionHeight", 4, 4, 12, i -> i + "行");
-            specmode.sliderPref("itemSelectionWidth", 4, 4, 12, i -> i + "列");
-            specmode.sliderPref("blockInventoryWidth", 3, 3, 16, i -> i + "");
-            specmode.sliderPref("editorBrush", 4, 3, 12, i -> i + "");
-
-            specmode.addCategory("personalized");
-            specmode.checkPref("colorizedContent", false);
-            specmode.sliderPref("fontSet", 0, 0, 2, 1, s -> {
-                if (s == 0) {
-                    return "原版字体";
-                } else if (s == 1) return "[violet]LC[white]の[cyan]萌化字体包";
-                else if (s == 2) return "[violet]9527[white]の[cyan]楷体包";
-                else {
-                    return s + "";
-                }
-            });
-            specmode.sliderPref("fontSize", 10, 5, 25, 1, i -> "x " + Strings.fixed(i * 0.1f, 1));
-            specmode.stringInput("themeColor", "ffd37f");
-            //specmode.stringInput("arcBackgroundPath", ""); 使用默认路径
-            if (!OS.isAndroid && !OS.isIos) {
-                specmode.stringInput("arcCursorPath", "");
-                specmode.buttonInput("[cyan]查看当前指针样式", () -> new BaseDialog("指针样式") {{
-                    shown(() -> {
-                        addCloseButton();
-
-                        cont.add("[orange]将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
-                        cont.add("[cyan]图片中心是指针中心").row();
-                        cont.button("[orange]重载指针", () -> {
-                            RFuncs.cursorChecked = false;
-                            RFuncs.cachedCursor = null;
-                            ui.drillCursor = RFuncs.customCursor("drill", Fonts.cursorScale());
-                            ui.unloadCursor = RFuncs.customCursor("unload", Fonts.cursorScale());
-                            ui.targetCursor = RFuncs.customCursor("target", Fonts.cursorScale());
-                            ARCVars.arcui.resizeHorizontalCursor = RFuncs.customCursor("resizeHorizontal", Fonts.cursorScale());
-                            ARCVars.arcui.resizeVerticalCursor = RFuncs.customCursor("resizeVertical", Fonts.cursorScale());
-                            ARCVars.arcui.resizeLeftCursor = RFuncs.customCursor("resizeLeft", Fonts.cursorScale());
-                            ARCVars.arcui.resizeRightCursor = RFuncs.customCursor("resizeRight", Fonts.cursorScale());
-                            Fonts.loadSystemCursors();
-                        }).growX().row();
-                        cont.table(root -> {
-                            root.table(t -> t.add("cursor").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.arrow));
-                            root.table(t -> t.add("hand").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.hand));
-                            root.table(t -> t.add("ibeam").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.ibeam));
-                        }).growX().row();
-                        cont.table(root -> {
-                            root.table(t -> t.add("drill").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.drillCursor));
-                            root.table(t -> t.add("unload").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.unloadCursor));
-                            root.table(t -> t.add("target").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.targetCursor));
-                        }).growX().row();
-                        cont.table(root -> {
-                            root.table(t -> t.add("resizeHorizontal").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeHorizontalCursor));
-                            root.table(t -> t.add("resizeVertical").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeVerticalCursor));
-                            root.table(t -> t.add("resizeLeft").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeLeftCursor));
-                            root.table(t -> t.add("resizeRight").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeRightCursor));
-                        }).growX();
-                    });
-                }}.show());
+            }}.show());
+        }
+        specmode.checkPref("yuanshen", false, b -> {
+            if (b) {
+                dataDirectory.child("yuanshen").writeString("原神，启动！");
+            } else {
+                dataDirectory.child("yuanshen").delete();
             }
-            specmode.checkPref("yuanshen", false, b -> {
-                if (b) {
-                    dataDirectory.child("yuanshen").writeString("原神，启动！");
-                } else {
-                    dataDirectory.child("yuanshen").delete();
-                }
-            });
-            specmode.checkPref("xibaoOnKick", false);
-            specmode.addCategory("specGameMode");
-            specmode.checkPref("autoSelSchematic", false);
-            specmode.checkPref("researchViewer", false);
-            specmode.checkPref("bossKeyValid",false);
-            specmode.checkPref("arcShareMedia",true);
-            specmode.checkPref("rotateCanvas",false);
-            specmode.checkPref("developMode", false);
-            //////////cheating
-            cheating.addCategory("arcWeakCheat");
-            cheating.checkPref("forceIgnoreAttack", false);
-            cheating.checkPref("allBlocksReveal", false, b -> AdvanceToolTable.allBlocksReveal = b);
-            cheating.checkPref("worldCreator", false, b -> AdvanceToolTable.worldCreator = b);
-            cheating.checkPref("overrideSkipWave", false);
-            cheating.checkPref("forceConfigInventory", false);
-            cheating.addCategory("arcStrongCheat");
-            cheating.checkPref("showOtherTeamResource", false);
-            cheating.checkPref("showOtherTeamState", false);
-            cheating.checkPref("selectTeam", false);
-            cheating.checkPref("playerNeedShooting", false);
-            cheating.checkPref("otherCheat", false);
-            if (OS.isMac) {
-                graphics.checkPref("macnotch", false);
-            }
+        });
+        specmode.checkPref("xibaoOnKick", false);
+        specmode.addCategory("specGameMode");
+        specmode.checkPref("autoSelSchematic", false);
+        specmode.checkPref("researchViewer", false);
+        specmode.checkPref("bossKeyValid",false);
+        specmode.checkPref("arcShareMedia",true);
+        specmode.checkPref("rotateCanvas",false);
+        specmode.checkPref("developMode", false);
+        //////////cheating
+        cheating.addCategory("arcWeakCheat");
+        cheating.checkPref("forceIgnoreAttack", false);
+        cheating.checkPref("allBlocksReveal", false, b -> AdvanceToolTable.allBlocksReveal = b);
+        cheating.checkPref("worldCreator", false, b -> AdvanceToolTable.worldCreator = b);
+        cheating.checkPref("overrideSkipWave", false);
+        cheating.checkPref("forceConfigInventory", false);
+        cheating.addCategory("arcStrongCheat");
+        cheating.checkPref("showOtherTeamResource", false);
+        cheating.checkPref("showOtherTeamState", false);
+        cheating.checkPref("selectTeam", false);
+        cheating.checkPref("playerNeedShooting", false);
+        cheating.checkPref("otherCheat", false);
+        if (OS.isMac) {
+            graphics.checkPref("macnotch", false);
+        }
 
         if(!mobile){
             Core.settings.put("swapdiagonal", false);
@@ -1101,7 +1100,7 @@ public class SettingsMenuDialog extends BaseDialog{
 
         Seq<Table> tables = new Seq<>();
 
-        tables.addAll(game, graphics, sound, arc,forcehide,specmode, cheating,dev);
+        tables.addAll(game, graphics, sound, arc, forcehide, specmode, cheating, dev);
 
         for(var custom : categories){
             tables.add(custom.table);
