@@ -187,11 +187,7 @@ public class UnitAssembler extends PayloadBlock{
                     itemCapacity = Math.max(itemCapacity, stack.amount * 2);
                 }
             }
-        }
-    }
 
-    public void setLiquidFilter(){
-        for(AssemblerUnitPlan plan : plans){
             if(plan.liquidReq != null){
                 for(LiquidStack stack : plan.liquidReq){
                     liquidFilter[stack.liquid.id] = true;
