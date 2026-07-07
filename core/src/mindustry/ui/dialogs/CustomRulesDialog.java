@@ -373,7 +373,7 @@ public class CustomRulesDialog extends BaseDialog{
         check("@rules.logicUnitBuild", b -> rules.logicUnitBuild = b, () -> rules.logicUnitBuild);
         check("@rules.coreDestroyClear",b->rules.coreDestroyClear = b,()->rules.coreDestroyClear);
         check("@rules.unitPayloadUpdate",b->rules.unitPayloadUpdate = b,()->rules.unitPayloadUpdate);
-        check("@rules.showSpawns",b->rules.showSpawns = b,()->rules.showSpawns);
+        check("@rules.hideSpawns",b->rules.hideSpawns = b,()->rules.hideSpawns);
         check("允许控制单位", b -> rules.possessionAllowed = b, () -> rules.possessionAllowed);
         check("禁用重建", b -> rules.ghostBlocks = b, () -> rules.ghostBlocks);
         //main.button("@hiddenBuildItems", () -> showBanned("@hiddenBuildItems", ContentType.item, rules.hiddenBuildItems, Item::showUnlock)).left().width(300f).row();

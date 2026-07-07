@@ -340,7 +340,7 @@ public class JoinDialog extends BaseDialog{
                 setupRemote();
             }).growX().height(48).update(b -> b.setText((Core.settings.getBool("showAccessibleServer") ? "显示" : "隐藏") + "版本不对的服务器"));
             t.button("", Styles.flatBordert, () -> ARCVars.replayController.shouldRecord(!ARCVars.replayController.shouldRecord())).update(b -> b.setText(ARCVars.replayController.shouldRecord() ? "关闭回放录制" : "开启回放录制")).growX().height(48);
-            t.button("加载回放文件", Styles.flatBordert, () -> platform.showFileChooser(true, "打开回放文件", "mrep", f -> Core.app.post(() -> ARCVars.replayController.startPlay(f.file())))).growX().height(48);
+            //t.button("加载回放文件", Styles.flatBordert, () -> FileChooser.open(true, "打开回放文件", "mrep", f -> Core.app.post(() -> ARCVars.replayController.startPlay(f.file())))).growX().height(48);
             t.button("usid管理器", Styles.flatBordert, () -> new USIDDialog().show()).growX().height(48);
             USIDDialog.chooseUSID = Core.settings.getBool("arc-chooseUSID", false);
         }), false);
