@@ -726,7 +726,6 @@ public class BlockRenderer{
             boolean visible = (build == null || !build.inFogTo(pteam));
 
             if(block != Blocks.air && (visible || build.wasVisible)){
-                if (settings.getInt("blockRenderLevel") > 1) block.drawBase(tile);
                 SpriteBatch.totalDrawCalls = 0;
                 block.drawBase(tile);
                 Draw.reset();
