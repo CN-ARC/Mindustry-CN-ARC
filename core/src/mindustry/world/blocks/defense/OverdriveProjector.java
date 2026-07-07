@@ -148,6 +148,8 @@ public class OverdriveProjector extends Block{
         public void draw(){
             super.draw();
 
+            if(!Lod.l2) return;
+
             float realRange = range + phaseHeat * phaseRangeBoost;
             float pro_Transparency = (float)Core.settings.getInt("overdrive_zone") / 100f;
             if(realBoost() > 1 && pro_Transparency > 0.02f){
@@ -169,9 +171,9 @@ public class OverdriveProjector extends Block{
             float f = 1f - (Time.time / 100f) % 1f;
 
             Draw.color(baseColor, phaseColor, phaseHeat);
-            Draw.alpha(heat * Mathf.absin(Time.time, 50f / Mathf.PI2, 1f) * 0.5f);
+            Draw.alpha(heat * Mathf.absin(Time.time, 50f / Mathf.PI2, 1f) * 0.5f * Lod.alpha2);
             Draw.rect(topRegion, x, y);
-            Draw.alpha(1f);
+            Draw.alpha(Lod.alpha2);
             Lines.stroke((2f * f + 0.1f) * heat);
 
             float r = Math.max(0f, Mathf.clamp(2f - f * 2f) * size * tilesize / 2f - f - 0.2f), w = Mathf.clamp(0.5f - f) * size * tilesize;

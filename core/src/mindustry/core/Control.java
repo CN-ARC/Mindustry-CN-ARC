@@ -412,6 +412,8 @@ public class Control implements ApplicationListener, Loadable{
         ui.loadAnd(() -> {
             logic.reset();
             world.loadMap(map, rules);
+            var oldRules = state.rules;
+            rules.retainContentFields(oldRules);
             state.rules = rules;
             if(playtest) state.playtestingMap = map;
             state.rules.sector = null;
@@ -805,6 +807,10 @@ public class Control implements ApplicationListener, Loadable{
                             """
                 );
             }
+        }
+
+        if(!scene.hasKeyboard()){
+            if(Core.input.keyTap(Binding.performanceMetrics)) Core.settings.toggle("showperformance");
         }
 
         if(state.isGame()){

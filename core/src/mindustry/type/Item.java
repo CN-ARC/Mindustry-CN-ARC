@@ -133,7 +133,7 @@ public class Item extends UnlockableContent implements Senseable{
             var pixmaps = new PixmapRegion[frames];
 
             for(int i = 0; i < frames; i++){
-                pixmaps[i] = Core.atlas.getPixmap(name + (i + 1));
+                pixmaps[i] = packer.get(name + (i + 1));
             }
 
             for(int i = 0; i < frames; i++){

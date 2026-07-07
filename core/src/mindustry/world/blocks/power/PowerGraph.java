@@ -386,10 +386,6 @@ public class PowerGraph{
         if(entity != null) entity.remove();
     }
 
-    public int getId(){
-        return graphID;
-    }
-
     @Override
     public String toString(){
         return "PowerGraph{" +

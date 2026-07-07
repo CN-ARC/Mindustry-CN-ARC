@@ -14,6 +14,7 @@ import mindustry.Vars;
 import mindustry.arcModule.ARCVars;
 import mindustry.content.Blocks;
 import mindustry.game.Schematic;
+import mindustry.ui.FileChooser;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.blocks.distribution.Sorter;
@@ -54,7 +55,7 @@ public class picToMindustry {
         Dialog pt = new BaseDialog("arc-图片转换器");
         pt.cont.table(t -> {
             t.add("选择并导入图片，可将其转成画板、像素画或是逻辑画").padBottom(20f).row();
-            t.button("[cyan]选择图片[white](png)", () -> Vars.platform.showFileChooser(false, "png", file -> {
+            t.button("[cyan]选择图片[white](png)", () -> FileChooser.open("", "png").submit(file -> {
                 try {
                     originFile = file;
                     byte[] bytes = file.readBytes();

@@ -17,6 +17,7 @@ import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.gen.Tex;
+import mindustry.ui.FileChooser;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 
@@ -69,7 +70,8 @@ public class arcChatPicture {
 
         Dialog dialog = new BaseDialog("图片分享器");
         dialog.cont.table(t -> {
-            t.button("[cyan]选择图片[white](png)", () -> platform.showFileChooser(false, "png", file -> {
+
+            t.button("[cyan]选择图片[white](png)", () -> FileChooser.open("", "png").submit(file -> {
                 figureFile = file;
                 try {
                     byte[] bytes = file.readBytes();
@@ -202,7 +204,7 @@ public class arcChatPicture {
         }
 
         private void saveFig() {
-            platform.export("图片-" + Time.millis(), "png", file -> PixmapIO.writePng(file, pix));
+            FileChooser.export("图片-" + Time.millis(), "png", file -> PixmapIO.writePng(file, pix));
             arcui.arcInfo("[cyan]已保存图片");
         }
     }

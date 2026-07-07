@@ -33,6 +33,7 @@ import mindustry.gen.Call;
 import mindustry.gen.Icon;
 import mindustry.gen.Player;
 import mindustry.gen.Tex;
+import mindustry.ui.FileChooser;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 
@@ -360,14 +361,14 @@ public class MusicDialog extends BaseDialog {
     }
 
     private void download(MusicInfo info) {
-        platform.showFileChooser(false, "下载音乐", "mp3", fi -> api.getInfoOrCall(info, fullInfo -> Http.get(fullInfo.url, r -> {
-            fi.writeBytes(r.getResult());
+        FileChooser.open("选择音乐文件", "mp3").submit(f -> api.getInfoOrCall(info, fullInfo -> Http.get(fullInfo.url, r -> {
+            f.writeBytes(r.getResult());
             Core.app.post(() -> Vars.ui.showInfo("下载成功"));
         })));
     }
 
     private void upload() {
-        platform.showFileChooser(true, "选择音乐文件", "mp3", f -> {
+        FileChooser.open("选择音乐文件", "mp3").submit(f -> {
             ui.announce("正在上传...\n很慢!(1-2分钟)\n上传完成后会自动播放");
             api.upload(f, info -> api.getInfoOrCall(info, this::play));
         });
@@ -727,8 +728,8 @@ public class MusicDialog extends BaseDialog {
             }));
             build();
             buttons.button(Icon.link, () -> apis.get(list.api).share(list)).disabled(b -> list.size() == 0);
-            buttons.button(Icon.download, () -> platform.showFileChooser(false, "保存歌单文件", "list", f -> f.writeString(api.buildList(list)))).disabled(b -> list.size() == 0);
-            buttons.button(Icon.upload, () -> platform.showFileChooser(true, "加载歌单文件", "list", f -> MusicList.parse(f.readString(), i -> Core.app.post(() -> MusicDialog.this.loadList(i)))));
+            //buttons.button(Icon.download, () -> platform.showFileChooser(false, "保存歌单文件", "list", f -> f.writeString(api.buildList(list)))).disabled(b -> list.size() == 0);
+            //buttons.button(Icon.upload, () -> platform.showFileChooser(true, "加载歌单文件", "list", f -> MusicList.parse(f.readString(), i -> Core.app.post(() -> MusicDialog.this.loadList(i)))));
             addCloseButton();
             onResize(this::build);
             shown(this::build);

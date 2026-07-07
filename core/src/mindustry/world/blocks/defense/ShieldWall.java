@@ -47,13 +47,18 @@ public class ShieldWall extends Wall{
                 () -> (entity.shield / shieldHealth)));
     }
 
+    @Override
+    public void init(){
+        super.init();
+        drawDynamic = true;
+    }
+
     public class ShieldWallBuild extends WallBuild{
         public float shield = shieldHealth, shieldRadius = 0f;
         public float breakTimer;
 
         @Override
         public void draw(){
-            Draw.rect(block.region, x, y);
 
             if(shieldRadius > 0){
                 float radius = shieldRadius * tilesize * size / 2f;

@@ -4,6 +4,7 @@ import arc.*;
 import arc.func.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
+import arc.input.*;
 import arc.math.*;
 import arc.scene.*;
 import arc.scene.actions.*;
@@ -14,7 +15,6 @@ import arc.scene.ui.ImageButton.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import arc.input.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCVars;
@@ -80,6 +80,7 @@ public class HudFragment{
 
     private Seq<Block> blocksOut = new Seq<>();
     private Table hudLabel;
+    private float coreAttackTime;
 
     private static ObjectSet<String> favoriteBlocks = new ObjectSet<>();
     private static String lastFavorited = null;
@@ -521,7 +522,7 @@ public class HudFragment{
                     toggleMenus();
                 }
 
-                if(Core.input.keyTap(Binding.skipWave) && canSkipWave()){
+                if(Core.input.keyTap(Binding.skipWave) && canSkipWave() && !Core.scene.hasDialog() && !Core.scene.hasField()){
                     if(net.client() && player.admin){
                         Call.adminRequest(player, AdminAction.wave, null);
                     }else{
@@ -778,9 +779,11 @@ public class HudFragment{
                 c.top().collapser(coreItems, () -> Core.settings.getInt("arccoreitems") > 0  && shown).fillX().row();
 
                 float notifDuration = 240f;
-                float[] coreAttackTime = {0};
 
-                Events.run(Trigger.teamCoreDamage, () -> coreAttackTime[0] = notifDuration);
+                Events.run(Trigger.teamCoreDamage, () -> coreAttackTime = notifDuration);
+                Events.on(ResetEvent.class, e -> {
+                    coreAttackTime = 0f;
+                });
 
                 //'core is under attack' table
                 c.collapser(top -> top.background(Styles.black6).add("@coreattack").pad(8)
@@ -794,13 +797,13 @@ public class HudFragment{
                 })
                 .update(label -> label.color.set(Color.orange).lerp(Color.scarlet, Mathf.absin(Time.time, 2f, 1f))), true,
                 () -> {
-                    if(!shown || state.isPaused()) return false;
                     if(state.isMenu() || !player.team().data().hasCore()){
-                        coreAttackTime[0] = 0f;
+                        coreAttackTime = 0f;
                         return false;
                     }
+                    if(!shown || state.isPaused()) return false;
 
-                    return (coreAttackTime[0] -= Time.delta) > 0;
+                    return (coreAttackTime -= Time.delta) > 0;
                 })
                 .touchable(Touchable.disabled)
                 .fillX().row();
@@ -1096,6 +1099,7 @@ public class HudFragment{
         enemiesf = new IntFormat("wave.enemies"),
         enemycf = new IntFormat("wave.enemycore"),
         enemycsf = new IntFormat("wave.enemycores"),
+
         waitingf = new IntFormat("wave.waiting", i -> {
             ibuild.setLength(0);
             int m = i/60;
@@ -1120,18 +1124,23 @@ public class HudFragment{
         table.marginTop(0).marginBottom(4).marginLeft(4);
 
         class SideBar extends Element{
-            public final Floatp amount;
-            public final boolean flip;
-            public final Boolp flash;
+            public Floatp amount;
+            public boolean flip, drawBack;
+            public Boolp flash;
 
             float last, blink, value;
 
-            public SideBar(Floatp amount, Boolp flash, boolean flip){
+            public SideBar(Floatp amount, Boolp flash, boolean flip, boolean drawBack, Color color){
                 this.amount = amount;
                 this.flip = flip;
                 this.flash = flash;
+                this.drawBack = drawBack;
 
-                setColor(Pal.health);
+                setColor(color);
+            }
+
+            public SideBar(Floatp amount, Boolp flash, boolean flip){
+                this(amount, flash, flip, true, Pal.health);
             }
 
             @Override
@@ -1150,7 +1159,7 @@ public class HudFragment{
 
                 if(Float.isNaN(value) || Float.isInfinite(value)) value = 1f;
 
-                drawInner(Pal.darkishGray, 1f);
+                if(drawBack) drawInner(Pal.darkishGray, 1f);
                 drawInner(Tmp.c1.set(color).lerp(Color.white, blink), value);
             }
 
@@ -1216,32 +1225,46 @@ public class HudFragment{
                     Call.unitClear(player);
                     control.input.recentRespawnTimer = 1f;
                     control.input.controlledType = null;
+                    control.input.droppingItem = false;
                 }
             });
 
-            Floatp unitShieldFrac = () -> {
-                if(player.dead()) return 0f;
-                for(var ability : player.unit().abilities){
-                    if(ability instanceof ForceFieldAbility f){
-                        return f.max <= 0f ? 0f : player.unit().shield / f.max;
-                    }
-                    if(ability instanceof ShieldArcAbility s){
-                        return s.max <= 0f ? 0f : s.data / s.max;
-                    }
-                }
-                return 0f;
-            };
-            Boolp unitHasShield = () -> !player.dead() && player.unit() != null && Structs.contains(player.unit().abilities, a -> a instanceof ForceFieldAbility || a instanceof ShieldArcAbility);
-
-            t.add(new SideBar(() -> player.dead() ? 0f : unitHasShield.get() ? unitShieldFrac.get() : player.unit().healthf(), () -> !unitHasShield.get(), true)).width(bw).growY().padRight(pad).update(b -> {
-                b.color.set(!player.dead() && unitHasShield.get() ? player.unit().type.shieldColor(player.unit()) : Pal.health);
-            });
-            t.image(() -> player.icon()).scaling(Scaling.bounded).grow().maxWidth(54f);
-
+            float[] shieldFrac = {0};
             Boolp playerHasPayloads = () -> player.unit() instanceof Payloadc pay && !pay.payloads().isEmpty();
             Floatp playerPayloadCapacityUsed = () -> player.unit() instanceof Payloadc pay ? pay.payloadUsed() / player.unit().type().payloadCapacity : 0f;
 
-            t.add(new SideBar(() -> player.dead() ? 0f : player.displayAmmo() ? player.unit().ammof() : playerHasPayloads.get() ? playerPayloadCapacityUsed.get() : player.unit().healthf(), () -> !(player.displayAmmo() || playerHasPayloads.get()), false)).width(bw).growY().padLeft(pad).update(b -> {
+            t.stack(
+            //health
+            new SideBar(() -> player.dead() ? 0f : player.unit().healthf(), () -> true, true),
+            //shields
+            new SideBar(() -> player.dead() ? 0 : shieldFrac[0], () -> true, true, false, Pal.accent){{
+                visible(() -> {
+                    if(player.dead()) return false;
+                    drawBack = !playerHasPayloads.get();
+
+                    var ab = Structs.find(player.unit().abilities, a -> a instanceof ForceFieldAbility || a instanceof ShieldArcAbility);
+                    if(ab instanceof ForceFieldAbility ff){
+                        shieldFrac[0] = player.unit().shield / ff.max;
+                        return ff.max > 0;
+                    }else if(ab instanceof ShieldArcAbility sa){
+                        shieldFrac[0] = sa.data / sa.max;
+                        return sa.max > 0;
+                    }else{
+                        return false;
+                    }
+                });
+            }}).width(bw).growY().padRight(pad);
+
+            t.image(() -> player.icon()).scaling(Scaling.bounded).grow().maxWidth(54f);
+
+            t.add(new SideBar(
+            () ->
+                player.dead() ? 0f :
+                player.displayAmmo() ? player.unit().ammof() :
+                playerHasPayloads.get() ? playerPayloadCapacityUsed.get() :
+                player.unit().healthf(),
+            () -> !(player.displayAmmo() || playerHasPayloads.get()), false)).width(bw).growY().padLeft(pad).update(b -> {
+
                 b.color.set(player.displayAmmo() ? Pal.ammo : playerHasPayloads.get() ? Pal.items : Pal.health);
             });
 
@@ -1262,7 +1285,6 @@ public class HudFragment{
                     lcell[0].padRight(-42f);
                 }
                 table.invalidateHierarchy();
-                table.pack();
                 couldSkip[0] = can;
             }
 
@@ -1293,6 +1315,10 @@ public class HudFragment{
                 if(builder.length() > 0){
                     return builder;
                 }
+            }
+
+            if(!player.team().activateUnitFactories()){
+                builder.append("[lightgray]").append(Core.bundle.format("rules.unitfactoryactivation.objective", "[accent]" + UI.formatTime((float)Math.max(state.rules.unitActivationDelay(player.team()) - state.tick, 0f)))).append("[white]\n");
             }
 
             if(!state.rules.waves && state.rules.attackMode){
@@ -1537,10 +1563,10 @@ public class HudFragment{
 
                 if(applied != null){
                     for(StatusEffect effect : content.statusEffects()){
-                        if(applied.get(effect.id) && !effect.isHidden()){
+                        if(applied.get(effect.id) && effect.uiIcon.found()){
                             t.image(effect.uiIcon).scaling(Scaling.fit).size(iconMed).get()
                             .addListener(new Tooltip(l -> l.label(() ->
-                                player.dead() ? "" : effect.localizedName + " [lightgray]" + UI.formatTime(player.unit().getDuration(effect))).style(Styles.outlineLabel)));
+                                player.dead() ? "" : effect.localizedName + " [lightgray]" + (player.unit().getDuration(effect) >= Float.MAX_VALUE ? "∞" : UI.formatTime(player.unit().getDuration(effect)))).style(Styles.outlineLabel)));
                         }
                     }
 
