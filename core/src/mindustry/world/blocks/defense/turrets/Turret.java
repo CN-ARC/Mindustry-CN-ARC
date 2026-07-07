@@ -775,9 +775,6 @@ public class Turret extends ReloadTurret{
 
         protected void updateReload(){
             reloadCounter += delta() * ammoReloadMultiplier() * baseReloadSpeed();
-
-            //cap reload for visual reasons
-            reloadCounter = Math.min(reloadCounter, reload);
         }
 
         @Override
