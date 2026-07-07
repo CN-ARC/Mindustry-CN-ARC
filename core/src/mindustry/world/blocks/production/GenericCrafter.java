@@ -251,10 +251,7 @@ public class GenericCrafter extends Block{
                     }
                 }
 
-                if(Core.settings.getInt("blockRenderLevel") >1 && wasVisible && Mathf.chanceDelta(updateEffectChance)) {
-                    updateEffect.at(x + Mathf.range(size * 4f), y + Mathf.range(size * 4));
-                }
-                if(wasVisible && Mathf.chanceDelta(updateEffectChance)){
+                if(Core.settings.getInt("blockRenderLevel") >1 && wasVisible && Mathf.chanceDelta(updateEffectChance)){
                     updateEffect.at(x + Mathf.range(size * updateEffectSpread), y + Mathf.range(size * updateEffectSpread));
                 }
             }else{
