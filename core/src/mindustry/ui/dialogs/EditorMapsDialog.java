@@ -7,6 +7,7 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcreeper.updateARCreeperDialog;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.io.*;
@@ -86,6 +87,9 @@ public class EditorMapsDialog extends MapListDialog{
                     }
                 });
             });
+        }).size(210f, 64f);
+        buttons.button("[blue]ARCreeperMaps", Icon.upload, () -> {
+            new updateARCreeperDialog(this::setup).show();
         }).size(210f, 64f);
     }
 
