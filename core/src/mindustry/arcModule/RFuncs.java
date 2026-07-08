@@ -86,6 +86,7 @@ public class RFuncs {
 
     public static void colorizeContent() {
         colorized = Core.settings.getBool("colorizedContent");
+        if (!colorized) return;
         content.items().each(c -> c.localizedName = colorized(c.color, c.localizedName));
         content.liquids().each(c -> c.localizedName = colorized(c.color, c.localizedName));
         content.statusEffects().each(c -> c.localizedName = colorized(c.color, c.localizedName));
