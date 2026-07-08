@@ -631,7 +631,7 @@ public class LogicBlock extends Block{
             }
         }
 
-        private @Nullable Building optionalLink(String name){
+        public @Nullable Building optionalLink(String name){
             if(name == null || name.isEmpty()) return null;
             // Quick check the name can even be a link to avoid building/using the map needlessly
             char ch = name.charAt(name.length() - 1);
