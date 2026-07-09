@@ -268,7 +268,7 @@ public class OverlayRenderer{
             Building build = world.buildWorld(vec.x, vec.y);
 
             //if(build != null && build.team == player.team()){
-            if(build != null){
+            if(build != null && !Core.settings.getBool("blockdisabled")){
                 build.drawSelect();
                 if(!build.enabled && build.block.drawDisabled){
                    build.drawDisabled();
