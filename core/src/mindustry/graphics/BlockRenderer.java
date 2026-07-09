@@ -764,6 +764,13 @@ public class BlockRenderer{
                             Draw.z(Layer.block);
                         }
                     }
+
+                    if(ARCVars.arcInfoControl(build.team)){
+                        build.drawStatus();
+                        if(Core.settings.getBool("blockdisabled")&& !build.enabled) build.drawDisabled();
+                        Draw.z(Layer.block);
+                    }
+
                 }
                 Draw.reset();
 
@@ -826,16 +833,10 @@ public class BlockRenderer{
                     Draw.z(Layer.blockCracks);
                     build.drawCracks();
                 }
-            }
-        }
 
-        if(renderer.drawStatus && Lod.l2){
-            for(int i = 0; i < tileWithConsumerView.size; i++){
-                Building build = tileWithConsumerView.items[i];
-                if(ARCVars.arcInfoControl(build.team)){
-                    //always guaranteed to be player team
-                    build.drawStatus();
-                    if(Core.settings.getBool("blockdisabled")&& !build.enabled) build.drawDisabled();
+                if(!build.enabled && ARCVars.arcInfoControl(build.team) && Core.settings.getBool("blockdisabled")){
+                    build.drawDisabled();
+                    Draw.z(Layer.block);
                 }
             }
         }
