@@ -88,7 +88,7 @@ public class GridImage extends Element{
         // 0 格为 cyan，10 格为 acid，20 格重新 cyan。
         for(int gx = 0; gx <= imageWidth; gx += minorStep){
             Draw.color(((gx / minorStep) & 1) == 0 ? Color.cyan : Color.acid);
-            if (gx % majorStep !=0 ) Draw.alpha(0.8f);
+            if (gx % majorStep !=0 ) Draw.alpha(0.6f);
 
             Fill.crect(
                     (int)(this.x + xspace * gx - s),
