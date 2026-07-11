@@ -679,10 +679,10 @@ public class PlacementFragment{
                                             });
                                         }
 
-                                        if (control.input.selectedUnits.contains(unit -> unit.type.commands.size > 1) && control.input.selectedUnits.contains(unit -> unit.type.commands.size <= 1)){
+                                        if (control.input.selectedUnits.contains(unit -> unit.type.buildSpeed > 0) && control.input.selectedUnits.contains(unit -> unit.type.buildSpeed == -1)){
                                             sp.table(spp->{
-                                                arcSelectUnits(spp,"\uE86E","进攻性单位", unit -> unit.type.commands.size <= 1);
-                                                arcSelectUnits(spp,"\uE86B","辅助性单位", unit -> unit.type.commands.size > 1);
+                                                arcSelectUnits(spp,"\uE86E","进攻性单位", unit -> unit.type.buildSpeed == -1);
+                                                arcSelectUnits(spp,"\uE86B","辅助性单位", unit -> unit.type.buildSpeed > 0);
                                             });
                                         }
 
