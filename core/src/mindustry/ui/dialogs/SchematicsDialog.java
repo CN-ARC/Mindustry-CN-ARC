@@ -74,7 +74,7 @@ public class SchematicsDialog extends BaseDialog{
             }
         });
 
-        Core.assets.load("sprites/schematic-background.png", Texture.class).loaded = t -> t.setWrap(TextureWrap.repeat);
+        Core.assets.load("sprites/schematic-background.png", Texture.class).loaded = t -> t.setWrap(Texture.TextureWrap.repeat);
 
         tags = Core.settings.getJson("schematic-tags", Seq.class, String.class, Seq::new);
 

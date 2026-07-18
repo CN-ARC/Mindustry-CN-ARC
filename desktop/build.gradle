@@ -53,9 +53,12 @@ tasks.register('dist', Jar){
     //don't include steam shared libraries unless necessary
     if(!versionModifier.contains("steam")){
         exclude("**steam**.so", "**steam**.dll", "**steam**.dylib")
+        archiveFileName = "${appName}.jar"
+    }else{
+        archiveFileName = "${appName}-steam.jar"
     }
 
-    archiveFileName = "${appName}.jar"
+
 
     manifest{
         attributes 'Main-Class': project.mainClassName
