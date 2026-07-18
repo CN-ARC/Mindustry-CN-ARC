@@ -14,7 +14,6 @@ import arc.struct.*;
 import arc.util.*;
 import arc.util.Log.*;
 import arc.util.serialization.*;
-import com.codedisaster.steamworks.*;
 import mindustry.*;
 import mindustry.arcModule.ARCVars;
 import mindustry.core.*;
@@ -30,6 +29,7 @@ import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.ui.FileChooser.*;
 import mindustry.ui.dialogs.*;
+import steamworks.*;
 
 import java.io.*;
 
