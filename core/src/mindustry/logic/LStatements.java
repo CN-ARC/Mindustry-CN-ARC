@@ -1464,7 +1464,7 @@ public class LStatements{
 
     @RegisterStatement("spawn")
     public static class SpawnUnitStatement extends LStatement{
-        public String type = "@dagger", x = "10", y = "10", rotation = "90", team = "@sharded", result = "result";
+        public String type = "@dagger", x = "10", y = "10", rotation = "90", team = "@sharded", result = "result", effect = "true";
 
         @Override
         public void build(Table table){
@@ -1492,6 +1492,11 @@ public class LStatements{
 
             table.add(" rot ");
             fields(table, rotation, str -> rotation = str).left();
+
+            row(table);
+
+            table.add("effect ");
+            fields(table, effect, str -> effect = str).left();
         }
 
         @Override
@@ -1501,7 +1506,7 @@ public class LStatements{
 
         @Override
         public LInstruction build(LAssembler builder){
-            return new SpawnUnitI(builder.var(type), builder.var(x), builder.var(y), builder.var(rotation), builder.var(team), builder.var(result));
+            return new SpawnUnitI(builder.var(type), builder.var(x), builder.var(y), builder.var(rotation), builder.var(team), builder.var(result), builder.var(effect));
         }
 
         @Override

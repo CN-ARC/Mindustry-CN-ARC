@@ -326,6 +326,7 @@ project(":core"){
         from{ configurations.runtimeClasspath.collect{ it.isDirectory() ? it : zipTree(it) } }
         from zipTree("../server/build/libs/server-release.jar")
         from files("src/")
+        from files("../../Arc/natives/natives-desktop/libs")
         from files("../../Arc/arc-core/src/")
         from files("../../Arc/extensions/arcnet/src/")
         from files("../../Arc/extensions/g3d/src/")
