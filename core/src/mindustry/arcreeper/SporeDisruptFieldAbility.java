@@ -14,6 +14,7 @@ import static mindustry.Vars.tilesize;
 
     public class SporeDisruptFieldAbility extends Ability {
     public float range = 60, reload = 60, damage = 1;
+    public Color color = Color.purple;
 
     protected float timer;
 
@@ -48,12 +49,12 @@ import static mindustry.Vars.tilesize;
 
                 spore.damage(damage);
                 showEffect = true;
-
+                Fx.chainLightning.at(unit.x, unit.y, 0f, color, spore);
             }
 
-            timer = 0f;
+            timer -= reload;
         }
-        if (showEffect) Fx.overdriveWave.at(unit.x, unit.y, range, Color.purple);
+        if (showEffect) Fx.overdriveWave.at(unit.x, unit.y, range, color);
     }
 
 }
