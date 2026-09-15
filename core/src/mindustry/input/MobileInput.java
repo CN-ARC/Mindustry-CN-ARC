@@ -311,7 +311,7 @@ public class MobileInput extends InputHandler implements GestureListener{
                     rebuildMode = false;
                     mode = none;
                 }
-            }).width(155f).height(48f).margin(12f).checked(b -> commandMode).row();
+            }).width(155f).height(48f).margin(12f).checked(b -> commandMode).visible(() -> !control.input.logicHideHud).row();
 
             t.spacerY(() -> showCancel() ? 50f : 0f).row();
 
@@ -1056,7 +1056,7 @@ public class MobileInput extends InputHandler implements GestureListener{
             attractDst = 0f;
 
             if(unit.within(payloadTarget, 3f * Time.delta)){
-                if(payloadTarget instanceof Vec2 && pay.hasPayload()){
+                if(pay.hasPayload() && (payloadTarget instanceof Vec2 || (payloadTarget instanceof Building b && b.team == player.team() && b.acceptPayload(b, pay.payloads().peek())))){
                     //vec -> dropping something
                     tryDropPayload();
                 }else if(payloadTarget instanceof Building build && build.team == unit.team){
@@ -1099,7 +1099,7 @@ public class MobileInput extends InputHandler implements GestureListener{
             //autofire targeting
             if(manualShooting){
                 player.shooting = !boosted;
-                unit.aim(player.mouseX = Core.input.mouseWorldX(), player.mouseY = Core.input.mouseWorldY());
+                unit.aim(player.mouseX = Core.input.mouseWorldX(), player.mouseY = Core.input.mouseWorldY(), true);
             }else if(target == null){
                 player.shooting = false;
                 if(Core.settings.getBool("autotarget") && !(player.unit() instanceof BlockUnitUnit u && u.tile() instanceof ControlBlock c && !c.shouldAutoTarget())){
@@ -1117,7 +1117,7 @@ public class MobileInput extends InputHandler implements GestureListener{
 
                 //when not shooting, aim at mouse cursor
                 //this may be a bad idea, aiming for a point far in front could work better, test it out
-                unit.aim(Core.input.mouseWorldX(), Core.input.mouseWorldY());
+                unit.aim(Core.input.mouseWorldX(), Core.input.mouseWorldY(), true);
             }else{
                 Vec2 intercept = player.unit().type.weapons.contains(w -> w.predictTarget) ? Predict.intercept(unit, target, type.weapons.first().bullet) : Tmp.v1.set(target);
 
@@ -1125,7 +1125,7 @@ public class MobileInput extends InputHandler implements GestureListener{
                 player.mouseY = intercept.y;
                 player.shooting = !boosted;
 
-                unit.aim(player.mouseX, player.mouseY);
+                unit.aim(player.mouseX, player.mouseY, true);
             }
         }
 

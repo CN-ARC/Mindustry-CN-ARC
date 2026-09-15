@@ -819,7 +819,6 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
 
     }
 
-
     /**
      * Tries moving a payload forwards.
      * @param todump payload to dump.
@@ -1665,7 +1664,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
 
             if(net.active() && lastAccessed != null){
                 table.row();
-                table.add(Core.bundle.format("lastaccessed", lastAccessed)).growX().wrap().left();
+                table.add(Core.bundle.format("lastaccessed", lastAccessed)).width(260f).wrap().left();
             }
 
             table.marginBottom(-5);
@@ -1865,6 +1864,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
         if(was){
             indexer.addIndex(tile);
             Events.fire(teamChangeEvent.set(last, self()));
+            pathfinder.updateTile(tile);
+            updateProximity();
         }
 
         checkAllowUpdate();
@@ -2150,6 +2151,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
             case powerNetOut -> power == null ? 0 : power.graph.getLastScaledPowerOut() * 60;
             case powerNetStored -> power == null ? 0 : power.graph.getLastPowerStored();
             case powerNetCapacity -> power == null ? 0 : power.graph.getLastCapacity();
+            case armor -> block.armor;
             case enabled -> enabled ? 1 : 0;
             case controlled -> this instanceof ControlBlock c && c.isControlled() ? GlobalVars.ctrlPlayer : 0;
             case payloadCount -> (getPayloads() != null ? getPayloads().total() : 0) + (getPayload() != null ? 1 : 0);
@@ -2202,8 +2204,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
         switch(prop){
             case health -> {
                 health = (float)Mathf.clamp(value, 0, maxHealth);
-                if(health <= 0f && !dead()){
-                    Call.buildDestroyed(self());
+                if(health <= 0f){
+                    if(!dead) Call.buildDestroyed(self());
                 }else{
                     healthChanged();
                 }

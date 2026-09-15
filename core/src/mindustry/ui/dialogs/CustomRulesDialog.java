@@ -212,18 +212,15 @@ public class CustomRulesDialog extends BaseDialog{
     void setup(){
         cont.clear();
         cont.table(t -> {
-            t.add("@search").padRight(10);
+            t.image(Icon.zoom).padRight(8);
             var field = t.field(ruleSearch, text -> {
                 ruleSearch = text.trim().replaceAll(" +", " ").toLowerCase();
                 setupMain();
-            }).grow().pad(8).get();
+            }).growX().pad(8).get();
+            field.setMessageText("@player.search");
             field.setCursorPosition(ruleSearch.length());
             Core.scene.setKeyboardFocus(field);
-            t.button(Icon.cancel, Styles.emptyi, () -> {
-                ruleSearch = "";
-                setupMain();
-            }).padLeft(10f).size(35f);
-        }).row();
+        }).fillX().row();
         Cell<ScrollPane> paneCell = cont.pane(m -> main = m);
 
         setupMain();
@@ -290,6 +287,7 @@ public class CustomRulesDialog extends BaseDialog{
         category("资源建筑");
         check("@rules.alloweditworldprocessors", b -> rules.allowEditWorldProcessors = b, () -> rules.allowEditWorldProcessors);
         check("@rules.infiniteresources", b -> rules.infiniteResources = b, () -> rules.infiniteResources);
+        check("@rules.corebuildandconfig", b -> rules.coreBuildAndConfig = b, () -> rules.coreBuildAndConfig);
         check("@rules.onlydepositcore", b -> rules.onlyDepositCore = b, () -> rules.onlyDepositCore);
         check("@rules.coreunloaders", b -> rules.allowCoreUnloaders = b, () -> rules.allowCoreUnloaders);
         check("@rules.derelictrepair", b -> rules.derelictRepair = b, () -> rules.derelictRepair);
@@ -390,6 +388,11 @@ public class CustomRulesDialog extends BaseDialog{
         }, () -> ui.picker.show(rules.dynamicColor, rules.dynamicColor::set)).left().width(250f).row();
         number("@rules.solarmultiplier", f -> rules.solarMultiplier = f, () -> rules.solarMultiplier);
 
+        if(Core.bundle.get("rules.weather").toLowerCase().contains(ruleSearch)){
+            current.button("@rules.weather", this::weatherDialog).width(250f).left().row();
+        }
+
+        category("light");
         if(Core.bundle.get("rules.ambientlight").toLowerCase().contains(ruleSearch)){
             current.button(b -> {
                 b.left();
@@ -401,6 +404,7 @@ public class CustomRulesDialog extends BaseDialog{
                 b.add("@rules.ambientlight");
             }, () -> ui.picker.show(rules.ambientLight, rules.ambientLight::set)).left().width(250f).row();
         }
+        check("@rules.lighting.unitlight", b -> rules.unitLight = b, () -> rules.unitLight);
 
         if(Core.bundle.get("rules.weather").toLowerCase().contains(ruleSearch)){
             current.button("@rules.weather", this::weatherDialog).width(250f).left().row();

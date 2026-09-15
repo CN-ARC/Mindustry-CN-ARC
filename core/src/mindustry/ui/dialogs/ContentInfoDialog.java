@@ -42,8 +42,9 @@ public class ContentInfoDialog extends BaseDialog{
         Table table = new Table();
         table.margin(10);
 
-        //initialize stats if they haven't been yet
-        content.checkStats();
+        //compute stats every time
+        var stats = content.computeStats();
+        var statMap = stats.toMap();
 
         table.table(title1 -> {
             title1.image(content.uiIcon).size(iconXLarge).scaling(Scaling.fit).get().clicked(() -> Core.app.setClipboardText(content.emoji()));
@@ -62,7 +63,7 @@ public class ContentInfoDialog extends BaseDialog{
         }
 
         if(content.description != null){
-            var any = content.stats.toMap().size > 0;
+            var any = statMap.size > 0;
 
             if(any){
                 table.add("@category.purpose").color(ARCVars.getThemeColor()).fillX().padTop(10);
@@ -72,16 +73,14 @@ public class ContentInfoDialog extends BaseDialog{
             table.add("[lightgray]" + UI.formatIcons(content.displayDescription())).wrap().fillX().padLeft(any ? 10 : 0).width(500f).padTop(any ? 0 : 10).left();
             table.row();
 
-            if(!content.stats.useCategories && any){
+            if(!stats.useCategories && any){
                 table.add("@category.general").fillX().color(ARCVars.getThemeColor());
                 table.row();
             }
         }
 
-        Stats stats = content.stats;
-
-        for(StatCat cat : stats.toMap().keys()){
-            OrderedMap<Stat, Seq<StatValue>> map = stats.toMap().get(cat);
+        for(StatCat cat : statMap.keys()){
+            var map = statMap.get(cat);
 
             if(map.size == 0) continue;
 

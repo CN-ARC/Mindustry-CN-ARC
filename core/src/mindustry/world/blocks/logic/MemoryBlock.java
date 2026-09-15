@@ -6,15 +6,21 @@ import arc.scene.event.Touchable;
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.Table;
 import arc.util.Time;
+import mindustry.ui.Styles;
+
+import arc.util.*;
 import arc.util.io.*;
 import mindustry.gen.*;
-import mindustry.ui.Styles;
+import mindustry.io.*;
+import mindustry.io.TypeIO.*;
 import mindustry.logic.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
+
+import java.util.*;
 
 public class MemoryBlock extends Block{
     public int memoryCapacity = 32;
@@ -48,14 +54,35 @@ public class MemoryBlock extends Block{
     }
 
     @Override
+    public double sense(LAccess sensor){
+        return switch(sensor){
+            case memoryCapacity -> memoryCapacity;
+            default -> super.sense(sensor);
+        };
+    }
+
+    @Override
     public boolean canBreak(Tile tile){
         return accessible();
     }
 
     public class MemoryBuild extends Building implements LReadable, LWritable{
-        public double[] memory = new double[memoryCapacity];
+        /** Marks a memory slot as being stored in {@code numberMemory} (instead of {@code objectMemory}) */
+        private static final Object sentinel = new Object();
+
+        /** Objects stored in this memory building */
+        private Object[] objectMemory = new Object[memoryCapacity];
+
+        /** Numbers stored in this memory building */
+        private double[] numberMemory = new double[memoryCapacity];
+
         float counter = 0f;
         int deci = -1;
+
+        {
+            //all memory slots contain 0 when first initialized
+            Arrays.fill(objectMemory, sentinel);
+        }
 
         //massive byte size means picking up causes sync issues
         @Override
@@ -82,7 +109,17 @@ public class MemoryBlock extends Block{
         public void read(LVar position, LVar output){
             int address = position.numi();
             //Return null when out of bounds. (instead of 0)
-            output.setnum(address < 0 || address >= memory.length ? Double.NaN : memory[address]);
+            if(address < 0 || address >= objectMemory.length){
+                output.setobj(null);
+                return;
+            }
+
+            Object value = objectMemory[address];
+            if(value == sentinel){
+                output.setnum(numberMemory[address]);
+            }else{
+                output.setobj(value);
+            }
         }
 
         @Override
@@ -93,8 +130,14 @@ public class MemoryBlock extends Block{
         @Override
         public void write(LVar position, LVar value){
             int address = position.numi();
-            if(address < 0 || address >= memory.length) return;
-            memory[address] = value.num();
+            if(address < 0 || address >= objectMemory.length) return;
+
+            if(value.isobj){
+                objectMemory[address] = value.objval;
+            }else{
+                objectMemory[address] = sentinel;
+                numberMemory[address] = value.numval;
+            }
         }
 
         @Override
@@ -112,12 +155,22 @@ public class MemoryBlock extends Block{
         }
 
         @Override
+        public byte version(){
+            return 1;
+        }
+
+        @Override
         public void write(Writes write){
             super.write(write);
 
-            write.i(memory.length);
-            for(double v : memory){
-                write.d(v);
+            write.i(objectMemory.length);
+            for(int i = 0; i < objectMemory.length; i++){
+                Object value = objectMemory[i];
+                if(value == sentinel){
+                    TypeIO.writeObject(write, numberMemory[i]);
+                }else{
+                    TypeIO.writeObject(write, value);
+                }
             }
         }
 
@@ -180,22 +233,22 @@ public class MemoryBlock extends Block{
             infoTable.row();
             infoTable.pane(t->{
                 int index = 0;
-                for(double v : memory){
+                for(double aaa : numberMemory){
                     Label textR = t.add(index + " ").get();
                     int finalIndex = index;
 
                     t.table(tt->{
-                        Label text = tt.add(showString(memory[finalIndex])).get();
+                        Label text = tt.add(showString(numberMemory[finalIndex])).get();
                         tt.update(()->{
                             if(counter + Time.delta>period){
-                                textR.setText((memory[finalIndex]==0?"[gray]":"") + finalIndex + " ");
-                                text.setText(showString(memory[finalIndex]));
+                                textR.setText((numberMemory[finalIndex]==0?"[gray]":"") + finalIndex + " ");
+                                text.setText(showString(numberMemory[finalIndex]));
                             }
                         });
                         tt.touchable = Touchable.enabled;
                         tt.tapped(()->{
-                            Core.app.setClipboardText(memory[finalIndex]+"");
-                            arcui.arcInfo("[cyan]复制内存[white]\n " + memory[finalIndex]);
+                            Core.app.setClipboardText(numberMemory[finalIndex]+"");
+                            arcui.arcInfo("[cyan]复制内存[white]\n " + numberMemory[finalIndex]);
                         });
                     });
                     index+=1;
@@ -216,9 +269,46 @@ public class MemoryBlock extends Block{
             super.read(read, revision);
 
             int amount = read.i();
+
+            if(revision == 0){
+                for(int i = 0; i < amount; i++){
+                    double val = read.d();
+                    if(i < objectMemory.length){
+                        objectMemory[i] = sentinel;
+                        numberMemory[i] = val;
+                    }
+                }
+                return;
+            }
+
+            //read all data, but ignore anything not fitting inside this memory building
             for(int i = 0; i < amount; i++){
-                double val = read.d();
-                if(i < memory.length) memory[i] = val;
+                byte type = read.b();
+                if(type == TypeIO.doubleType){
+                    //same logic as readObject, but prevents boxing
+                    double value = read.d();
+                    if(i < objectMemory.length){
+                        objectMemory[i] = sentinel;
+                        numberMemory[i] = value;
+                    }
+                }else{
+                    Object value = TypeIO.readObject(read, true, null, false, true, type);
+                    if(i < objectMemory.length){
+                        objectMemory[i] = value;
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void afterReadAll(){
+            super.afterReadAll();
+            //unbox any memory contents which require it
+            for(int i = 0; i < objectMemory.length; i++){
+                //skips sentinel objects
+                if(objectMemory[i] instanceof Boxed<?> boxed){
+                    objectMemory[i] = boxed.unbox();
+                }
             }
         }
     }

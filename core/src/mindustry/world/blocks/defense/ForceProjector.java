@@ -51,6 +51,7 @@ public class ForceProjector extends Block{
     public float hitSoundVolume = 0.12f;
     public Effect absorbEffect = Fx.absorb;
     public Effect shieldBreakEffect = Fx.shieldBreak;
+    public Effect forceShrinkEffect = Fx.forceShrink;
     public @Load("@-top") TextureRegion topRegion;
     /** ARCreeper: 此立场覆盖 tile 时增加的临时高度。 */
     public float heightEnhance = 0f;
@@ -202,7 +203,7 @@ public class ForceProjector extends Block{
         @Override
         public void onRemoved(){
             float radius = realRadius();
-            if(!broken && radius > 1f) Fx.forceShrink.at(x, y, radius, team.color);
+            if(!broken && radius > 1f) forceShrinkEffect.at(x, y, radius, team.color);
             super.onRemoved();
         }
 
@@ -256,7 +257,7 @@ public class ForceProjector extends Block{
             if(buildup >= shieldHealth + phaseShieldBoost * phaseHeat && !broken){
                 broken = true;
                 buildup = shieldHealth;
-                shieldBreakEffect.at(x, y, realRadius(), team.color);
+                shieldBreakEffect.at(x, y, realRadius(), team.color, block);
                 breakSound.at(x, y);
                 if(team != state.rules.defaultTeam){
                     Events.fire(Trigger.forceProjectorBreak);

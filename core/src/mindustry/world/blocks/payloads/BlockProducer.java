@@ -1,5 +1,6 @@
 package mindustry.world.blocks.payloads;
 
+import arc.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.struct.*;
@@ -71,16 +72,21 @@ public abstract class BlockProducer extends PayloadBlock{
     public void setBars(){
         super.setBars();
 
-        addBar("progress", (BlockProducerBuild entity) ->
-                new Bar(() -> entity.recipe() == null ? (Iconc.crafting + "") : (Iconc.crafting + " " + Strings.fixed((entity.progress / entity.recipe().buildTime) * 100f, 0)  + " %"),
-                        () -> Pal.ammo, () -> entity.recipe() == null ? 0f : (entity.progress / entity.recipe().buildTime))
-            );
+        addBar("progress", (BlockProducerBuild e) -> new Bar(
+            () -> e.recipe() == null ? (Iconc.crafting + "") : (Iconc.crafting + " " + Strings.autoFixed(e.fraction() * 100f, 0)  + " %"),
+            () -> Pal.ammo,
+            e::fraction
+        ));
     }
 
     public abstract class BlockProducerBuild extends PayloadBlockBuild<BuildPayload>{
         public float progress, time, heat;
 
         public abstract @Nullable Block recipe();
+
+        public float fraction(){
+            return recipe() == null ? 0f : (progress / recipe().buildTime);
+        }
 
         @Override
         public boolean acceptItem(Building source, Item item){

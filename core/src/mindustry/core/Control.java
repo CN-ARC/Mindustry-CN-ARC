@@ -130,7 +130,7 @@ public class Control implements ApplicationListener, Loadable{
         });
 
         Events.on(WaveEvent.class, event -> {
-            if(state.map.getHightScore() < state.wave){
+            if(state.map.getHighScore() < state.wave){
                 hiscore = true;
                 state.map.setHighScore(state.wave);
             }
@@ -156,7 +156,7 @@ public class Control implements ApplicationListener, Loadable{
 
         //autohost for pvp maps
         Events.on(WorldLoadEvent.class, event -> app.post(() -> {
-            if(state.rules.pvp && !net.active() && !state.rules.pauseDisabled){
+            if(state.rules.pvp && !net.active() && !state.rules.pauseDisabled && !state.isEditor() && !ui.editor.isShown()){
                 try{
                     net.host(port);
                     player.admin = true;
@@ -418,6 +418,7 @@ public class Control implements ApplicationListener, Loadable{
             if(playtest) state.playtestingMap = map;
             state.rules.sector = null;
             state.rules.editor = false;
+            Events.fire(new RulesLoadEvent(state.rules));
             logic.play();
             if(settings.getBool("savecreate") && !world.isInvalidMap() && !playtest){
                 control.saves.addSave(map.name() + " " + new SimpleDateFormat("MMM dd h:mm", Locale.getDefault()).format(new Date()));
@@ -557,6 +558,7 @@ public class Control implements ApplicationListener, Loadable{
                             });
                         }
                     }else{
+                        Events.fire(new RulesLoadEvent(state.rules, true));
                         state.set(State.playing);
                         reloader.end();
                     }
@@ -591,6 +593,7 @@ public class Control implements ApplicationListener, Loadable{
             beforePlay.run();
         }
 
+        Events.fire(new RulesLoadEvent(state.rules));
         logic.play();
         control.saves.saveSector(sector);
         Events.fire(new SectorLaunchEvent(sector));

@@ -26,7 +26,6 @@ import mindustry.core.*;
 import mindustry.ctype.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
-import mindustry.graphics.*;
 import mindustry.input.*;
 import mindustry.type.*;
 import mindustry.ui.*;
@@ -536,7 +535,7 @@ public class SettingsMenuDialog extends BaseDialog{
 
         graphics.sliderPref("screenshake", 4, 0, 8, i -> (i / 4f) + "x");
 
-        graphics.sliderPref("bloomintensity", 6, 0, 16, i -> (int)(i/4f * 100f) + "%");
+        graphics.sliderPref("bloomintensity", 6, 0, 16, i -> (int)(i / 4f * 100f) + "%");
         graphics.sliderPref("bloomblur", 2, 1, 16, i -> i + "x");
 
         graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> {
@@ -868,12 +867,10 @@ public class SettingsMenuDialog extends BaseDialog{
         forcehide.checkPref("showweather", true);
         forcehide.checkPref("animatedwater", true);
 
-        if(Shaders.shield != null){
-            forcehide.checkPref("animatedshields", true);
-            forcehide.checkPref("staticShieldsBorder", false);
-        }
+        forcehide.checkPref("staticShieldsBorder", false);
 
-            forcehide.checkPref("atmosphere", !mobile);
+        forcehide.checkPref("atmosphere", !mobile);
+        graphics.checkPref("bloom", true, val -> renderer.toggleBloom(val));
 
         graphics.checkPref("pixelate", false, val -> {
             if(val){
@@ -919,6 +916,7 @@ public class SettingsMenuDialog extends BaseDialog{
             ARCVars.limitDst = s * 8;
             return s + "格";
         });
+        graphics.checkPref("logiclocalization", true);
 
         //////////specmode
         specmode.addCategory("moreContent");
@@ -1291,25 +1289,13 @@ public class SettingsMenuDialog extends BaseDialog{
 
             @Override
             public void add(SettingsTable table){
-                Button box = new Button(Styles.grayt);
-                box.background(Styles.grayPanel);
-                box.margin(10f);
-
-                box.add(new Image()).update(i -> i.setDrawable(box.isOver() ? (box.isChecked() ? Tex.checkOnOver : Tex.checkOver) : box.isChecked() ? Tex.checkOn : Tex.checkOff))
-                    .size(32f).padRight(8f).padLeft(-4f);
-
-                box.add(title);
-
-                box.update(() -> box.setChecked(settings.getBool(name)));
-
-                box.clicked(() -> {
-                    settings.put(name, box.isChecked());
+                Table box = Elems.check(title, () -> settings.getBool(name), value -> {
+                    settings.put(name, value);
                     if(changed != null){
-                        changed.get(box.isChecked());
+                        changed.get(value);
                     }
                 });
 
-                box.left();
                 addDesc(table.add(box).minWidth(Math.min(500f, Core.graphics.getWidth() / 1.2f / Scl.scl(1f))).fillX().height(45f).left().padTop(7f).get());
                 table.row();
             }
