@@ -239,9 +239,7 @@ public class UnitFactory extends UnitBlock{
 
         public boolean canSetCommand(){
             var output = unit();
-            return output != null && output.commands.size > 1 && output.allowChangeCommands &&
-                //to avoid cluttering UI, don't show command selection for "standard" units that only have two commands.
-                !(output.commands.size == 2 && output.commands.get(1) == UnitCommand.enterPayloadCommand);
+            return output != null && output.commands.size > 1 && output.allowChangeCommands;
         }
 
         @Override
@@ -268,6 +266,12 @@ public class UnitFactory extends UnitBlock{
         @Override
         public void onCommand(Vec2 target){
             commandPos = target;
+            if(command != null && command.snapToBuilding){
+                var build = world.buildWorld(target.x, target.y);
+                if(build != null && build.team == this.team){
+                    commandPos.set(build);
+                }
+            }
         }
 
         @Override

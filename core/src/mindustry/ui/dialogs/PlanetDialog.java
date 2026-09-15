@@ -858,7 +858,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                                 }
 
                                 String ic = sec.iconChar() == null ? "" : sec.iconChar() + " ";
-                                head.add(ic + sec.name()).growX().wrap();
+                                head.add(ic + sec.name()).growX().wrap(true);
 
                                 if(!mobile && !sec.info.export.isEmpty() && sec.info.destination != null && sec.info.destination.hasBase()){
                                     String des = sec.info.destination.iconChar();

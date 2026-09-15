@@ -190,7 +190,7 @@ public class UnitAssembler extends PayloadBlock{
 
             if(plan.liquidReq != null){
                 for(LiquidStack stack : plan.liquidReq){
-                    liquidFilter[stack.liquid.id] = true;
+                    if(stack.liquid.id < liquidFilter.length) liquidFilter[stack.liquid.id] = true;
                 }
             }
         }
