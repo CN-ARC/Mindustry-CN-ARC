@@ -49,7 +49,7 @@ public enum EditorTool{
             });
         }
     },
-    pencil(KeyCode.b, "replace", "square", "drawteams", "underliquid"){
+    pencil(KeyCode.b, "replace", "square", "drawteams", "underliquid", "underliquidarc"){
         {
             edit = true;
             draggable = true;
@@ -71,8 +71,9 @@ public enum EditorTool{
                 editor.drawCircle(x, y, tile -> tile.setTeam(editor.drawTeam));
             }else if(mode == 3 && !(editor.drawBlock instanceof Floor f && f.isLiquid)){
                 editor.drawBlocks(x, y, false, true, tile -> tile.floor().isLiquid);
+            } else if(mode == 4){
+                editor.drawBlocks(x, y, true, true, tile ->true);
             }
-
         }
     },
     eraser(KeyCode.e, "eraseores"){
@@ -94,7 +95,7 @@ public enum EditorTool{
             });
         }
     },
-    fill(KeyCode.g, "replaceall", "fillteams", "fillerase", "fillcliffs", "fillunderliquid"){
+    fill(KeyCode.g, "replaceall", "fillteams", "fillerase", "fillcliffs", "fillunderliquid", "fillunderliquidarc"){
         {
             edit = true;
         }
@@ -230,6 +231,19 @@ public enum EditorTool{
                     
                     fill(x, y, false, tester, setter);
                 }
+            }else if(mode == 5){ //fill under liquid
+                Block dest = tile.floor(), destoverlay = tile.overlay();
+
+                Boolf<Tile> tester;
+                Cons<Tile> setter;
+                tester = t -> t.floor() == dest && t.overlay() == destoverlay;
+                setter = t -> {
+                    if(t.overlay() != editor.drawBlock){
+                        t.setOverlay(editor.drawBlock.asFloor());
+                    }
+                };
+
+                fill(x, y, false, tester, setter);
             }
         }
 
