@@ -702,9 +702,7 @@ public class Turret extends ReloadTurret{
                         buildings,
                         targetHighestCreeper
                 );
-                /*return Units.bestTarget(team, x, y, range,
-                    e -> !e.dead() && unitFilter.get(e) && (e.isGrounded() || targetAir) && (!e.isGrounded() || targetGround) && (missiles || !(e instanceof TimedKillc)),
-                    b -> buildings && buildingFilter.get(b), sort);
+
             }
         }
 
