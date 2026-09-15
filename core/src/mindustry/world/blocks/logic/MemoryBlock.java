@@ -233,22 +233,22 @@ public class MemoryBlock extends Block{
             infoTable.row();
             infoTable.pane(t->{
                 int index = 0;
-                for(double v : memory){
+                for(double aaa : numberMemory){
                     Label textR = t.add(index + " ").get();
                     int finalIndex = index;
 
                     t.table(tt->{
-                        Label text = tt.add(showString(memory[finalIndex])).get();
+                        Label text = tt.add(showString(numberMemory[finalIndex])).get();
                         tt.update(()->{
                             if(counter + Time.delta>period){
-                                textR.setText((memory[finalIndex]==0?"[gray]":"") + finalIndex + " ");
-                                text.setText(showString(memory[finalIndex]));
+                                textR.setText((numberMemory[finalIndex]==0?"[gray]":"") + finalIndex + " ");
+                                text.setText(showString(numberMemory[finalIndex]));
                             }
                         });
                         tt.touchable = Touchable.enabled;
                         tt.tapped(()->{
-                            Core.app.setClipboardText(memory[finalIndex]+"");
-                            arcui.arcInfo("[cyan]复制内存[white]\n " + memory[finalIndex]);
+                            Core.app.setClipboardText(numberMemory[finalIndex]+"");
+                            arcui.arcInfo("[cyan]复制内存[white]\n " + numberMemory[finalIndex]);
                         });
                     });
                     index+=1;

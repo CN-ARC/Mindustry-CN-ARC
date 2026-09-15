@@ -1,11 +1,17 @@
 package mindustry.entities.comp;
 
+import arc.Core;
+import arc.graphics.Color;
+import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.util.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCVars;
 import mindustry.content.*;
 import mindustry.gen.*;
+import mindustry.graphics.Drawf;
+import mindustry.graphics.Layer;
+import mindustry.graphics.Pal;
 import mindustry.input.*;
 import mindustry.type.*;
 import mindustry.world.*;

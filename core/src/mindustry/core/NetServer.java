@@ -815,6 +815,7 @@ public class NetServer implements ApplicationListener{
         player.boosting = boosting;
         player.selectedBlock = selectedBlock;
         player.selectedRotation = selectedRotation;
+        @Nullable var unit = player.unit();
 
         player.unit().controlWeapons(shooting, shooting);
         player.unit().aim(pointerX, pointerY);
